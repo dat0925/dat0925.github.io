@@ -170,7 +170,7 @@ body {
 /* ─── MAIN LAYOUT ─── */
 #main {
   display: flex;
-  height: calc(100vh - 105px);
+  height: calc(100vh - 108px);
   overflow: hidden;
 }
 
@@ -583,18 +583,121 @@ textarea.form-control { min-height: 70px; resize: vertical; }
 
 /* ─── RESPONSIVE ─── */
 @media (max-width: 768px) {
-  #task-panel { min-width: 100%; width: 100%; border-right: none; border-bottom: 2px solid var(--border2); }
-  #gantt-container { flex-direction: column; height: auto; overflow: visible; }
-  #main { height: auto; overflow: visible; }
-  #chart-panel { height: 400px; }
-  .table-header, .task-row, .phase-header {
-    grid-template-columns: 28px 24px 1fr 70px 55px;
+  /* スマホでは body全体をスクロール */
+  html, body { height: auto; overflow-x: hidden; }
+
+  /* sticky を解除してページ内フロー */
+  #topbar { position: relative; top: auto; }
+  #view-tabs { position: relative; top: auto; }
+
+  /* topbar */
+  #topbar {
+    padding: 8px 10px;
+    gap: 6px;
   }
-  .task-date:nth-child(6), .task-assignee, .task-updated { display: none; }
-  .logo { font-size: 13px; }
-  #topbar { padding: 8px 12px; }
-  #view-tabs { padding: 6px 12px; top: 45px; }
-  #main { height: calc(100vh - 96px); }
+  .logo { font-size: 12px; letter-spacing: 1px; }
+  .project-selector { min-width: 0; flex: 1; }
+  .project-selector select { max-width: 120px; font-size: 12px; }
+  .project-selector input[type=text] { width: 100px; font-size: 12px; }
+  .topbar-right { width: 100%; gap: 5px; }
+  .filter-bar { width: 100%; }
+  .filter-bar input[type=text] { flex: 1; width: auto; min-width: 80px; }
+  .filter-bar select { flex: 1; min-width: 70px; }
+  .btn { padding: 4px 9px; font-size: 11px; }
+
+  /* view tabs */
+  #view-tabs {
+    padding: 6px 10px;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  #view-tabs .right-controls { flex-wrap: wrap; gap: 4px; }
+
+  /* main — 高さ固定を解除、縦スクロール */
+  #main {
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+    flex-direction: column;
+  }
+
+  /* ガントコンテナ: 縦並び */
+  #gantt-container {
+    flex-direction: column;
+    height: auto;
+    overflow: visible;
+    width: 100%;
+  }
+
+  /* タスクパネル: 横幅100%・高さ自動 */
+  #task-panel {
+    min-width: 100%;
+    width: 100%;
+    height: auto;
+    max-height: 50vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border-right: none;
+    border-bottom: 2px solid var(--border2);
+  }
+
+  /* チャートパネル: 横スクロール固定高さ */
+  #chart-panel {
+    width: 100%;
+    height: 280px;
+    flex: none;
+    overflow-x: auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* テーブル列を縮小 — 開始日・終了日のみ表示 */
+  .table-header,
+  .task-row,
+  .phase-header {
+    grid-template-columns: 26px 20px 14px 1fr 56px 56px;
+  }
+
+  /* 完了日・工数・更新日 列を非表示 */
+  .table-header span:nth-child(7),
+  .table-header span:nth-child(8),
+  .table-header span:nth-child(9),
+  .task-row > span:nth-child(7),
+  .task-row > span:nth-child(8),
+  .task-row > span:nth-child(9),
+  .phase-header > span:nth-child(7),
+  .phase-header > span:nth-child(8),
+  .phase-header > span:nth-child(9) {
+    display: none;
+  }
+
+  /* サマリービュー */
+  #summary-view {
+    height: auto;
+    min-height: 50vh;
+    padding: 14px;
+  }
+  .summary-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .summary-card { padding: 10px; }
+  .summary-card .card-value { font-size: 22px; }
+
+  /* モーダル */
+  .form-row { grid-template-columns: 1fr; }
+  .modal { max-height: 88vh; margin: 0 8px; }
+
+  /* bulk bar */
+  #bulk-bar { flex-wrap: wrap; padding: 6px 10px; gap: 6px; }
+}
+
+/* さらに小さいスマホ */
+@media (max-width: 390px) {
+  .project-selector select { max-width: 95px; }
+  .project-selector input[type=text] { width: 80px; }
+  #chart-panel { height: 240px; }
+  .summary-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 /* ─── TOOLTIP ─── */
