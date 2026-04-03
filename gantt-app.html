@@ -1735,13 +1735,11 @@ function renderChartBody() {
   html += '</div>';
   container.innerHTML = html;
 
-  // Sync scroll between task panel and chart body
-  syncScroll();
 }
 
-// Sync scroll
+// Sync scroll — init()で一度だけ呼ぶ
 let syncingScroll = false;
-function syncScroll() {
+function initSyncScroll() {
   const taskPanel = document.getElementById('task-panel');
   const chartPanel = document.getElementById('chart-panel');
   taskPanel.addEventListener('scroll', () => {
@@ -1749,13 +1747,13 @@ function syncScroll() {
     syncingScroll = true;
     chartPanel.scrollTop = taskPanel.scrollTop;
     syncingScroll = false;
-  });
+  }, { passive: true });
   chartPanel.addEventListener('scroll', () => {
     if (syncingScroll) return;
     syncingScroll = true;
     taskPanel.scrollTop = chartPanel.scrollTop;
     syncingScroll = false;
-  });
+  }, { passive: true });
 }
 
 // ── SUMMARY ──
@@ -2001,6 +1999,12 @@ function esc(s) {
 // ════════════════════════════════════════════
 function init() {
   load();
+
+  // Demo project がなければ先に作成
+  if (Object.keys(state.projects).length === 0) {
+    createDemoProject();
+  }
+
   if (state.currentProject) {
     const phases = getPhases();
     phases.forEach(p => state.expandedPhases.add(p.id));
@@ -2009,6 +2013,9 @@ function init() {
   renderAll();
   updateAssigneeFilter();
   scrollToToday();
+
+  // スクロール同期 — 一度だけ登録
+  initSyncScroll();
 
   // ESC to close modal
   document.addEventListener('keydown', e => {
@@ -2019,11 +2026,6 @@ function init() {
   document.getElementById('modal-overlay').addEventListener('click', function(e) {
     if (e.target === this) closeModal();
   });
-
-  // Demo project
-  if (Object.keys(state.projects).length === 0) {
-    createDemoProject();
-  }
 }
 
 function createDemoProject() {
