@@ -44,13 +44,13 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--f);
 #gw{display:flex;flex:1;overflow:hidden;min-height:0}
 /* TASK PANEL */
 #tp{width:500px;min-width:500px;flex-shrink:0;display:flex;flex-direction:column;border-right:2px solid var(--bd2);background:var(--s1);overflow:hidden}
-#tph{display:grid;grid-template-columns:24px 18px 12px 1fr 58px 58px 44px;align-items:center;padding:0 6px;height:34px;background:var(--s2);border-bottom:2px solid var(--bd2);flex-shrink:0;gap:3px}
+#tph{display:grid;grid-template-columns:24px 22px 12px 1fr 58px 58px 44px 24px;align-items:center;padding:0 6px;height:34px;background:var(--s2);border-bottom:2px solid var(--bd2);flex-shrink:0;gap:3px}
 #tph span{font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.3px;white-space:nowrap}
 #tpb{flex:1;overflow-y:auto;overflow-x:hidden}
 /* ROWS */
-.ph-r{display:grid;grid-template-columns:24px 18px 12px 1fr 58px 58px 44px;align-items:center;padding:0 6px;height:32px;background:var(--s3);border-bottom:1px solid var(--bd);cursor:pointer;gap:3px;transition:background .1s}
+.ph-r{display:grid;grid-template-columns:24px 22px 12px 1fr 58px 58px 44px 24px;align-items:center;padding:0 6px;height:32px;background:var(--s3);border-bottom:1px solid var(--bd);cursor:pointer;gap:3px;transition:background .1s}
 .ph-r:hover{background:var(--bd)}
-.t-r{display:grid;grid-template-columns:24px 18px 12px 1fr 58px 58px 44px;align-items:center;padding:0 6px;height:30px;border-bottom:1px solid var(--bd);gap:3px;cursor:pointer;transition:background .1s}
+.t-r{display:grid;grid-template-columns:24px 22px 12px 1fr 58px 58px 44px 24px;align-items:center;padding:0 6px;height:30px;border-bottom:1px solid var(--bd);gap:3px;cursor:pointer;transition:background .1s}
 .t-r:hover{background:var(--s2)}.t-r.sel{background:var(--ac2)}.t-r.ch{padding-left:14px}
 .sd{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 .sd.todo{background:#5a6478}.sd.inprogress{background:#4f7fff}.sd.requested{background:#f59e0b}.sd.done{background:#22c55e}.sd.cancelled{background:#ef4444}
@@ -58,9 +58,9 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--f);
 .tn.dn{text-decoration:line-through;color:var(--tx3)}
 .td{font-size:12px;color:var(--tx2);font-family:var(--fm);white-space:nowrap}
 .ef{font-size:12px;color:var(--tx2);font-family:var(--fm);text-align:center}
-.tog{display:flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:3px;color:var(--tx3);font-size:9px;cursor:pointer}
-.tog:hover{background:var(--bd2);color:var(--tx2)}
-.ptog{display:flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:3px;background:var(--bd2);color:var(--tx2);font-size:9px;transition:transform .15s}
+.tog{display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:4px;color:var(--tx2);font-size:13px;cursor:pointer;font-weight:600}
+.tog:hover{background:var(--bd2);color:var(--ac)}
+.ptog{display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:4px;background:var(--bd);color:var(--tx2);font-size:13px;font-weight:600;transition:transform .15s}
 .ptog.cl{transform:rotate(-90deg)}
 .pn{font-size:12px;font-weight:700;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* CHART */
@@ -165,7 +165,7 @@ textarea.fc{min-height:60px;resize:vertical}.fg{margin-bottom:11px}.fr{display:g
     <div id="tp">
       <div id="tph">
         <span><input type="checkbox" id="chkall" onchange="toggleAll(this)" style="accent-color:var(--ac);width:13px;height:13px"></span>
-        <span></span><span></span><span>タスク名</span><span>開始</span><span>終了</span><span>工数h</span>
+        <span></span><span></span><span>タスク名</span><span>開始</span><span>終了</span><span>工数h</span><span title="複製">⧉</span>
       </div>
       <div id="tpb"></div>
     </div>
@@ -297,7 +297,7 @@ function renderPHR(ph){
   const ts=filtered().filter(t=>t.phaseId===ph.id);
   const exp=S.exp.has(ph.id);
   const eff=ts.reduce((s,t)=>s+(t.effort||1),0);
-  return`<div class="ph-r" onclick="togPh('${ph.id}')" ondblclick="editPh('${ph.id}');event.stopPropagation()"><span></span><span class="ptog ${exp?'':'cl'}">▾</span><span></span><span class="pn">${esc(ph.name)}</span><span class="td">${fmt(ph.startDate)}</span><span class="td">${fmt(ph.endDate)}</span><span class="ef">${eff}h</span></div>`;
+  return`<div class="ph-r" onclick="togPh('${ph.id}')" ondblclick="editPh('${ph.id}');event.stopPropagation()"><span></span><span class="ptog ${exp?'':'cl'}">▾</span><span></span><span class="pn">${esc(ph.name)}</span><span class="td">${fmt(ph.startDate)}</span><span class="td">${fmt(ph.endDate)}</span><span class="ef">${eff}h</span><span></span></div>`;
 }
 function renderTR(t,ch=false){
   const sel=S.sel.has(t.id);
@@ -311,6 +311,7 @@ function renderTR(t,ch=false){
     <span class="td">${fmt(t.startDate)}</span>
     <span class="td">${fmt(t.endDate)}</span>
     <span class="ef">${t.effort||1}h</span>
+    <span class="dup-btn" onclick="event.stopPropagation();dupTask('${t.id}')" title="複製" style="display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:4px;cursor:pointer;font-size:13px;color:var(--tx3)" onmouseenter="this.style.background='var(--bd2)';this.style.color='var(--ac)'" onmouseleave="this.style.background='';this.style.color='var(--tx3)'">⧉</span>
   </div>`;
 }
 
@@ -463,7 +464,174 @@ function rr(ctx,x,y,w,h,r){
   ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();
 }
 
-// SCROLL SYNC
+// DUPLICATE TASK
+function dupTask(id){
+  const p=pj();if(!p)return;
+  const t=p.tasks.find(t=>t.id===id);if(!t)return;
+  const newT={...t,
+    id:'t_'+Date.now()+'_'+Math.random().toString(36).slice(2,5),
+    name:t.name+' (複製)',
+    completedDate:null,
+    status: t.status==='done'?'todo':t.status,
+    updatedAt:td()
+  };
+  // 元タスクの直後に挿入
+  const idx=p.tasks.findIndex(x=>x.id===id);
+  p.tasks.splice(idx+1,0,newT);
+  save();renderAll();
+}
+
+// ══════════════════════════════════════════
+// CANVAS DRAG
+// ══════════════════════════════════════════
+let drag={active:false,taskId:null,mode:null,startX:0,origStart:null,origEnd:null};
+
+function getRowAtY(y){
+  const rows=getRows();let cy=0;
+  for(const r of rows){
+    const rh=r.type==='ph'?PHROW:ROW;
+    if(y>=cy&&y<cy+rh)return r;
+    cy+=rh;
+  }
+  return null;
+}
+function getBarInfo(t){
+  const{days}=getDays();const w=cw();
+  const di={};days.forEach((d,i)=>di[d]=i);
+  const si=di[t.startDate]??-1;
+  const ei=di[t.endDate]??-1;
+  const barStart=si>=0?si:(t.startDate<days[0]?0:days.length);
+  const barEnd=ei>=0?ei:(t.endDate>days[days.length-1]?days.length-1:-1);
+  return{bx:barStart*w,bw:(barEnd-barStart+1)*w,barStart,barEnd};
+}
+function xToDateIdx(x){
+  const w=cw();return Math.round(x/w);
+}
+function idxToDate(idx){
+  const{days}=getDays();
+  const i=Math.max(0,Math.min(days.length-1,idx));
+  return days[i];
+}
+
+function initDrag(){
+  const canvas=document.getElementById('cbc');
+  const wrap=document.getElementById('cbw');
+
+  // カーソル変更のためにmousemoveでヒットテスト
+  canvas.addEventListener('mousemove',e=>{
+    if(drag.active){
+      const dx=e.clientX-drag.startX;
+      const dayDelta=Math.round(dx/cw());
+      const p=pj();if(!p)return;
+      const t=p.tasks.find(t=>t.id===drag.taskId);if(!t)return;
+      if(drag.mode==='move'){
+        const dur=diffD(drag.origStart,drag.origEnd);
+        t.startDate=addD(drag.origStart,dayDelta);
+        t.endDate=addD(t.startDate,dur);
+      } else if(drag.mode==='left'){
+        const newStart=addD(drag.origStart,dayDelta);
+        if(newStart<=drag.origEnd) t.startDate=newStart;
+      } else if(drag.mode==='right'){
+        const newEnd=addD(drag.origEnd,dayDelta);
+        if(newEnd>=drag.origStart) t.endDate=newEnd;
+      }
+      drawBody();renderTP();
+      return;
+    }
+    // hit test for cursor
+    const rect=canvas.getBoundingClientRect();
+    const x=e.clientX-rect.left+wrap.scrollLeft;
+    const y=e.clientY-rect.top+wrap.scrollTop;
+    const row=getRowAtY(y);
+    if(row&&row.type==='t'){
+      const t=row.data;
+      const{bx,bw}=getBarInfo(t);
+      const EDGE=8;
+      if(x>=bx&&x<=bx+bw){
+        if(x<=bx+EDGE||x>=bx+bw-EDGE) canvas.style.cursor='ew-resize';
+        else canvas.style.cursor='grab';
+      } else canvas.style.cursor='default';
+    } else canvas.style.cursor='default';
+  });
+
+  canvas.addEventListener('mousedown',e=>{
+    const rect=canvas.getBoundingClientRect();
+    const x=e.clientX-rect.left+wrap.scrollLeft;
+    const y=e.clientY-rect.top+wrap.scrollTop;
+    const row=getRowAtY(y);
+    if(!row||row.type!=='t')return;
+    const t=row.data;
+    const{bx,bw}=getBarInfo(t);
+    const EDGE=8;
+    if(x<bx||x>bx+bw)return;
+    e.preventDefault();
+    drag.active=true;
+    drag.taskId=t.id;
+    drag.startX=e.clientX;
+    drag.origStart=t.startDate;
+    drag.origEnd=t.endDate;
+    if(x<=bx+EDGE) drag.mode='left';
+    else if(x>=bx+bw-EDGE) drag.mode='right';
+    else drag.mode='move';
+    canvas.style.cursor=drag.mode==='move'?'grabbing':'ew-resize';
+  });
+
+  const endDrag=()=>{
+    if(!drag.active)return;
+    drag.active=false;
+    const p=pj();
+    if(p){
+      const t=p.tasks.find(t=>t.id===drag.taskId);
+      if(t)t.updatedAt=td();
+      save();
+    }
+    renderAll();
+    document.getElementById('cbc').style.cursor='default';
+  };
+  document.addEventListener('mouseup',endDrag);
+
+  // タッチ対応
+  canvas.addEventListener('touchstart',e=>{
+    const touch=e.touches[0];
+    const rect=canvas.getBoundingClientRect();
+    const x=touch.clientX-rect.left+wrap.scrollLeft;
+    const y=touch.clientY-rect.top+wrap.scrollTop;
+    const row=getRowAtY(y);
+    if(!row||row.type!=='t')return;
+    const t=row.data;
+    const{bx,bw}=getBarInfo(t);
+    const EDGE=12;
+    if(x<bx||x>bx+bw)return;
+    e.preventDefault();
+    drag.active=true;drag.taskId=t.id;drag.startX=touch.clientX;
+    drag.origStart=t.startDate;drag.origEnd=t.endDate;
+    if(x<=bx+EDGE)drag.mode='left';
+    else if(x>=bx+bw-EDGE)drag.mode='right';
+    else drag.mode='move';
+  },{passive:false});
+
+  canvas.addEventListener('touchmove',e=>{
+    if(!drag.active)return;
+    e.preventDefault();
+    const touch=e.touches[0];
+    const dx=touch.clientX-drag.startX;
+    const dayDelta=Math.round(dx/cw());
+    const p=pj();if(!p)return;
+    const t=p.tasks.find(t=>t.id===drag.taskId);if(!t)return;
+    if(drag.mode==='move'){
+      const dur=diffD(drag.origStart,drag.origEnd);
+      t.startDate=addD(drag.origStart,dayDelta);
+      t.endDate=addD(t.startDate,dur);
+    } else if(drag.mode==='left'){
+      const ns=addD(drag.origStart,dayDelta);if(ns<=drag.origEnd)t.startDate=ns;
+    } else if(drag.mode==='right'){
+      const ne=addD(drag.origEnd,dayDelta);if(ne>=drag.origStart)t.endDate=ne;
+    }
+    drawBody();renderTP();
+  },{passive:false});
+
+  canvas.addEventListener('touchend',endDrag,{passive:true});
+}
 let syncing=false;
 function initSync(){
   const tb=document.getElementById('tpb'),cb=document.getElementById('cbw');
@@ -677,6 +845,7 @@ function init(){
   S.sd=addD(td(),-7);
   renderPJS();updateFAs();renderAll();
   initSync();
+  initDrag();
   document.addEventListener('keydown',e=>{if(e.key==='Escape')closeM()});
   document.getElementById('ov').addEventListener('click',function(e){if(e.target===this)closeM()});
 }
