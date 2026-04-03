@@ -14,6 +14,7 @@
   --f:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic UI',sans-serif;
   --fm:'SF Mono',Menlo,Consolas,monospace;
   --row:35px;--phrow:35px;--hdr:52px;
+  --gc:16px 20px 22px 1fr 54px 52px 52px 24px 24px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--f);font-size:13px;overflow:hidden}
@@ -47,11 +48,11 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--f);
 /* TASK PANEL */
 #tp{width:590px;min-width:590px;flex-shrink:0;display:flex;flex-direction:column;border-right:2px solid var(--bd2);background:var(--s1);overflow:hidden}
 /* 列構成: drag(16) | chk(20) | expand(22) | name(1fr) | status(54) | start(52) | end(52) | edit(24) | dup(24) */
-#tph{display:grid;grid-template-columns:16px 20px 22px 1fr 54px 52px 52px 24px 24px;align-items:center;padding:0 6px;height:35px;background:var(--s2);border-bottom:2px solid var(--bd2);flex-shrink:0;gap:3px}
+#tph{display:grid;grid-template-columns:var(--gc);align-items:center;padding:0 6px;height:35px;background:var(--s2);border-bottom:2px solid var(--bd2);flex-shrink:0;gap:3px}
 #tph span{font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;user-select:none}
 #tpb{flex:1;overflow-y:auto;overflow-x:hidden;position:relative}
 /* ROWS — 同じgrid、子タスクはname列のpadding-leftだけでインデント */
-.ph-r,.t-r{display:grid;grid-template-columns:16px 20px 22px 1fr 54px 52px 52px 24px 24px;gap:3px;align-items:center;padding:0 6px;border-bottom:1px solid var(--bd);user-select:none;position:relative;box-sizing:border-box}
+.ph-r,.t-r{display:grid;grid-template-columns:var(--gc);gap:3px;align-items:center;padding:0 6px;border-bottom:1px solid var(--bd);user-select:none;position:relative;box-sizing:border-box}
 .ph-r{height:35px;background:var(--s3);cursor:pointer;transition:background .1s}
 .ph-r:hover{background:var(--bd)}
 .t-r{height:35px;transition:background .1s;cursor:default}
@@ -62,9 +63,6 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--f);
 .t-r.dragging{opacity:.4;background:var(--ac2)!important}
 .drop-line{height:2px;background:var(--ac);margin:0 6px;border-radius:1px}
 /* inline add row */
-.add-row{display:grid;grid-template-columns:20px 24px 14px 1fr 60px 55px 60px 40px 26px;gap:3px;align-items:center;padding:0 6px;height:34px;border-bottom:1px solid var(--bd);background:#f0f6ff}
-.add-row input{background:var(--s1);border:1px solid var(--ac);color:var(--tx);padding:3px 5px;border-radius:4px;font-family:var(--f);font-size:11px;outline:none;width:100%}
-.add-row input[type=date]{font-size:10px}
 /* STATUS BADGE inline */
 .stbdg{display:inline-flex;align-items:center;padding:1px 5px;border-radius:10px;font-size:9px;font-weight:700;cursor:pointer;white-space:nowrap}
 .stbdg.todo{background:rgba(90,100,120,.2);color:#5a6478}
@@ -394,7 +392,7 @@ function renderInlineAddRow(){
   const today=td();const end=addD(today,6);
   const fi=(s)=>{if(!s)return'';const d=pd(s);return`${d.getMonth()+1}/${d.getDate()}`;};
   const inp='background:#fff;border:1px solid var(--ac);color:var(--tx);border-radius:4px;outline:none;font-family:var(--f)';
-  return `<div id="inline-add-row" style="display:grid;grid-template-columns:16px 20px 22px 1fr 58px 52px 52px 24px 22px;gap:3px;align-items:center;padding:0 6px;height:${ROW}px;border-bottom:1px solid var(--bd);background:#eff6ff;box-sizing:border-box">
+  return `<div id="inline-add-row" style="display:grid;grid-template-columns:var(--gc);gap:3px;align-items:center;padding:0 6px;height:${ROW}px;border-bottom:1px solid var(--bd);background:#eff6ff;box-sizing:border-box">
     <span></span><span></span><span></span>
     <span style="display:flex;align-items:center;gap:3px;min-width:0;overflow:hidden">
       <input type="text" id="ia-name" placeholder="タスク名..." style="${inp};flex:1;min-width:0;padding:3px 5px;font-size:12px" onkeydown="iaKeydown(event)">
