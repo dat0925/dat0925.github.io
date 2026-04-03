@@ -434,6 +434,8 @@ function submitInlineAdd(){
   inlineAddParent=null;inlineAddAfterIdx=-1;
   save();updateFAs();renderAll();
 }
+
+function renderPHR(ph,idx){
   const ts2=tasks().filter(t=>t.phaseId===ph.id&&!t.parentId);
   const allPh=tasks().filter(t=>t.phaseId===ph.id);
   const exp=S.exp.has(ph.id);
@@ -491,52 +493,6 @@ function renderTR(t,ch=false,idx=0){
   </div>`;
 }
 
-function renderInlineAddRow(){
-  const today=td();
-  const end=addD(today,6);
-  return `<div class="add-row" id="inline-add-row">
-    <span></span><span></span><span></span>
-    <span style="display:flex;align-items:center;gap:4px">
-      <input type="text" id="ia-name" placeholder="タスク名を入力..." style="flex:1" onkeydown="iaKeydown(event)">
-    </span>
-    <span><input type="date" id="ia-start" value="${today}" class="add-row input"></span>
-    <span><input type="date" id="ia-end" value="${end}" class="add-row input"></span>
-    <span><input type="number" id="ia-eff" value="1" min="0" step="0.5" style="width:36px;background:var(--s1);border:1px solid var(--ac);color:var(--tx);padding:3px 4px;border-radius:4px;font-size:11px;outline:none"></span>
-    <button class="btn p" style="font-size:10px;padding:3px 6px" onclick="submitInlineAdd()">追加</button>
-    <button class="btn" style="font-size:10px;padding:3px 6px" onclick="cancelInlineAdd()">✕</button>
-  </div>`;
-}
-
-function startInlineAdd(parentIdOrPhase){
-  inlineAddParent=parentIdOrPhase||null;
-  renderTP();
-  setTimeout(()=>{const el=document.getElementById('ia-name');if(el)el.focus();},50);
-}
-function cancelInlineAdd(){inlineAddParent=null;renderTP();}
-function iaKeydown(e){
-  if(e.key==='Enter')submitInlineAdd();
-  if(e.key==='Escape')cancelInlineAdd();
-}
-function submitInlineAdd(){
-  const name=(document.getElementById('ia-name')?.value||'').trim();
-  if(!name)return;
-  const s=document.getElementById('ia-start')?.value||td();
-  const en=document.getElementById('ia-end')?.value||addD(td(),6);
-  const eff=parseFloat(document.getElementById('ia-eff')?.value)||1;
-  const p=pj();if(!p)return;
-  let phaseId=null,parentId=null;
-  if(inlineAddParent&&inlineAddParent.startsWith('ph:')){
-    phaseId=inlineAddParent.slice(3);
-  } else if(inlineAddParent){
-    parentId=inlineAddParent;
-    const parentTask=p.tasks.find(t=>t.id===parentId);
-    if(parentTask)phaseId=parentTask.phaseId;
-  }
-  const t={id:'t_'+Date.now()+'_'+Math.random().toString(36).slice(2,5),phaseId,parentId,name,startDate:s,endDate:en,completedDate:null,status:'todo',assignee:'',effort:eff,memo:'',updatedAt:td()};
-  p.tasks.push(t);
-  inlineAddParent=null;
-  save();updateFAs();renderAll();
-}
 
 // ══════════════════════════════════════════
 // STATUS POPUP
