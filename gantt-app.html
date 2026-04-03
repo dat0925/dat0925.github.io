@@ -392,18 +392,18 @@ function renderTP(){
 
 function renderInlineAddRow(){
   const today=td();const end=addD(today,6);
-  // 日付を M/D 形式で表示するためのフォーマット
-  const fmtInput=(s)=>{if(!s)return '';const d=pd(s);return `${d.getMonth()+1}/${d.getDate()}`;};
-  return `<div id="inline-add-row" style="display:grid;grid-template-columns:16px 20px 22px 1fr 54px 52px 52px 24px 24px;gap:3px;align-items:center;padding:0 6px;height:${ROW}px;border-bottom:1px solid var(--bd);background:#eff6ff;box-sizing:border-box">
+  const fi=(s)=>{if(!s)return'';const d=pd(s);return`${d.getMonth()+1}/${d.getDate()}`;};
+  const inp='background:#fff;border:1px solid var(--ac);color:var(--tx);border-radius:4px;outline:none;font-family:var(--f)';
+  return `<div id="inline-add-row" style="display:grid;grid-template-columns:16px 20px 22px 1fr 58px 52px 52px 24px 22px;gap:3px;align-items:center;padding:0 6px;height:${ROW}px;border-bottom:1px solid var(--bd);background:#eff6ff;box-sizing:border-box">
     <span></span><span></span><span></span>
-    <span style="display:flex;align-items:center;gap:3px;min-width:0">
-      <input type="text" id="ia-name" placeholder="タスク名..." style="flex:1;min-width:0;background:var(--s1);border:1px solid var(--ac);color:var(--tx);padding:3px 5px;border-radius:4px;font-size:12px;outline:none" onkeydown="iaKeydown(event)">
-      <button style="flex-shrink:0;padding:3px 5px;border-radius:4px;border:1px solid var(--bd2);background:var(--s3);color:var(--tx3);font-size:12px;cursor:pointer;line-height:1" onclick="cancelInlineAdd()" title="キャンセル">✕</button>
+    <span style="display:flex;align-items:center;gap:3px;min-width:0;overflow:hidden">
+      <input type="text" id="ia-name" placeholder="タスク名..." style="${inp};flex:1;min-width:0;padding:3px 5px;font-size:12px" onkeydown="iaKeydown(event)">
+      <button style="flex-shrink:0;padding:3px 5px;border-radius:4px;border:1px solid var(--bd2);background:var(--s3);color:var(--tx3);font-size:12px;cursor:pointer" onclick="cancelInlineAdd()">✕</button>
     </span>
     <span></span>
-    <input type="date" id="ia-start" value="${today}" style="background:var(--s1);border:1px solid var(--ac);color:var(--tx);padding:2px 2px;border-radius:4px;font-size:11px;outline:none;width:100%">
-    <input type="date" id="ia-end" value="${end}" style="background:var(--s1);border:1px solid var(--ac);color:var(--tx);padding:2px 2px;border-radius:4px;font-size:11px;outline:none;width:100%">
-    <button style="padding:3px 8px;border-radius:4px;border:1px solid var(--ac);background:var(--ac);color:#fff;font-size:11px;cursor:pointer;white-space:nowrap;font-weight:600" onclick="submitInlineAdd()">追加</button>
+    <input type="text" id="ia-start" value="${fi(today)}" placeholder="3/2" style="${inp};padding:2px 3px;font-size:11px;width:100%;text-align:center;font-family:var(--fm)" onkeydown="if(event.key==='Enter')submitInlineAdd()">
+    <input type="text" id="ia-end" value="${fi(end)}" placeholder="3/8" style="${inp};padding:2px 3px;font-size:11px;width:100%;text-align:center;font-family:var(--fm)" onkeydown="if(event.key==='Enter')submitInlineAdd()">
+    <button style="padding:3px 6px;border-radius:4px;border:1px solid var(--ac);background:var(--ac);color:#fff;font-size:11px;cursor:pointer;font-weight:600;white-space:nowrap" onclick="submitInlineAdd()">追加</button>
     <span></span>
   </div>`;
 }
@@ -419,11 +419,22 @@ function iaKeydown(e){
   if(e.key==='Enter')submitInlineAdd();
   if(e.key==='Escape')cancelInlineAdd();
 }
+function parseInputDate(s){
+  // M/D → YYYY-MM-DD (今年基準)
+  if(!s)return td();
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s))return s;
+  const m=s.match(/^(\d{1,2})\/(\d{1,2})$/);
+  if(m){
+    const yr=new Date().getFullYear();
+    return`${yr}-${String(m[1]).padStart(2,'0')}-${String(m[2]).padStart(2,'0')}`;
+  }
+  return td();
+}
 function submitInlineAdd(){
   const name=(document.getElementById('ia-name')?.value||'').trim();
   if(!name)return;
-  const s=document.getElementById('ia-start')?.value||td();
-  const en=document.getElementById('ia-end')?.value||addD(td(),6);
+  const s=parseInputDate(document.getElementById('ia-start')?.value||'');
+  const en=parseInputDate(document.getElementById('ia-end')?.value||'');
   const p=pj();if(!p)return;
   let phaseId=null,parentId=null;
   if(inlineAddParent&&inlineAddParent!=='__root__'){
@@ -433,7 +444,6 @@ function submitInlineAdd(){
   }
   const t={id:'t_'+Date.now()+'_'+Math.random().toString(36).slice(2,5),phaseId,parentId,name,startDate:s,endDate:en,completedDate:null,status:'todo',assignee:'',effort:1,memo:'',updatedAt:td()};
   p.tasks.push(t);
-  // サブタスク追加時は親を自動展開
   if(parentId) S.exp.add('c_'+parentId);
   inlineAddParent=null;inlineAddAfterIdx=-1;
   save();updateFAs();renderAll();
