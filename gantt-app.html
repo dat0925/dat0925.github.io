@@ -263,14 +263,11 @@ function diffD(a,b){return Math.round((pd(b)-pd(a))/86400000)}
 // ══════════════════════════════════════════
 // STORAGE
 // ══════════════════════════════════════════
-function save(){try{localStorage.setItem('gp5',JSON.stringify(S.pjs));localStorage.setItem('gp5c',S.cur||'')}catch(e){}}
+function save(){try{localStorage.setItem('gp6',JSON.stringify(S.pjs));localStorage.setItem('gp6c',S.cur||'')}catch(e){}}
 function load(){
   try{
-    // migrate from old keys
-    const old=localStorage.getItem('gp4');
-    if(old&&!localStorage.getItem('gp5')){localStorage.setItem('gp5',old);}
-    const d=localStorage.getItem('gp5');if(d)S.pjs=JSON.parse(d);
-    S.cur=localStorage.getItem('gp5c')||localStorage.getItem('gp4c')||null;
+    const d=localStorage.getItem('gp6');if(d)S.pjs=JSON.parse(d);
+    S.cur=localStorage.getItem('gp6c')||null;
     if(S.cur&&!S.pjs[S.cur])S.cur=null;
   }catch(e){S.pjs={};}
 }
@@ -1150,20 +1147,56 @@ function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').
 // DEMO DATA
 // ══════════════════════════════════════════
 function createDemo(){
-  const id='pj_demo',t=td();
+  const id='pj_epress';
   S.pjs[id]={
-    name:'EPRESSプロジェクト（サンプル）',
-    phases:[{id:'ph1',name:'フォーム＆プロンプト作成',startDate:t,endDate:addD(t,28)},{id:'ph2',name:'AI生成→アップロード',startDate:addD(t,29),endDate:addD(t,48)}],
+    name:'EPRESSプロジェクト',
+    phases:[
+      {id:'ph_1',name:'フォーム & プロンプト作成',startDate:'',endDate:''},
+      {id:'ph_2',name:'AI生成 → アップロード',startDate:'',endDate:''},
+      {id:'ph_3',name:'管理画面・オプション設定実装',startDate:'',endDate:''},
+      {id:'ph_4',name:'プレリリース準備',startDate:'',endDate:''},
+      {id:'ph_5',name:'開発（関連部署連携）',startDate:'',endDate:''},
+      {id:'ph_6',name:'企画承認 （3/1～4/15）',startDate:'',endDate:''},
+      {id:'ph_7',name:'販売準備 （3/25～5/25）',startDate:'',endDate:''},
+    ],
     tasks:[
-      {id:'t1',phaseId:'ph1',parentId:null,name:'ヒアリングフォーム設計・実装',startDate:t,endDate:addD(t,4),completedDate:t,status:'done',assignee:'橋本',effort:8,memo:'26項目設計完了',updatedAt:t},
-      {id:'t2',phaseId:'ph1',parentId:null,name:'Claude自動生成検証',startDate:addD(t,1),endDate:addD(t,17),completedDate:null,status:'inprogress',assignee:'森',effort:16,memo:'',updatedAt:t},
-      {id:'t1a',phaseId:'ph1',parentId:'t2',name:'APIテスト',startDate:addD(t,2),endDate:addD(t,5),completedDate:null,status:'done',assignee:'森',effort:4,memo:'',updatedAt:t},
-      {id:'t3',phaseId:'ph1',parentId:null,name:'画像動画生成検証',startDate:addD(t,7),endDate:addD(t,17),completedDate:null,status:'todo',assignee:'石川',effort:8,memo:'',updatedAt:t},
-      {id:'t4',phaseId:'ph2',parentId:null,name:'ClaudeCode AWS実装',startDate:addD(t,29),endDate:addD(t,33),completedDate:null,status:'todo',assignee:'橋本',effort:12,memo:'',updatedAt:t},
-      {id:'t5',phaseId:'ph2',parentId:null,name:'GitHub連携',startDate:addD(t,33),endDate:addD(t,35),completedDate:null,status:'todo',assignee:'森',effort:4,memo:'',updatedAt:t},
+      {id:'t_1',phaseId:'ph_1',parentId:null,name:'ヒアリングフォーム設計・実装（26項目）',startDate:'2026-03-02',endDate:'2026-03-06',completedDate:null,status:'todo',assignee:'',effort:1,memo:'',updatedAt:'2026-04-03'},
+      {id:'t_2',phaseId:'ph_1',parentId:null,name:'Claude（クロード）プログラム自動生成検証',startDate:'2026-03-03',endDate:'2026-03-20',completedDate:null,status:'todo',assignee:'',effort:1,memo:'',updatedAt:'2026-04-03'},
+      {id:'t_3',phaseId:'ph_1',parentId:null,name:'画像動画生成検証',startDate:'2026-03-09',endDate:'2026-03-20',completedDate:null,status:'todo',assignee:'',effort:1,memo:'',updatedAt:'2026-04-03'},
+      {id:'t_4',phaseId:'ph_1',parentId:null,name:'OpenClaw（オープンクロー）導入検証',startDate:'2026-03-10',endDate:'2026-03-30',completedDate:null,status:'todo',assignee:'',effort:1,memo:'',updatedAt:'2026-04-03'},
+      {id:'t_5',phaseId:'ph_1',parentId:null,name:'フォーム→プロンプト→生成の結合テスト',startDate:'2026-03-20',endDate:'2026-03-31',completedDate:null,status:'todo',assignee:'',effort:1,memo:'',updatedAt:'2026-04-03'},
+      {id:'t_6',phaseId:'ph_2',parentId:null,name:'ClaudeCode（クロードコード）　AWS実装',startDate:'2026-04-01',endDate:'2026-04-06',completedDate:null,status:'todo',assignee:'',effort:1,memo:'',updatedAt:'2026-04-03'},
+      {id:'t_7',phaseId:'ph_2',parentId:null,name:'OpenClaw（オープンクロー）AWS実装',startDate:'2026-04-01',endDate:'2026-04-06',completedDate:null,status:'todo',assignee:'',effort:1,memo:'',updatedAt:'2026-04-03'},
+      {id:'t_8',phaseId:'ph_2',parentId:null,name:'画像生成、動画生成修正、実装',startDate:'2026-04-02',endDate:'2026-04-13',completedDate:null,status:'todo',assignee:'',effort:1,memo:'',updatedAt:'2026-04-03'},
+      {id:'t_9',phaseId:'ph_2',parentId:null,name:'GitHub連携',startDate:'2026-04-06',endDate:'2026-04-08',completedDate:null,status:'todo',assignee:'',effort:1,memo:'',updatedAt:'2026-04-03'},
+      {id:'t_10',phaseId:'ph_2',parentId:null,name:'Cloud上でのシステム統合及び修正',startDate:'2026-04-13',endDate:'2026-04-20',completedDate:null,status:'todo',assignee:'',effort:1,memo:'',updatedAt:'2026-04-03'},
+      {id:'t_11',phaseId:'ph_3',parentId:null,name:'管理画面構築（バリエーション選択→アップロード確認）',startDate:'2026-04-08',endDate:'2026-04-15',completedDate:null,status:'todo',assignee:'',effort:1,memo:'',updatedAt:'2026-04-03'},
+      {id:'t_12',phaseId:'ph_3',parentId:null,name:'アップロードオプションの作成（SNS、画像）',startDate:'2026-04-10',endDate:'2026-04-20',completedDate:null,status:'todo',assignee:'',effort:1,memo:'',updatedAt:'2026-04-03'},
+      {id:'t_13',phaseId:'ph_3',parentId:null,name:'サーバー自動アップロード',startDate:'2026-04-15',endDate:'2026-04-20',completedDate:null,status:'todo',assignee:'',effort:1,memo:'',updatedAt:'2026-04-03'},
+      {id:'t_14',phaseId:'ph_3',parentId:null,name:'テスト・バグ修正',startDate:'2026-04-20',endDate:'2026-04-30',completedDate:null,status:'todo',assignee:'',effort:1,memo:'',updatedAt:'2026-04-03'},
+      {id:'t_15',phaseId:'ph_4',parentId:null,name:'本番環境最終アップロード・負荷テスト',startDate:'2026-05-01',endDate:'2026-05-10',completedDate:null,status:'todo',assignee:'',effort:1,memo:'',updatedAt:'2026-04-03'},
+      {id:'t_16',phaseId:'ph_4',parentId:null,name:'バージョン２（プロンプト修正済み）内容の反映',startDate:'2026-05-08',endDate:'2026-05-16',completedDate:null,status:'todo',assignee:'',effort:1,memo:'',updatedAt:'2026-04-03'},
+      {id:'t_17',phaseId:'ph_4',parentId:null,name:'アカウント情報（社員情報）の反映（情シス）',startDate:'2026-05-15',endDate:'2026-05-20',completedDate:null,status:'todo',assignee:'',effort:1,memo:'',updatedAt:'2026-04-03'},
+      {id:'t_18',phaseId:'ph_4',parentId:null,name:'最終確認・微調整',startDate:'2026-05-20',endDate:'2026-05-25',completedDate:null,status:'todo',assignee:'',effort:1,memo:'',updatedAt:'2026-04-03'},
+      {id:'t_19',phaseId:'ph_5',parentId:null,name:'ユーザ管理画面構築（開発部）',startDate:'2026-04-15',endDate:'2026-05-10',completedDate:null,status:'todo',assignee:'',effort:1,memo:'',updatedAt:'2026-04-03'},
+      {id:'t_20',phaseId:'ph_5',parentId:null,name:'ブログ掲載システム構築（制作部）',startDate:'2026-04-15',endDate:'2026-05-15',completedDate:null,status:'todo',assignee:'',effort:1,memo:'',updatedAt:'2026-04-03'},
+      {id:'t_21',phaseId:'ph_5',parentId:null,name:'学習機能の構築（参考サイトの選択システム）',startDate:'2026-04-15',endDate:'2026-05-31',completedDate:null,status:'todo',assignee:'',effort:1,memo:'',updatedAt:'2026-04-03'},
+      {id:'t_22',phaseId:'ph_5',parentId:null,name:'テスト・バグ修正',startDate:'2026-05-01',endDate:'2026-05-31',completedDate:null,status:'todo',assignee:'',effort:1,memo:'',updatedAt:'2026-04-03'},
+      {id:'t_23',phaseId:'ph_6',parentId:null,name:'SLA確定',startDate:'2026-03-01',endDate:'2026-03-24',completedDate:null,status:'todo',assignee:'',effort:1,memo:'',updatedAt:'2026-04-03'},
+      {id:'t_24',phaseId:'ph_6',parentId:null,name:'プロジェクト審査',startDate:'2026-04-06',endDate:'2026-04-15',completedDate:null,status:'todo',assignee:'',effort:1,memo:'',updatedAt:'2026-04-03'},
+      {id:'t_25',phaseId:'ph_6',parentId:null,name:'投融資委員会',startDate:'2026-04-06',endDate:'2026-04-07',completedDate:null,status:'todo',assignee:'',effort:1,memo:'',updatedAt:'2026-04-03'},
+      {id:'t_26',phaseId:'ph_6',parentId:null,name:'リリース稟議',startDate:'2026-04-07',endDate:'2026-04-10',completedDate:null,status:'todo',assignee:'',effort:1,memo:'',updatedAt:'2026-04-03'},
+      {id:'t_27',phaseId:'ph_7',parentId:null,name:'契約書作成',startDate:'2026-03-25',endDate:'2026-04-10',completedDate:null,status:'todo',assignee:'',effort:1,memo:'',updatedAt:'2026-04-03'},
+      {id:'t_28',phaseId:'ph_7',parentId:null,name:'規約作成',startDate:'2026-03-25',endDate:'2026-04-20',completedDate:null,status:'todo',assignee:'',effort:1,memo:'',updatedAt:'2026-04-03'},
+      {id:'t_29',phaseId:'ph_7',parentId:null,name:'営業資料作成',startDate:'2026-04-06',endDate:'2026-04-16',completedDate:null,status:'todo',assignee:'',effort:1,memo:'',updatedAt:'2026-04-03'},
+      {id:'t_30',phaseId:'ph_7',parentId:null,name:'LP作成',startDate:'2026-04-16',endDate:'2026-05-11',completedDate:null,status:'todo',assignee:'',effort:1,memo:'',updatedAt:'2026-04-03'},
+      {id:'t_31',phaseId:'ph_7',parentId:null,name:'社内マニュアル作成',startDate:'2026-04-17',endDate:'2026-05-11',completedDate:null,status:'todo',assignee:'',effort:1,memo:'',updatedAt:'2026-04-03'},
+      {id:'t_32',phaseId:'ph_7',parentId:null,name:'社員研修',startDate:'2026-04-01',endDate:'2026-05-25',completedDate:null,status:'todo',assignee:'',effort:1,memo:'',updatedAt:'2026-04-03'},
     ]
   };
-  S.cur=id;S.exp.add('ph1');S.exp.add('ph2');S.exp.add('c_t2');save();
+  S.cur=id;
+  ['ph_1','ph_2','ph_3','ph_4','ph_5','ph_6','ph_7'].forEach(p=>S.exp.add(p));
+  save();
 }
 
 // ══════════════════════════════════════════
