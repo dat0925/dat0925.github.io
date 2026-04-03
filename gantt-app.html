@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GANTT PRO</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
 <style>
 :root {
   --bg: #0d0f14;
@@ -29,8 +29,8 @@
   --purple-dim: rgba(168,85,247,0.15);
   --cyan: #06b6d4;
   --today: #ef4444;
-  --font: 'DM Sans', sans-serif;
-  --mono: 'JetBrains Mono', monospace;
+  --font: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Yu Gothic UI', 'Meiryo', sans-serif;
+  --mono: 'SF Mono', 'Menlo', 'Consolas', 'Courier New', monospace;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -2009,10 +2009,13 @@ function init() {
     const phases = getPhases();
     phases.forEach(p => state.expandedPhases.add(p.id));
   }
+
+  // Today起点をセット（renderAll前に設定）
+  state.chartStartDate = addDays(today(), -7);
+
   renderProjectSelect();
   renderAll();
   updateAssigneeFilter();
-  scrollToToday();
 
   // スクロール同期 — 一度だけ登録
   initSyncScroll();
