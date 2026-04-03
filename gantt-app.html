@@ -13,7 +13,7 @@
   --gn:#16a34a;--or:#d97706;--rd:#dc2626;--pu:#7c3aed;
   --f:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic UI',sans-serif;
   --fm:'SF Mono',Menlo,Consolas,monospace;
-  --row:34px;--phrow:34px;--hdr:52px;
+  --row:35px;--phrow:35px;--hdr:52px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--f);font-size:13px;overflow:hidden}
@@ -47,14 +47,14 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--f);
 /* TASK PANEL */
 #tp{width:620px;min-width:620px;flex-shrink:0;display:flex;flex-direction:column;border-right:2px solid var(--bd2);background:var(--s1);overflow:hidden}
 /* 列構成: drag(16) | chk(20) | expand(22) | name(1fr) | status(52) | start(50) | end(50) | effort(38) | edit(22) | dup(22) */
-#tph{display:grid;grid-template-columns:16px 20px 22px 1fr 52px 50px 50px 38px 22px 22px;align-items:center;padding:0 6px;height:34px;background:var(--s2);border-bottom:2px solid var(--bd2);flex-shrink:0;gap:3px}
+#tph{display:grid;grid-template-columns:16px 20px 22px 1fr 52px 50px 50px 38px 22px 22px;align-items:center;padding:0 6px;height:35px;background:var(--s2);border-bottom:2px solid var(--bd2);flex-shrink:0;gap:3px}
 #tph span{font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;user-select:none}
 #tpb{flex:1;overflow-y:auto;overflow-x:hidden;position:relative}
 /* ROWS — 同じgrid、子タスクはname列のpadding-leftだけでインデント */
-.ph-r,.t-r{display:grid;grid-template-columns:16px 20px 22px 1fr 52px 50px 50px 38px 22px 22px;gap:3px;align-items:center;padding:0 6px;border-bottom:1px solid var(--bd);user-select:none;position:relative}
-.ph-r{height:var(--phrow);background:var(--s3);cursor:pointer;transition:background .1s}
+.ph-r,.t-r{display:grid;grid-template-columns:16px 20px 22px 1fr 52px 50px 50px 38px 22px 22px;gap:3px;align-items:center;padding:0 6px;border-bottom:1px solid var(--bd);user-select:none;position:relative;box-sizing:border-box}
+.ph-r{height:35px;background:var(--s3);cursor:pointer;transition:background .1s}
 .ph-r:hover{background:var(--bd)}
-.t-r{height:var(--row);transition:background .1s;cursor:default}
+.t-r{height:35px;transition:background .1s;cursor:default}
 .t-r:hover{background:var(--s2)}.t-r.sel{background:var(--ac2)!important}
 /* ch = child task: name列だけ左paddingでインデント、gridは崩さない */
 .t-r.ch .tn-wrap{padding-left:14px}
@@ -237,7 +237,7 @@ const SBG={todo:'#e2e8f0',inprogress:'#dbeafe',requested:'#fef3c7',done:'#dcfce7
 const SACC={todo:'#5a6478',inprogress:'#1d4ed8',requested:'#b45309',done:'#15803d',cancelled:'#b91c1c'};
 const DN=['日','月','火','水','木','金','土'];
 const HOLS=new Set(['2025-01-01','2025-01-13','2025-02-11','2025-02-23','2025-03-20','2025-04-29','2025-05-03','2025-05-04','2025-05-05','2025-07-21','2025-08-11','2025-09-15','2025-09-22','2025-09-23','2025-10-13','2025-11-03','2025-11-23','2025-11-24','2025-12-23','2026-01-01','2026-01-12','2026-02-11','2026-02-23','2026-03-20','2026-04-29','2026-05-03','2026-05-04','2026-05-05','2026-07-20','2026-08-11','2026-09-21','2026-09-22','2026-09-23','2026-10-12','2026-11-03','2026-11-23','2026-12-23']);
-const ROW=34,PHROW=34,HDR=52;
+const ROW=35,PHROW=35,HDR=52;
 
 // ══════════════════════════════════════════
 // STATE
