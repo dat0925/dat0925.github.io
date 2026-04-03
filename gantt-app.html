@@ -13,7 +13,7 @@
   --gn:#16a34a;--or:#d97706;--rd:#dc2626;--pu:#7c3aed;
   --f:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic UI',sans-serif;
   --fm:'SF Mono',Menlo,Consolas,monospace;
-  --row:32px;--phrow:34px;--hdr:52px;
+  --row:34px;--phrow:34px;--hdr:52px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--f);font-size:13px;overflow:hidden}
@@ -42,20 +42,20 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--f);
 #bulk select{background:var(--s3);border:1px solid var(--bd2);color:var(--tx);padding:3px 7px;border-radius:4px;font-family:var(--f);font-size:11px;outline:none}
 .bc{font-size:11px;color:var(--ac);font-weight:600}
 /* MAIN */
-#main{display:flex;flex-direction:column;height:calc(100vh - 88px);overflow:hidden}
+#main{display:flex;flex-direction:column;height:calc(100vh - 84px);overflow:hidden}
 #gw{display:flex;flex:1;overflow:hidden;min-height:0}
 /* TASK PANEL */
-#tp{width:560px;min-width:560px;flex-shrink:0;display:flex;flex-direction:column;border-right:2px solid var(--bd2);background:var(--s1);overflow:hidden}
-#tph{display:grid;grid-template-columns:20px 24px 14px 1fr 60px 55px 60px 40px 26px;align-items:center;padding:0 6px;height:34px;background:var(--s2);border-bottom:2px solid var(--bd2);flex-shrink:0;gap:3px}
+#tp{width:600px;min-width:600px;flex-shrink:0;display:flex;flex-direction:column;border-right:2px solid var(--bd2);background:var(--s1);overflow:hidden}
+#tph{display:grid;grid-template-columns:18px 20px 14px 1fr 54px 52px 52px 42px 24px 22px;align-items:center;padding:0 6px;height:34px;background:var(--s2);border-bottom:2px solid var(--bd2);flex-shrink:0;gap:3px}
 #tph span{font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;user-select:none}
 #tpb{flex:1;overflow-y:auto;overflow-x:hidden;position:relative}
 /* ROWS */
 .ph-r,.t-r{display:grid;gap:3px;align-items:center;padding:0 6px;border-bottom:1px solid var(--bd);user-select:none;position:relative}
-.ph-r{grid-template-columns:20px 24px 14px 1fr 60px 55px 60px 40px 26px;height:var(--phrow);background:var(--s3);cursor:pointer;transition:background .1s}
+.ph-r{grid-template-columns:18px 20px 14px 1fr 54px 52px 52px 42px 24px 22px;height:var(--phrow);background:var(--s3);cursor:pointer;transition:background .1s}
 .ph-r:hover{background:var(--bd)}
-.t-r{grid-template-columns:20px 24px 14px 1fr 60px 55px 60px 40px 26px;height:var(--row);transition:background .1s;cursor:default}
+.t-r{grid-template-columns:18px 20px 14px 1fr 54px 52px 52px 42px 24px 22px;height:var(--row);transition:background .1s;cursor:default}
 .t-r:hover{background:var(--s2)}.t-r.sel{background:var(--ac2)!important}
-.t-r.ch{padding-left:16px;grid-template-columns:20px 24px 14px 1fr 60px 55px 60px 40px 26px}
+.t-r.ch{padding-left:16px;grid-template-columns:18px 20px 14px 1fr 54px 52px 52px 42px 24px 22px}
 /* drag ghost */
 .t-r.dragging{opacity:.4;background:var(--ac2)!important}
 .drop-line{height:2px;background:var(--ac);margin:0 6px;border-radius:1px}
@@ -170,6 +170,13 @@ textarea.fc{min-height:60px;resize:vertical}.fg{margin-bottom:11px}.fr{display:g
     <div class="tab on" data-v="gantt" onclick="setView('gantt')">ガント</div>
     <div class="tab" data-v="summary" onclick="setView('summary')">サマリー</div>
   </div>
+  <!-- 一括操作: 常時表示 -->
+  <div id="bulk-inline" style="display:flex;align-items:center;gap:5px;margin-left:8px">
+    <span class="bc" id="bcc" style="font-size:11px;color:var(--tx3);white-space:nowrap">0件選択</span>
+    <select id="bst" style="background:var(--s3);border:1px solid var(--bd2);color:var(--tx);padding:3px 6px;border-radius:4px;font-family:var(--f);font-size:11px;outline:none"><option value="">ステータス変更</option><option value="todo">未着手</option><option value="inprogress">進行中</option><option value="requested">依頼中</option><option value="done">完了</option><option value="cancelled">不用</option></select>
+    <button class="btn p" style="padding:3px 8px;font-size:11px" onclick="applyBulk()">適用</button>
+    <button class="btn" style="padding:3px 8px;font-size:11px" onclick="clearSel()">解除</button>
+  </div>
   <div class="sp"></div>
   <div class="rc">
     <div class="tg" id="sctabs">
@@ -182,23 +189,17 @@ textarea.fc{min-height:60px;resize:vertical}.fg{margin-bottom:11px}.fr{display:g
     <button class="btn" onclick="nav(1)">▶</button>
   </div>
 </div>
-<div id="bulk">
-  <span class="bc" id="bcc">0件選択</span>
-  <select id="bst"><option value="">ステータス変更...</option><option value="todo">未着手</option><option value="inprogress">進行中</option><option value="requested">依頼中</option><option value="done">完了</option><option value="cancelled">不用</option></select>
-  <button class="btn p" onclick="applyBulk()">適用</button>
-  <button class="btn" onclick="clearSel()">解除</button>
-</div>
 <div id="main">
   <div id="gw">
     <div id="tp">
       <div id="tph">
-        <span></span><!-- drag handle -->
+        <span></span><!-- drag -->
         <span><input type="checkbox" id="chkall" onchange="toggleAll(this)" style="accent-color:var(--ac);width:13px;height:13px"></span>
-        <span></span><!-- status dot -->
-        <span>タスク名 / ステータス</span>
+        <span></span><!-- expand/+ -->
+        <span>タスク名</span>
+        <span>ステータス</span>
         <span>開始</span><span>終了</span><span>工数h</span>
-        <span title="詳細">詳細</span>
-        <span title="複製">⧉</span>
+        <span>✏</span><span>⧉</span>
       </div>
       <div id="tpb"></div>
     </div>
@@ -234,7 +235,7 @@ const SBG={todo:'#e2e8f0',inprogress:'#dbeafe',requested:'#fef3c7',done:'#dcfce7
 const SACC={todo:'#5a6478',inprogress:'#1d4ed8',requested:'#b45309',done:'#15803d',cancelled:'#b91c1c'};
 const DN=['日','月','火','水','木','金','土'];
 const HOLS=new Set(['2025-01-01','2025-01-13','2025-02-11','2025-02-23','2025-03-20','2025-04-29','2025-05-03','2025-05-04','2025-05-05','2025-07-21','2025-08-11','2025-09-15','2025-09-22','2025-09-23','2025-10-13','2025-11-03','2025-11-23','2025-11-24','2025-12-23','2026-01-01','2026-01-12','2026-02-11','2026-02-23','2026-03-20','2026-04-29','2026-05-03','2026-05-04','2026-05-05','2026-07-20','2026-08-11','2026-09-21','2026-09-22','2026-09-23','2026-10-12','2026-11-03','2026-11-23','2026-12-23']);
-const ROW=32,PHROW=34,HDR=52;
+const ROW=34,PHROW=34,HDR=52;
 
 // ══════════════════════════════════════════
 // STATE
@@ -363,7 +364,8 @@ function updateFAs(){
 // ══════════════════════════════════════════
 // RENDER TASK PANEL
 // ══════════════════════════════════════════
-let inlineAddParent=null; // null=top-level, 'ph:id'=phase, taskId=child
+let inlineAddParent=null;
+let inlineAddAfterIdx=-1; // row index after which to insert
 
 function renderTP(){
   const b=document.getElementById('tpb');
@@ -371,55 +373,118 @@ function renderTP(){
   const rows=getRows();
   if(!rows.length&&inlineAddParent===null){
     b.innerHTML='<div class="emp"><div class="ic">✅</div><div class="et">タスクがありません</div><div class="ed">「+ タスク」から追加してください</div></div>';
-    return;
+    // still show inline add if triggered
   }
-  let html=rows.map((r,i)=>r.type==='ph'?renderPHR(r.data,i):renderTR(r.data,r.ch,i)).join('');
-  // inline add row
-  if(inlineAddParent!==null){
-    html+=renderInlineAddRow();
+  const parts=rows.map((r,i)=>{
+    const html=r.type==='ph'?renderPHR(r.data,i):renderTR(r.data,r.ch,i);
+    // insert inline add row immediately after the target row
+    if(inlineAddParent!==null && i===inlineAddAfterIdx){
+      return html+renderInlineAddRow();
+    }
+    return html;
+  });
+  // if inlineAddAfterIdx=-1 (top level, no rows), append at end
+  if(inlineAddParent!==null && inlineAddAfterIdx===-1){
+    parts.push(renderInlineAddRow());
   }
-  b.innerHTML=html;
-  // attach row-drag events after render
+  b.innerHTML=parts.join('');
   attachRowDragEvents();
 }
 
-function renderPHR(ph,idx){
-  const ts=filtered().filter(t=>t.phaseId===ph.id);
+function renderInlineAddRow(){
+  const today=td();const end=addD(today,6);
+  return `<div class="add-row" id="inline-add-row" style="display:grid;grid-template-columns:18px 20px 14px 1fr 54px 52px 52px 42px 24px 22px;gap:3px;align-items:center;padding:0 6px;height:36px;border-bottom:1px solid var(--bd);background:#eff6ff">
+    <span></span><span></span><span></span>
+    <input type="text" id="ia-name" placeholder="タスク名を入力..." style="background:var(--s1);border:1px solid var(--ac);color:var(--tx);padding:3px 6px;border-radius:4px;font-size:12px;outline:none;width:100%" onkeydown="iaKeydown(event)">
+    <span></span>
+    <input type="date" id="ia-start" value="${today}" style="background:var(--s1);border:1px solid var(--ac);color:var(--tx);padding:2px 3px;border-radius:4px;font-size:10px;outline:none;width:100%">
+    <input type="date" id="ia-end" value="${end}" style="background:var(--s1);border:1px solid var(--ac);color:var(--tx);padding:2px 3px;border-radius:4px;font-size:10px;outline:none;width:100%">
+    <input type="number" id="ia-eff" value="1" min="0" step="0.5" style="background:var(--s1);border:1px solid var(--ac);color:var(--tx);padding:3px 4px;border-radius:4px;font-size:11px;outline:none;width:100%;text-align:center">
+    <button class="btn p" style="font-size:10px;padding:2px 5px" onclick="submitInlineAdd()">追加</button>
+    <button class="btn" style="font-size:11px;padding:2px 4px" onclick="cancelInlineAdd()">✕</button>
+  </div>`;
+}
+
+function startInlineAdd(parentId, rowIdx){
+  inlineAddParent=parentId||'__root__';
+  inlineAddAfterIdx=parseInt(rowIdx)||0;
+  renderTP();
+  setTimeout(()=>{const el=document.getElementById('ia-name');if(el)el.focus();},30);
+}
+function cancelInlineAdd(){inlineAddParent=null;inlineAddAfterIdx=-1;renderTP();}
+function iaKeydown(e){
+  if(e.key==='Enter')submitInlineAdd();
+  if(e.key==='Escape')cancelInlineAdd();
+}
+function submitInlineAdd(){
+  const name=(document.getElementById('ia-name')?.value||'').trim();
+  if(!name)return;
+  const s=document.getElementById('ia-start')?.value||td();
+  const en=document.getElementById('ia-end')?.value||addD(td(),6);
+  const eff=parseFloat(document.getElementById('ia-eff')?.value)||1;
+  const p=pj();if(!p)return;
+  let phaseId=null,parentId=null;
+  if(inlineAddParent&&inlineAddParent!=='__root__'){
+    parentId=inlineAddParent;
+    const parentTask=p.tasks.find(t=>t.id===parentId);
+    if(parentTask)phaseId=parentTask.phaseId;
+  }
+  const t={id:'t_'+Date.now()+'_'+Math.random().toString(36).slice(2,5),phaseId,parentId,name,startDate:s,endDate:en,completedDate:null,status:'todo',assignee:'',effort:eff,memo:'',updatedAt:td()};
+  p.tasks.push(t);
+  inlineAddParent=null;inlineAddAfterIdx=-1;
+  save();updateFAs();renderAll();
+}
+  const ts2=tasks().filter(t=>t.phaseId===ph.id&&!t.parentId);
+  const allPh=tasks().filter(t=>t.phaseId===ph.id);
   const exp=S.exp.has(ph.id);
-  const eff=ts.reduce((s,t)=>s+(t.effort||1),0);
+  const eff=allPh.reduce((s,t)=>s+(t.effort||1),0);
+  // auto dates from child tasks
+  let sd=ph.startDate,ed=ph.endDate;
+  if(ts2.length){
+    const starts=ts2.map(t=>t.startDate).filter(Boolean).sort();
+    const ends=ts2.map(t=>t.endDate).filter(Boolean).sort();
+    if(starts.length)sd=starts[0];
+    if(ends.length)ed=ends[ends.length-1];
+  }
   return `<div class="ph-r" data-idx="${idx}" data-type="ph" data-id="${ph.id}"
     onclick="togPh('${ph.id}')"
     ondblclick="editPh('${ph.id}');event.stopPropagation()">
     <span class="drag-handle" onclick="event.stopPropagation()">⠿</span>
-    <span></span><span></span>
+    <span></span>
+    <span class="ptog ${exp?'':'cl'}" onclick="event.stopPropagation();togPh('${ph.id}')">▾</span>
     <span class="pn">${esc(ph.name)}</span>
-    <span class="td">${fmt(ph.startDate)}</span>
-    <span class="td">${fmt(ph.endDate)}</span>
+    <span></span>
+    <span class="td">${fmt(sd)}</span>
+    <span class="td">${fmt(ed)}</span>
     <span class="ef">${eff}h</span>
     <span></span><span></span>
-    <span class="ptog ${exp?'':'cl'}" style="position:absolute;left:26px;top:50%;transform:translateY(-50%)${exp?'':'rotate(-90deg)'}">▾</span>
   </div>`;
 }
 
 function renderTR(t,ch=false,idx=0){
   const sel=S.sel.has(t.id);
   const ts2=tasks();
-  const hasC=ts2.some(c=>c.parentId===t.id);
+  const children=ts2.filter(c=>c.parentId===t.id);
+  const hasC=children.length>0;
   const exp=S.exp.has('c_'+t.id);
-  const isChild=!!t.parentId;
+  // auto dates: parent inherits from children
+  let sd=t.startDate,ed=t.endDate;
+  if(hasC){
+    const starts=children.map(c=>c.startDate).filter(Boolean).sort();
+    const ends=children.map(c=>c.endDate).filter(Boolean).sort();
+    if(starts.length)sd=starts[0];
+    if(ends.length)ed=ends[ends.length-1];
+  }
   return `<div class="t-r${ch?' ch':''}${sel?' sel':''}" data-idx="${idx}" data-type="t" data-id="${t.id}" id="tr_${t.id}">
     <span class="drag-handle" data-drag-id="${t.id}" title="ドラッグで並び替え">⠿</span>
     <span><input type="checkbox"${sel?' checked':''} style="accent-color:var(--ac);width:13px;height:13px" onclick="event.stopPropagation();togSel('${t.id}',this.checked)"></span>
-    <span><span class="sd ${t.status}"></span></span>
-    <span style="display:flex;align-items:center;gap:4px;overflow:hidden;min-width:0">
-      <span class="tog" onclick="event.stopPropagation();${hasC?`togC('${t.id}')`:`startInlineAdd('${t.id}')`}" title="${hasC?(exp?'折りたたむ':'展開'):'サブタスク追加'}">${hasC?(exp?'▾':'▸'):'+'}</span>
-      <span style="display:flex;flex-direction:column;overflow:hidden;flex:1;gap:1px">
-        <span class="tn${t.status==='done'?' dn':''}" ondblclick="event.stopPropagation();editTask('${t.id}')" style="cursor:text" title="${esc(t.name)}">${esc(t.name)}</span>
-        <span class="stbdg ${t.status}" onclick="event.stopPropagation();openStPopup(event,'${t.id}')">${SL[t.status]}</span>
-      </span>
+    <span class="tog" onclick="event.stopPropagation();${hasC?`togC('${t.id}')`:`startInlineAdd('${t.id}','${idx}')`}" title="${hasC?(exp?'折りたたむ':'展開'):'サブタスク追加'}">${hasC?(exp?'▾':'▸'):'+'}</span>
+    <span style="display:flex;align-items:center;overflow:hidden;min-width:0">
+      <span class="tn${t.status==='done'?' dn':''}" ondblclick="event.stopPropagation();editTask('${t.id}')" style="cursor:text" title="${esc(t.name)}">${esc(t.name)}</span>
     </span>
-    <span class="td">${fmt(t.startDate)}</span>
-    <span class="td">${fmt(t.endDate)}</span>
+    <span><span class="stbdg ${t.status}" onclick="event.stopPropagation();openStPopup(event,'${t.id}')">${SL[t.status]}</span></span>
+    <span class="td">${fmt(sd)}</span>
+    <span class="td">${fmt(ed)}</span>
     <span class="ef">${t.effort||1}h</span>
     <button class="ic-btn" onclick="event.stopPropagation();editTask('${t.id}')" title="詳細編集">✏</button>
     <button class="ic-btn" onclick="event.stopPropagation();dupTask('${t.id}')" title="複製">⧉</button>
@@ -643,7 +708,10 @@ function toggleParentChild(taskId){
 function togSel(id,v){v?S.sel.add(id):S.sel.delete(id);updateBulk();}
 function clearSel(){S.sel.clear();updateBulk();renderTP();document.getElementById('chkall').checked=false;}
 function toggleAll(cb){filtered().forEach(t=>cb.checked?S.sel.add(t.id):S.sel.delete(t.id));updateBulk();renderTP();}
-function updateBulk(){const n=S.sel.size;document.getElementById('bulk').classList.toggle('on',n>0);document.getElementById('bcc').textContent=n+'件選択';}
+function updateBulk(){
+  const n=S.sel.size;
+  document.getElementById('bcc').textContent=n>0?`${n}件選択中`:'0件選択';
+}
 function applyBulk(){
   const st=document.getElementById('bst').value;if(!st)return;
   const p=pj();if(!p)return;
@@ -734,11 +802,20 @@ function drawBody(){
     ctx.strokeStyle='#e2e8f0';ctx.lineWidth=.5;ctx.beginPath();ctx.moveTo(0,y+rh);ctx.lineTo(W,y+rh);ctx.stroke();
     if(r.type==='t'){
       const t=r.data;
-      if(t.startDate&&t.endDate){
-        const si=di[t.startDate]!==undefined?di[t.startDate]:(t.startDate<days[0]?0:days.length);
-        const ei=di[t.endDate]!==undefined?di[t.endDate]:(t.endDate>days[days.length-1]?days.length-1:-1);
+      // auto-calc dates if has children
+      const children2=tasks().filter(c=>c.parentId===t.id);
+      let drawStart=t.startDate,drawEnd=t.endDate;
+      if(children2.length){
+        const ss=children2.map(c=>c.startDate).filter(Boolean).sort();
+        const ee=children2.map(c=>c.endDate).filter(Boolean).sort();
+        if(ss.length)drawStart=ss[0];
+        if(ee.length)drawEnd=ee[ee.length-1];
+      }
+      if(drawStart&&drawEnd){
+        const si=di[drawStart]!==undefined?di[drawStart]:(drawStart<days[0]?0:days.length);
+        const ei=di[drawEnd]!==undefined?di[drawEnd]:(drawEnd>days[days.length-1]?days.length-1:-1);
         if(ei>=0&&si<days.length&&ei>=si){
-          const bx=si*cw(),bw=Math.max(cw()/2,(ei-si+1)*cw()),bh=14,by=y+(rh-bh)/2;
+          const bx=si*cw(),bw=Math.max(cw()/2,(ei-si+1)*cw()),bh=18,by=y+(rh-bh)/2;
           ctx.fillStyle=SBG[t.status]||'#e2e8f0';rr(ctx,bx,by,bw,bh,3);ctx.fill();
           ctx.fillStyle=SC[t.status]||'#8a96a8';rr(ctx,bx,by,Math.min(bw,5),bh,3);ctx.fill();
           if(bw>30){
@@ -753,16 +830,25 @@ function drawBody(){
         if(ci!==undefined){
           const cx=ci*cw()+cw()/2,cy=y+rh/2;
           ctx.save();ctx.translate(cx,cy);ctx.rotate(Math.PI/4);
-          ctx.fillStyle='#16a34a';ctx.fillRect(-4,-4,8,8);ctx.restore();
+          ctx.fillStyle='#16a34a';ctx.fillRect(-5,-5,10,10);ctx.restore();
         }
       }
     } else {
       const ph=r.data;
-      if(ph.startDate&&ph.endDate){
-        const si=di[ph.startDate]!==undefined?di[ph.startDate]:(ph.startDate<days[0]?0:days.length);
-        const ei=di[ph.endDate]!==undefined?di[ph.endDate]:(ph.endDate>days[days.length-1]?days.length-1:-1);
+      // auto-calc phase dates
+      const phTasks=tasks().filter(t=>t.phaseId===ph.id&&!t.parentId);
+      let phStart=ph.startDate,phEnd=ph.endDate;
+      if(phTasks.length){
+        const ss=phTasks.map(t=>t.startDate).filter(Boolean).sort();
+        const ee=phTasks.map(t=>t.endDate).filter(Boolean).sort();
+        if(ss.length)phStart=ss[0];
+        if(ee.length)phEnd=ee[ee.length-1];
+      }
+      if(phStart&&phEnd){
+        const si=di[phStart]!==undefined?di[phStart]:(phStart<days[0]?0:days.length);
+        const ei=di[phEnd]!==undefined?di[phEnd]:(phEnd>days[days.length-1]?days.length-1:-1);
         if(ei>=0&&si<days.length&&ei>=si){
-          const bx=si*cw(),bw=(ei-si+1)*cw(),bh=10,by=y+(rh-bh)/2;
+          const bx=si*cw(),bw=(ei-si+1)*cw(),bh=13,by=y+(rh-bh)/2;
           ctx.fillStyle='rgba(37,99,235,.12)';rr(ctx,bx,by,bw,bh,2);ctx.fill();
           ctx.strokeStyle='rgba(37,99,235,.3)';ctx.lineWidth=1;rr(ctx,bx,by,bw,bh,2);ctx.stroke();
         }
