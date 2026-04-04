@@ -701,7 +701,10 @@ function drawHdr(){
   document.getElementById('chw').style.height=HDR+'px';
   const ctx=c.getContext('2d');ctx.scale(dpr,dpr);
   ctx.fillStyle='#f0f2f5';ctx.fillRect(0,0,W,HDR);
-  // month row
+
+  const scale=S.scale;
+
+  // month row (全モード共通)
   let cm=null,ms=0;
   days.forEach((d,i)=>{
     const dt=pd(d);const m=`${dt.getFullYear()}年${dt.getMonth()+1}月`;
@@ -709,31 +712,85 @@ function drawHdr(){
   });
   if(cm)drawML(ctx,ms,days.length,cw(),cm,M_H);
   ctx.strokeStyle='#d0d5dd';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,M_H);ctx.lineTo(W,M_H);ctx.stroke();
-  // day/dow row
-  const today=td();
-  days.forEach((d,i)=>{
-    const dt=pd(d);const x=i*cw();const w=cw();
-    const isT=d===today,isWE=dt.getDay()===0||dt.getDay()===6,isH=HOLS.has(d);
-    if(isT){ctx.fillStyle='rgba(220,38,38,.10)';ctx.fillRect(x,M_H,w,D_H+W_H);}
-    else if(isH){ctx.fillStyle='rgba(217,119,6,.08)';ctx.fillRect(x,M_H,w,D_H+W_H);}
-    else if(isWE){ctx.fillStyle='rgba(124,58,237,.05)';ctx.fillRect(x,M_H,w,D_H+W_H);}
-    ctx.strokeStyle='#d0d5dd';ctx.lineWidth=.5;
-    ctx.beginPath();ctx.moveTo(x+w,M_H);ctx.lineTo(x+w,HDR);ctx.stroke();
-    if(w>=10){
-      const dc=isT?'#dc2626':isH?'#d97706':isWE?'#7c3aed':'#374151';
-      const wc=isT?'#dc2626':isH?'#d97706':isWE?'#7c3aed':'#9ca3af';
+
+  if(scale==='day'){
+    // 日表示: 従来通り日付+曜日
+    const today=td();
+    days.forEach((d,i)=>{
+      const dt=pd(d);const x=i*cw();const w=cw();
+      const isT=d===today,isWE=dt.getDay()===0||dt.getDay()===6,isH=HOLS.has(d);
+      if(isT){ctx.fillStyle='rgba(220,38,38,.10)';ctx.fillRect(x,M_H,w,D_H+W_H);}
+      else if(isH){ctx.fillStyle='rgba(217,119,6,.08)';ctx.fillRect(x,M_H,w,D_H+W_H);}
+      else if(isWE){ctx.fillStyle='rgba(124,58,237,.05)';ctx.fillRect(x,M_H,w,D_H+W_H);}
+      ctx.strokeStyle='#d0d5dd';ctx.lineWidth=.5;
+      ctx.beginPath();ctx.moveTo(x+w,M_H);ctx.lineTo(x+w,HDR);ctx.stroke();
+      if(w>=10){
+        const dc=isT?'#dc2626':isH?'#d97706':isWE?'#7c3aed':'#374151';
+        const wc=isT?'#dc2626':isH?'#d97706':isWE?'#7c3aed':'#9ca3af';
+        ctx.textAlign='center';
+        ctx.font='600 11px -apple-system,sans-serif';ctx.fillStyle=dc;
+        ctx.fillText(dt.getDate(),x+w/2,M_H+D_H-4);
+        if(w>=18){ctx.font='500 10px -apple-system,sans-serif';ctx.fillStyle=wc;ctx.fillText(DN[dt.getDay()],x+w/2,M_H+D_H+W_H-4);}
+      }
+    });
+  } else {
+    // 週・月表示: 週単位でグループ化して 1W,2W... 表示
+    // 週番号の計算: 表示開始日を基準に何番目の週か
+    const startDay=pd(days[0]);
+    // 月曜始まりで週グループを作る
+    const startMonday=new Date(startDay);
+    const dow=startMonday.getDay();
+    const diff=dow===0?-6:1-dow; // 直近月曜
+    startMonday.setDate(startMonday.getDate()+diff);
+
+    // 各dayが属する週グループ(0始まり)を計算
+    const weekGroups={};
+    days.forEach((d,i)=>{
+      const dt=pd(d);
+      const diffMs=dt-startMonday;
+      const wk=Math.floor(diffMs/(7*86400000));
+      if(!weekGroups[wk])weekGroups[wk]={startIdx:i,endIdx:i,wkNum:wk};
+      else weekGroups[wk].endIdx=i;
+    });
+
+    // 週グループを描画
+    const wkKeys=Object.keys(weekGroups).map(Number).sort((a,b)=>a-b);
+    wkKeys.forEach(wk=>{
+      const g=weekGroups[wk];
+      const x=g.startIdx*cw();
+      const w2=(g.endIdx-g.startIdx+1)*cw();
+      const label=`${wk+1}W`;
+      // 週区切り線（開始位置に）
+      if(g.startIdx>0){
+        ctx.strokeStyle='#a0a8b8';ctx.lineWidth=1;
+        ctx.beginPath();ctx.moveTo(x,M_H);ctx.lineTo(x,HDR);ctx.stroke();
+      }
+      // 週ラベル背景（偶数週でわずかに色分け）
+      if(wk%2===0){ctx.fillStyle='rgba(37,99,235,.04)';ctx.fillRect(x,M_H,w2,D_H+W_H);}
+      // ラベルテキスト
       ctx.textAlign='center';
-      ctx.font='600 11px -apple-system,sans-serif';ctx.fillStyle=dc;
-      ctx.fillText(dt.getDate(),x+w/2,M_H+D_H-4);
-      if(w>=18){ctx.font='500 10px -apple-system,sans-serif';ctx.fillStyle=wc;ctx.fillText(DN[dt.getDay()],x+w/2,M_H+D_H+W_H-4);}
+      ctx.font='700 11px -apple-system,sans-serif';ctx.fillStyle='#374151';
+      ctx.fillText(label,x+w2/2,M_H+D_H-4);
+      // 開始日（月/日）を小さく
+      const startDt=pd(days[g.startIdx]);
+      ctx.font='500 10px -apple-system,sans-serif';ctx.fillStyle='#6b7280';
+      ctx.fillText(`${startDt.getMonth()+1}/${startDt.getDate()}`,x+w2/2,M_H+D_H+W_H-4);
+    });
+    // today列ハイライト
+    const today=td();
+    const ti=days.indexOf(today);
+    if(ti>=0){
+      const x=ti*cw();const w=cw();
+      ctx.fillStyle='rgba(220,38,38,.12)';ctx.fillRect(x,M_H,w,D_H+W_H);
     }
-  });
+  }
+
   ctx.strokeStyle='#d0d5dd';ctx.lineWidth=.5;ctx.beginPath();ctx.moveTo(0,M_H+D_H);ctx.lineTo(W,M_H+D_H);ctx.stroke();
   ctx.strokeStyle='#b0b8c8';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(0,HDR-.75);ctx.lineTo(W,HDR-.75);ctx.stroke();
 }
 function drawML(ctx,si,ei,w,label,mh){
   const x=si*w,ww=(ei-si)*w;
-  ctx.strokeStyle='#d0d5dd';ctx.lineWidth=.5;ctx.beginPath();ctx.moveTo(x+ww,0);ctx.lineTo(x+ww,mh);ctx.stroke();
+  ctx.strokeStyle='#b0b8c8';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x+ww,0);ctx.lineTo(x+ww,mh);ctx.stroke();
   ctx.font='700 11px -apple-system,sans-serif';ctx.fillStyle='#374151';ctx.textAlign='left';
   ctx.fillText(label,x+6,mh-4);
 }
@@ -751,23 +808,60 @@ function drawBody(){
   ctx.clearRect(0,0,W,H);
   const di={};days.forEach((d,i)=>di[d]=i);
   const today=td();
-  // col bg
+  const scale=S.scale;
+
+  // col bg (日表示のみ土日・祝日を色分け)
   days.forEach((d,i)=>{
     const dt=pd(d);const x=i*cw();const w=cw();
     const isT=d===today,isWE=dt.getDay()===0||dt.getDay()===6,isH=HOLS.has(d);
     if(isT){ctx.fillStyle='rgba(220,38,38,.04)';ctx.fillRect(x,0,w,H);}
-    else if(isH){ctx.fillStyle='rgba(217,119,6,.04)';ctx.fillRect(x,0,w,H);}
-    else if(isWE){ctx.fillStyle='rgba(124,58,237,.03)';ctx.fillRect(x,0,w,H);}
+    else if(scale==='day'&&isH){ctx.fillStyle='rgba(217,119,6,.04)';ctx.fillRect(x,0,w,H);}
+    else if(scale==='day'&&isWE){ctx.fillStyle='rgba(124,58,237,.03)';ctx.fillRect(x,0,w,H);}
   });
-  // grid
-  ctx.strokeStyle='#e2e8f0';ctx.lineWidth=.5;
-  days.forEach((_,i)=>{const x=i*cw()+cw();ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();});
+
+  // 週区切り縦線（週・月表示）/ 日表示でも細いグリッド線
+  if(scale==='day'){
+    ctx.strokeStyle='#dde1e8';ctx.lineWidth=.5;
+    days.forEach((_,i)=>{const x=i*cw()+cw();ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();});
+  } else {
+    // 細いグリッド線（各日）
+    ctx.strokeStyle='#eaecf0';ctx.lineWidth=.3;
+    days.forEach((_,i)=>{const x=i*cw()+cw();ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();});
+    // 週区切り太線（月曜ごと）
+    days.forEach((d,i)=>{
+      const dt=pd(d);
+      if(dt.getDay()===1&&i>0){// 月曜
+        const x=i*cw();
+        ctx.strokeStyle='rgba(100,116,139,.35)';ctx.lineWidth=1;
+        ctx.setLineDash([]);ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();
+      }
+    });
+  }
+
+  // 月区切り縦線（全モード共通）
+  days.forEach((d,i)=>{
+    if(i===0)return;
+    const dt=pd(d);
+    if(dt.getDate()===1){
+      const x=i*cw();
+      ctx.strokeStyle='rgba(37,99,235,.45)';ctx.lineWidth=1.5;
+      ctx.setLineDash([]);ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();
+    }
+  });
+
   // rows
   let y=0;
   rows.forEach(r=>{
     const rh=r.type==='ph'?PHROW:ROW;
-    if(r.type==='ph'){ctx.fillStyle='#eef0f3';ctx.fillRect(0,y,W,rh);}
-    ctx.strokeStyle='#e2e8f0';ctx.lineWidth=.5;ctx.beginPath();ctx.moveTo(0,y+rh);ctx.lineTo(W,y+rh);ctx.stroke();
+    if(r.type==='ph'){ctx.fillStyle='#e8eaef';ctx.fillRect(0,y,W,rh);}
+    // 横線: フェーズ行は濃く、タスク行はやや濃く
+    if(r.type==='ph'){
+      ctx.strokeStyle='#b8bfcc';ctx.lineWidth=1;
+    } else {
+      ctx.strokeStyle='#d4d8e0';ctx.lineWidth=.7;
+    }
+    ctx.beginPath();ctx.moveTo(0,y+rh);ctx.lineTo(W,y+rh);ctx.stroke();
+
     if(r.type==='t'){
       const t=r.data;
       // auto-calc dates if has children
@@ -816,9 +910,18 @@ function drawBody(){
         const si=di[phStart]!==undefined?di[phStart]:(phStart<days[0]?0:days.length);
         const ei=di[phEnd]!==undefined?di[phEnd]:(phEnd>days[days.length-1]?days.length-1:-1);
         if(ei>=0&&si<days.length&&ei>=si){
-          const bx=si*cw(),bw=(ei-si+1)*cw(),bh=13,by=y+(rh-bh)/2;
-          ctx.fillStyle='rgba(37,99,235,.12)';rr(ctx,bx,by,bw,bh,2);ctx.fill();
-          ctx.strokeStyle='rgba(37,99,235,.3)';ctx.lineWidth=1;rr(ctx,bx,by,bw,bh,2);ctx.stroke();
+          const bx=si*cw(),bw=(ei-si+1)*cw(),bh=14,by=y+(rh-bh)/2;
+          // フェーズバー: より鮮明な塗り＋枠線＋左端アクセント
+          ctx.fillStyle='rgba(37,99,235,.18)';rr(ctx,bx,by,bw,bh,3);ctx.fill();
+          ctx.strokeStyle='rgba(37,99,235,.55)';ctx.lineWidth=1.5;rr(ctx,bx,by,bw,bh,3);ctx.stroke();
+          // 左端アクセントバー
+          ctx.fillStyle='rgba(37,99,235,.85)';rr(ctx,bx,by,4,bh,2);ctx.fill();
+          // フェーズ名テキスト（バー内）
+          if(bw>40){
+            ctx.font='600 10px -apple-system,sans-serif';ctx.fillStyle='rgba(30,58,138,.9)';ctx.textAlign='left';
+            ctx.save();ctx.beginPath();ctx.rect(bx+8,by,bw-12,bh);ctx.clip();
+            ctx.fillText(ph.name,bx+8,by+bh/2+3.5);ctx.restore();
+          }
         }
       }
     }
