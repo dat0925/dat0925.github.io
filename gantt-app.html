@@ -126,6 +126,27 @@ textarea.fc{min-height:60px;resize:vertical}.fg{margin-bottom:11px}.fr{display:g
 /* EMPTY */
 .emp{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 16px;color:var(--tx3);gap:8px;text-align:center}
 .emp .ic{font-size:36px;opacity:.3}.emp .et{font-size:13px;font-weight:600}.emp .ed{font-size:11px}
+/* ALL PROJECTS SUMMARY */
+#apsv{display:none;flex:1;overflow-y:auto;padding:16px}
+.aps-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;margin-top:12px}
+.aps-card{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:14px;cursor:pointer;transition:box-shadow .15s,border-color .15s;position:relative}
+.aps-card:hover{box-shadow:0 4px 16px rgba(37,99,235,.12);border-color:var(--ac)}
+.aps-card-name{font-size:13px;font-weight:700;color:var(--tx);margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.aps-meta{display:flex;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.aps-meta-item{font-size:10px;color:var(--tx3)}
+.aps-meta-item strong{color:var(--tx2);font-weight:600}
+.aps-bar-wrap{height:6px;background:var(--bd);border-radius:3px;margin-bottom:8px}
+.aps-bar-fill{height:6px;border-radius:3px;transition:width .3s}
+.aps-status-row{display:flex;gap:5px;flex-wrap:wrap}
+.aps-st-chip{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:10px;font-size:9px;font-weight:700}
+.aps-pct{position:absolute;top:14px;right:14px;font-size:18px;font-weight:700;font-family:var(--fm);color:var(--gn)}
+.aps-pct.low{color:var(--rd)}.aps-pct.mid{color:var(--or)}
+.aps-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.aps-head h2{font-size:14px;font-weight:700}
+.aps-stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.aps-stat-card{background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:10px;text-align:center}
+.aps-stat-label{font-size:9px;color:var(--tx3);margin-bottom:2px}
+.aps-stat-val{font-size:20px;font-weight:700;font-family:var(--fm)}
 /* SCROLLBAR */
 ::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:var(--s1)}::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:3px}
 /* MOBILE */
@@ -169,6 +190,7 @@ textarea.fc{min-height:60px;resize:vertical}.fg{margin-bottom:11px}.fr{display:g
   <div class="tg">
     <div class="tab on" data-v="gantt" onclick="setView('gantt')">ガント</div>
     <div class="tab" data-v="summary" onclick="setView('summary')">サマリー</div>
+    <div class="tab" data-v="allprojects" onclick="setView('allprojects')">全プロジェクト</div>
   </div>
   <!-- 一括操作: 常時表示 -->
   <div id="bulk-inline" style="display:flex;align-items:center;gap:5px;margin-left:8px">
@@ -209,6 +231,7 @@ textarea.fc{min-height:60px;resize:vertical}.fg{margin-bottom:11px}.fr{display:g
     </div>
   </div>
   <div id="sv"></div>
+  <div id="apsv"></div>
 </div>
 <!-- STATUS POPUP -->
 <div class="st-popup" id="stpop" style="display:none">
@@ -1056,14 +1079,17 @@ function getBarInfo(t){
 // ══════════════════════════════════════════
 function renderAll(){
   if(S.view==='gantt'){renderTP();drawChart();}
-  else renderSummary();
+  else if(S.view==='summary')renderSummary();
+  else if(S.view==='allprojects')renderAllProjects();
 }
 function setView(v){
   S.view=v;
   document.querySelectorAll('#tabs .tab[data-v]').forEach(t=>t.classList.toggle('on',t.dataset.v===v));
   document.getElementById('gw').style.display=v==='gantt'?'flex':'none';
   document.getElementById('sv').style.display=v==='summary'?'block':'none';
+  document.getElementById('apsv').style.display=v==='allprojects'?'block':'none';
   if(v==='summary')renderSummary();
+  else if(v==='allprojects')renderAllProjects();
 }
 
 // ══════════════════════════════════════════
@@ -1157,6 +1183,23 @@ function dupTask(id){
 // ══════════════════════════════════════════
 // SUMMARY
 // ══════════════════════════════════════════
+function scrollToPhase(phId){
+  // ガントビューに切り替えてフェーズ行へスクロール
+  setView('gantt');
+  setTimeout(()=>{
+    const rows=getRows();
+    let y=0;
+    for(const r of rows){
+      const rh=r.type==='ph'?PHROW:ROW;
+      if(r.type==='ph'&&r.data.id===phId){
+        document.getElementById('tpb').scrollTop=y;
+        document.getElementById('cbw').scrollTop=y;
+        break;
+      }
+      y+=rh;
+    }
+  },50);
+}
 function renderSummary(){
   const sv=document.getElementById('sv');
   if(!S.cur){sv.innerHTML='<div class="emp"><div class="ic">📊</div><div class="et">プロジェクトを選択してください</div></div>';return;}
@@ -1164,7 +1207,6 @@ function renderSummary(){
   const cnt={todo:0,inprogress:0,requested:0,done:0,cancelled:0};
   ts.forEach(t=>cnt[t.status]=(cnt[t.status]||0)+1);
   const total=ts.length,rate=total?Math.round(cnt.done/total*100):0;
-  const eff=ts.reduce((s,t)=>s+(t.effort||1),0);
   const ov=ts.filter(t=>t.endDate<today&&t.status!=='done'&&t.status!=='cancelled');
   const rk=ts.filter(t=>{if(t.status==='done'||t.status==='cancelled')return false;const d=diffD(today,t.endDate);return d>=0&&d<=3;});
   const phs=phases();
@@ -1175,10 +1217,9 @@ function renderSummary(){
     <div class="sc"><div class="sl">進行中</div><div class="sv2 ac">${cnt.inprogress}</div></div>
     <div class="sc"><div class="sl">未着手</div><div class="sv2">${cnt.todo}</div></div>
     <div class="sc"><div class="sl">期限切れ</div><div class="sv2 rd">${ov.length}</div></div>
-    <div class="sc"><div class="sl">総工数</div><div class="sv2 or">${eff}h</div></div>
   </div>`;
   if(phs.length){
-    h+='<div class="sst">フェーズ別進捗</div>';
+    h+='<div class="sst">フェーズ別進捗 <span style="font-size:9px;font-weight:400;color:var(--tx3);margin-left:4px">（タップでガント遷移）</span></div>';
     phs.forEach(ph=>{
       const pt=ts.filter(t=>t.phaseId===ph.id);
       const done=pt.filter(t=>t.status==='done').length;
@@ -1186,7 +1227,7 @@ function renderSummary(){
       const hov=pt.some(t=>t.endDate<today&&t.status!=='done'&&t.status!=='cancelled');
       const cls=pct<30&&hov?'dng':hov?'wrn':'';
       const col=pct>=80?'#16a34a':pct>=50?'#2563eb':'#d97706';
-      h+=`<div class="pi ${cls}"><div style="flex:1"><div class="pi-t">${esc(ph.name)}</div><div class="pi-m">${done}/${pt.length}件完了 · ${ph.startDate}〜${ph.endDate}</div><div class="pb"><div class="pbf" style="width:${pct}%;background:${col}"></div></div></div><div class="ppct">${pct}%</div></div>`;
+      h+=`<div class="pi ${cls}" style="cursor:pointer" onclick="scrollToPhase('${ph.id}')"><div style="flex:1"><div class="pi-t">${esc(ph.name)}</div><div class="pi-m">${done}/${pt.length}件完了 · ${ph.startDate}〜${ph.endDate}</div><div class="pb"><div class="pbf" style="width:${pct}%;background:${col}"></div></div></div><div class="ppct">${pct}%</div></div>`;
     });
   }
   if(ov.length){
@@ -1198,6 +1239,70 @@ function renderSummary(){
     rk.forEach(t=>{h+=`<div class="pi wrn" style="cursor:pointer" ondblclick="editTask('${t.id}')"><div><div class="pi-t">${esc(t.name)}</div><div class="pi-m">${t.assignee||'未担当'} · ${t.endDate}</div></div><span class="bdg ${t.status}">${SL[t.status]}</span></div>`;});
   }
   sv.innerHTML=h;
+}
+
+// ══════════════════════════════════════════
+// ALL PROJECTS SUMMARY
+// ══════════════════════════════════════════
+function renderAllProjects(){
+  const el=document.getElementById('apsv');
+  const pjIds=Object.keys(S.pjs);
+  if(!pjIds.length){
+    el.innerHTML='<div class="emp"><div class="ic">🗂</div><div class="et">プロジェクトがありません</div><div class="ed">「+ 作成」からプロジェクトを追加してください</div></div>';
+    return;
+  }
+  const today=td();
+  // 集計
+  let allTotal=0,allDone=0,allInprogress=0,allOv=0;
+  pjIds.forEach(id=>{
+    const p=S.pjs[id];const ts=p.tasks||[];
+    allTotal+=ts.length;
+    allDone+=ts.filter(t=>t.status==='done').length;
+    allInprogress+=ts.filter(t=>t.status==='inprogress').length;
+    allOv+=ts.filter(t=>t.endDate<today&&t.status!=='done'&&t.status!=='cancelled').length;
+  });
+  const allRate=allTotal?Math.round(allDone/allTotal*100):0;
+  let h=`<div class="aps-head"><h2>全プロジェクト サマリー</h2><span style="font-size:11px;color:var(--tx3)">${pjIds.length}件のプロジェクト</span></div>
+  <div class="aps-stat-row">
+    <div class="aps-stat-card"><div class="aps-stat-label">総タスク</div><div class="aps-stat-val" style="color:var(--ac)">${allTotal}</div></div>
+    <div class="aps-stat-card"><div class="aps-stat-label">完了率</div><div class="aps-stat-val" style="color:var(--gn)">${allRate}%</div></div>
+    <div class="aps-stat-card"><div class="aps-stat-label">進行中</div><div class="aps-stat-val" style="color:var(--ac)">${allInprogress}</div></div>
+    <div class="aps-stat-card"><div class="aps-stat-label">期限切れ</div><div class="aps-stat-val" style="color:var(--rd)">${allOv}</div></div>
+  </div>
+  <div class="aps-grid">`;
+  pjIds.forEach(id=>{
+    const p=S.pjs[id];const ts=p.tasks||[];
+    const cnt2={todo:0,inprogress:0,requested:0,done:0,cancelled:0};
+    ts.forEach(t=>cnt2[t.status]=(cnt2[t.status]||0)+1);
+    const tot=ts.length,dn=cnt2.done;
+    const pct=tot?Math.round(dn/tot*100):0;
+    const ov2=ts.filter(t=>t.endDate<today&&t.status!=='done'&&t.status!=='cancelled').length;
+    const barCol=pct>=80?'#16a34a':pct>=50?'#2563eb':'#d97706';
+    const pctCls=pct>=60?'':'pct<30?\'low\':\'mid\'';
+    const pctClass=pct>=60?'':'pct<30?"low":"mid"';
+    const pClass=pct<30?'low':pct<60?'mid':'';
+    let rk2=ts.filter(t=>{if(t.status==='done'||t.status==='cancelled')return false;const d=diffD(today,t.endDate);return d>=0&&d<=3;}).length;
+    h+=`<div class="aps-card" onclick="switchPJ('${id}');setView('gantt')">
+      <div class="aps-pct ${pClass}">${pct}%</div>
+      <div class="aps-card-name" title="${esc(p.name)}">${esc(p.name)}</div>
+      <div class="aps-meta">
+        <div class="aps-meta-item">タスク <strong>${tot}</strong></div>
+        <div class="aps-meta-item">完了 <strong>${dn}</strong></div>
+        ${ov2?`<div class="aps-meta-item" style="color:var(--rd)">⚠ 期限切れ <strong>${ov2}</strong></div>`:''}
+        ${rk2?`<div class="aps-meta-item" style="color:var(--or)">⚡ 期限近 <strong>${rk2}</strong></div>`:''}
+      </div>
+      <div class="aps-bar-wrap"><div class="aps-bar-fill" style="width:${pct}%;background:${barCol}"></div></div>
+      <div class="aps-status-row">
+        ${cnt2.inprogress?`<span class="aps-st-chip" style="background:rgba(37,99,235,.12);color:#2563eb">進行中 ${cnt2.inprogress}</span>`:''}
+        ${cnt2.todo?`<span class="aps-st-chip" style="background:rgba(90,100,120,.15);color:#5a6478">未着手 ${cnt2.todo}</span>`:''}
+        ${cnt2.requested?`<span class="aps-st-chip" style="background:rgba(217,119,6,.12);color:#d97706">依頼中 ${cnt2.requested}</span>`:''}
+        ${cnt2.done?`<span class="aps-st-chip" style="background:rgba(22,163,74,.12);color:#16a34a">完了 ${cnt2.done}</span>`:''}
+        ${cnt2.cancelled?`<span class="aps-st-chip" style="background:rgba(220,38,38,.12);color:#dc2626">不用 ${cnt2.cancelled}</span>`:''}
+      </div>
+    </div>`;
+  });
+  h+='</div>';
+  el.innerHTML=h;
 }
 
 // ══════════════════════════════════════════
