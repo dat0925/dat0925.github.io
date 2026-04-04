@@ -1282,7 +1282,7 @@ function renderAllProjects(){
     const pctClass=pct>=60?'':'pct<30?"low":"mid"';
     const pClass=pct<30?'low':pct<60?'mid':'';
     let rk2=ts.filter(t=>{if(t.status==='done'||t.status==='cancelled')return false;const d=diffD(today,t.endDate);return d>=0&&d<=3;}).length;
-    h+=`<div class="aps-card" onclick="switchPJ('${id}');setView('gantt')">
+    h+=`<div class="aps-card" onclick="setView('gantt');switchPJ('${id}')">
       <div class="aps-pct ${pClass}">${pct}%</div>
       <div class="aps-card-name" title="${esc(p.name)}">${esc(p.name)}</div>
       <div class="aps-meta">
