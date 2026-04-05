@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MEO統合管理画面 — iFLAG IFG IT Solutions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0D1B3E;
+    --navy-mid: #152347;
+    --navy-light: #1E3160;
+    --navy-border: #2A4070;
+    --orange: #F05A1A;
+    --orange-light: #FF7A45;
+    --orange-dim: rgba(240,90,26,0.15);
+    --white: #FFFFFF;
+    --gray-100: #F4F6FA;
+    --gray-200: #E8ECF4;
+    --gray-400: #9AABC8;
+    --gray-600: #5A6E94;
+    --green: #22C55E;
+    --yellow: #FACC15;
+    --red: #EF4444;
+    --cyan: #06B6D4;
+    --sidebar-w: 240px;
+    --header-h: 60px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'BIZ UDPGothic', sans-serif;
+    background: var(--gray-100);
+    color: var(--navy);
+    display: flex;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: var(--sidebar-w);
+    min-height: 100vh;
+    background: var(--navy);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+    overflow: hidden;
+  }
+  .sidebar::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -80px;
+    width: 220px; height: 220px;
+    background: radial-gradient(circle, rgba(240,90,26,0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .sidebar-logo {
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid var(--navy-border);
+  }
+  .sidebar-logo .brand {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+    font-size: 15px;
+    color: var(--white);
+    letter-spacing: 0.02em;
+  }
+  .sidebar-logo .brand span { color: var(--orange); }
+  .sidebar-logo .sub {
+    font-size: 10px;
+    color: var(--gray-400);
+    margin-top: 3px;
+    letter-spacing: 0.05em;
+  }
+
+  .sidebar-tenant {
+    margin: 12px 16px;
+    background: var(--navy-light);
+    border: 1px solid var(--navy-border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .tenant-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    flex-shrink: 0;
+    box-shadow: 0 0 6px var(--green);
+  }
+  .tenant-name { font-size: 12px; color: var(--white); font-weight: 700; }
+  .tenant-count { font-size: 10px; color: var(--gray-400); }
+
+  nav { flex: 1; padding: 8px 0; overflow-y: auto; }
+  .nav-section { padding: 12px 16px 4px; font-size: 9px; color: var(--gray-600); letter-spacing: 0.12em; font-family: 'Outfit', sans-serif; font-weight: 600; text-transform: uppercase; }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 20px;
+    font-size: 13px;
+    color: var(--gray-400);
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s;
+    text-decoration: none;
+    border-left: 2px solid transparent;
+  }
+  .nav-item:hover { color: var(--white); background: rgba(255,255,255,0.04); }
+  .nav-item.active {
+    color: var(--white);
+    background: rgba(240,90,26,0.12);
+    border-left-color: var(--orange);
+  }
+  .nav-item .icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
+  .nav-badge {
+    margin-left: auto;
+    background: var(--orange);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 20px;
+    font-family: 'Outfit', sans-serif;
+  }
+  .nav-badge.warn { background: var(--yellow); color: var(--navy); }
+
+  .sidebar-bottom {
+    border-top: 1px solid var(--navy-border);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--orange), #FF7A45);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0;
+    font-family: 'Outfit', sans-serif;
+  }
+  .user-info { flex: 1; overflow: hidden; }
+  .user-name { font-size: 12px; color: var(--white); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .user-role { font-size: 10px; color: var(--gray-400); }
+
+  /* ── MAIN ── */
+  .main {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  .topbar {
+    height: var(--header-h);
+    background: var(--white);
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    align-items: center;
+    padding: 0 28px;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 90;
+  }
+  .topbar-title { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 16px; color: var(--navy); flex: 1; }
+  .topbar-title span { color: var(--gray-400); font-weight: 400; font-size: 13px; margin-left: 8px; }
+
+  .date-badge {
+    background: var(--gray-100);
+    border: 1px solid var(--gray-200);
+    border-radius: 6px;
+    padding: 5px 12px;
+    font-size: 12px;
+    color: var(--gray-600);
+    font-family: 'Outfit', sans-serif;
+  }
+  .topbar-btn {
+    background: var(--orange);
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    padding: 7px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'BIZ UDPGothic', sans-serif;
+    transition: background 0.2s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .topbar-btn:hover { background: var(--orange-light); }
+
+  /* ── CONTENT ── */
+  .content { padding: 24px 28px; flex: 1; }
+
+  /* ── ALERT BAR ── */
+  .alert-bar {
+    background: linear-gradient(90deg, rgba(240,90,26,0.08) 0%, transparent 100%);
+    border: 1px solid rgba(240,90,26,0.3);
+    border-radius: 8px;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .alert-bar .alert-icon { font-size: 16px; }
+  .alert-bar .alert-text { font-size: 13px; color: var(--navy); flex: 1; }
+  .alert-bar .alert-text strong { color: var(--orange); }
+  .alert-link { font-size: 12px; color: var(--orange); text-decoration: underline; cursor: pointer; white-space: nowrap; }
+
+  /* ── KPI CARDS ── */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .kpi-card {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 18px 20px;
+    border: 1px solid var(--gray-200);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(13,27,62,0.08); }
+  .kpi-card.primary { background: var(--navy); border-color: var(--navy); }
+  .kpi-card.primary::after {
+    content: '';
+    position: absolute;
+    bottom: -20px; right: -20px;
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: rgba(240,90,26,0.2);
+  }
+
+  .kpi-label { font-size: 11px; color: var(--gray-600); margin-bottom: 6px; letter-spacing: 0.02em; }
+  .kpi-card.primary .kpi-label { color: var(--gray-400); }
+  .kpi-value { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 28px; color: var(--navy); line-height: 1; }
+  .kpi-card.primary .kpi-value { color: var(--white); }
+  .kpi-unit { font-size: 13px; font-weight: 400; margin-left: 3px; }
+  .kpi-delta {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 600;
+    margin-top: 6px; padding: 2px 7px; border-radius: 20px;
+  }
+  .kpi-delta.up { background: rgba(34,197,94,0.12); color: var(--green); }
+  .kpi-delta.down { background: rgba(239,68,68,0.12); color: var(--red); }
+  .kpi-delta.warn { background: rgba(250,204,21,0.2); color: #CA8A04; }
+  .kpi-icon { position: absolute; top: 16px; right: 16px; font-size: 22px; opacity: 0.2; }
+  .kpi-card.primary .kpi-icon { opacity: 0.3; }
+
+  /* ── MAIN GRID ── */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--white);
+    border-radius: 12px;
+    border: 1px solid var(--gray-200);
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .card-header h3 { font-size: 14px; font-weight: 700; color: var(--navy); flex: 1; }
+  .card-header .badge {
+    font-size: 10px; font-family: 'Outfit', sans-serif; font-weight: 700;
+    padding: 2px 8px; border-radius: 20px;
+  }
+  .badge-blue { background: rgba(6,182,212,0.1); color: var(--cyan); }
+  .badge-orange { background: var(--orange-dim); color: var(--orange); }
+  .badge-green { background: rgba(34,197,94,0.1); color: var(--green); }
+  .badge-red { background: rgba(239,68,68,0.1); color: var(--red); }
+  .badge-yellow { background: rgba(250,204,21,0.15); color: #CA8A04; }
+
+  .card-body { padding: 20px; }
+
+  /* ── CHART BAR (CSS only) ── */
+  .chart-wrap { display: flex; align-items: flex-end; gap: 6px; height: 120px; margin-bottom: 8px; }
+  .chart-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
+  .chart-bar {
+    width: 100%; border-radius: 4px 4px 0 0;
+    background: linear-gradient(180deg, var(--cyan), rgba(6,182,212,0.4));
+    transition: all 0.4s;
+    position: relative;
+    cursor: pointer;
+  }
+  .chart-bar.orange { background: linear-gradient(180deg, var(--orange), rgba(240,90,26,0.4)); }
+  .chart-bar:hover { filter: brightness(1.2); }
+  .chart-label { font-size: 10px; color: var(--gray-600); font-family: 'Outfit', sans-serif; }
+  .chart-x { display: flex; gap: 6px; }
+  .chart-x span { flex: 1; text-align: center; font-size: 10px; color: var(--gray-400); font-family: 'Outfit', sans-serif; }
+  .chart-legend { display: flex; gap: 16px; margin-top: 10px; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--gray-600); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 2px; }
+
+  /* ── TODO LIST ── */
+  .todo-list { display: flex; flex-direction: column; gap: 0; }
+  .todo-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--gray-200);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .todo-item:last-child { border-bottom: none; }
+  .todo-item:hover { background: var(--gray-100); margin: 0 -20px; padding: 12px 20px; }
+  .todo-priority {
+    width: 4px; height: 36px; border-radius: 2px; flex-shrink: 0;
+  }
+  .p-high { background: var(--red); }
+  .p-mid { background: var(--yellow); }
+  .p-low { background: var(--cyan); }
+  .todo-text { flex: 1; }
+  .todo-title { font-size: 13px; color: var(--navy); font-weight: 700; }
+  .todo-desc { font-size: 11px; color: var(--gray-600); margin-top: 2px; }
+  .todo-meta { text-align: right; flex-shrink: 0; }
+  .todo-count { font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 800; color: var(--navy); line-height: 1; }
+  .todo-unit { font-size: 10px; color: var(--gray-400); }
+  .todo-action { font-size: 11px; color: var(--orange); cursor: pointer; font-weight: 700; }
+
+  /* ── LISTING STATUS ── */
+  .listing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .listing-stat {
+    background: var(--gray-100);
+    border-radius: 8px;
+    padding: 14px 16px;
+    border: 1px solid var(--gray-200);
+    text-align: center;
+  }
+  .listing-stat .ls-num { font-family: 'Outfit', sans-serif; font-size: 26px; font-weight: 800; }
+  .listing-stat .ls-label { font-size: 11px; color: var(--gray-600); margin-top: 2px; }
+  .ls-good { color: var(--green); }
+  .ls-warn { color: var(--yellow); }
+  .ls-bad { color: var(--red); }
+
+  .sync-progress { margin-top: 12px; }
+  .progress-bar-wrap { background: var(--gray-200); border-radius: 20px; height: 8px; overflow: hidden; margin: 6px 0; }
+  .progress-bar { height: 100%; border-radius: 20px; background: linear-gradient(90deg, var(--green), #4ADE80); transition: width 0.6s; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--gray-600); }
+
+  /* ── RANKING TABLE ── */
+  .rank-table { width: 100%; border-collapse: collapse; }
+  .rank-table th { font-size: 10px; color: var(--gray-600); text-align: left; padding: 0 8px 8px; letter-spacing: 0.05em; font-family: 'Outfit', sans-serif; font-weight: 600; text-transform: uppercase; }
+  .rank-table td { font-size: 13px; padding: 10px 8px; border-top: 1px solid var(--gray-200); vertical-align: middle; }
+  .rank-table tr:hover td { background: var(--gray-100); }
+  .rank-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; border-radius: 6px;
+    font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 14px;
+  }
+  .r1 { background: rgba(250,204,21,0.2); color: #CA8A04; }
+  .r2 { background: rgba(156,163,175,0.2); color: #6B7280; }
+  .r3 { background: rgba(180,120,80,0.15); color: #92400E; }
+  .rn { background: var(--gray-200); color: var(--gray-600); }
+  .kw-chip {
+    background: rgba(6,182,212,0.08); color: var(--cyan);
+    border: 1px solid rgba(6,182,212,0.2);
+    border-radius: 4px; padding: 2px 7px; font-size: 11px; font-weight: 700;
+    font-family: 'Outfit', sans-serif;
+  }
+  .rank-delta { font-size: 11px; font-family: 'Outfit', sans-serif; font-weight: 700; }
+  .rank-up { color: var(--green); }
+  .rank-down { color: var(--red); }
+  .rank-same { color: var(--gray-400); }
+
+  /* ── BOTTOM GRID ── */
+  .bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+  }
+
+  /* ── REVIEW FEED ── */
+  .review-item {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--gray-200);
+  }
+  .review-item:last-child { border-bottom: none; }
+  .review-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .review-avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--navy-light), var(--navy));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; color: var(--gray-400); flex-shrink: 0;
+    font-family: 'Outfit', sans-serif;
+  }
+  .review-name { font-size: 12px; font-weight: 700; color: var(--navy); }
+  .review-date { font-size: 10px; color: var(--gray-400); margin-left: auto; }
+  .stars { color: var(--yellow); font-size: 11px; }
+  .review-text { font-size: 12px; color: var(--gray-600); line-height: 1.5; margin-bottom: 6px; }
+  .review-reply-btn {
+    font-size: 11px; color: var(--orange); cursor: pointer; font-weight: 700;
+    background: var(--orange-dim); border: none; border-radius: 4px; padding: 3px 9px;
+    font-family: 'BIZ UDPGothic', sans-serif; cursor: pointer;
+  }
+
+  /* ── WEBHOOK LOG ── */
+  .webhook-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 0; border-bottom: 1px solid var(--gray-200);
+    font-size: 12px;
+  }
+  .webhook-item:last-child { border-bottom: none; }
+  .wh-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .wh-ok { background: var(--green); box-shadow: 0 0 5px var(--green); }
+  .wh-warn { background: var(--yellow); }
+  .wh-event { font-weight: 700; color: var(--navy); flex: 1; }
+  .wh-shop { font-size: 11px; color: var(--gray-600); }
+  .wh-time { font-size: 10px; color: var(--gray-400); font-family: 'Outfit', sans-serif; white-space: nowrap; }
+
+  /* ── AIO STATUS ── */
+  .aio-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 0; border-bottom: 1px solid var(--gray-200);
+  }
+  .aio-item:last-child { border-bottom: none; }
+  .aio-icon { font-size: 18px; flex-shrink: 0; }
+  .aio-info { flex: 1; }
+  .aio-title { font-size: 12px; font-weight: 700; color: var(--navy); }
+  .aio-desc { font-size: 11px; color: var(--gray-600); margin-top: 1px; }
+  .aio-status { font-size: 11px; font-weight: 700; font-family: 'Outfit', sans-serif; }
+  .s-ok { color: var(--green); }
+  .s-warn { color: #CA8A04; }
+  .s-bad { color: var(--red); }
+
+  /* ── MINI GRAPH (GSC) ── */
+  .gsc-row { display: flex; gap: 8px; margin-bottom: 10px; }
+  .gsc-kpi { flex: 1; background: var(--gray-100); border-radius: 8px; padding: 10px 12px; }
+  .gsc-kpi .val { font-family: 'Outfit', sans-serif; font-size: 20px; font-weight: 800; color: var(--navy); }
+  .gsc-kpi .lbl { font-size: 10px; color: var(--gray-600); margin-top: 1px; }
+  .gsc-kpi .chg { font-size: 10px; font-family: 'Outfit', sans-serif; font-weight: 600; }
+  .gsc-kpi .chg.up { color: var(--green); }
+  .gsc-kpi .chg.dn { color: var(--red); }
+
+  .sparkline { height: 40px; display: flex; align-items: flex-end; gap: 2px; }
+  .spark-bar { flex: 1; border-radius: 2px 2px 0 0; background: var(--navy-light); opacity: 0.6; }
+  .spark-bar.hi { background: var(--orange); opacity: 1; }
+
+  /* ── ENGINE OWNER TAG ── */
+  .engine-tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: rgba(6,182,212,0.1); border: 1px solid rgba(6,182,212,0.25);
+    border-radius: 4px; padding: 2px 8px;
+    font-size: 10px; font-family: 'Outfit', sans-serif; font-weight: 700; color: var(--cyan);
+  }
+
+  /* ── TABS ── */
+  .tab-row { display: flex; gap: 2px; border-bottom: 1px solid var(--gray-200); padding: 0 20px; }
+  .tab {
+    padding: 10px 14px; font-size: 12px; color: var(--gray-600); cursor: pointer;
+    border-bottom: 2px solid transparent; transition: all 0.2s; font-weight: 700;
+  }
+  .tab.active { color: var(--orange); border-bottom-color: var(--orange); }
+  .tab:hover:not(.active) { color: var(--navy); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .kpi-card { animation: fadeUp 0.4s ease both; }
+  .kpi-card:nth-child(1) { animation-delay: 0.05s; }
+  .kpi-card:nth-child(2) { animation-delay: 0.10s; }
+  .kpi-card:nth-child(3) { animation-delay: 0.15s; }
+  .kpi-card:nth-child(4) { animation-delay: 0.20s; }
+  .kpi-card:nth-child(5) { animation-delay: 0.25s; }
+  .card { animation: fadeUp 0.5s ease both; animation-delay: 0.3s; }
+
+  /* ── TOOLTIP ── */
+  .tooltip-wrap { position: relative; }
+  .tooltip-wrap:hover .tooltip-box { display: block; }
+  .tooltip-box {
+    display: none;
+    position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+    background: var(--navy); color: #fff; font-size: 11px; padding: 5px 10px;
+    border-radius: 5px; white-space: nowrap; z-index: 999; pointer-events: none;
+    font-family: 'BIZ UDPGothic', sans-serif;
+  }
+  .tooltip-box::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: var(--navy); }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--gray-200); border-radius: 10px; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="brand">MEO<span>管理</span></div>
+    <div class="sub">iFLAG IFG IT Solutions</div>
+  </div>
+  <div class="sidebar-tenant">
+    <div class="tenant-dot"></div>
+    <div>
+      <div class="tenant-name">株式会社サンプルフード</div>
+      <div class="tenant-count">店舗 12店 管理中</div>
+    </div>
+  </div>
+  <nav>
+    <div class="nav-section">メイン</div>
+    <a class="nav-item active" href="#"><span class="icon">📊</span>ダッシュボード</a>
+    <a class="nav-item" href="#"><span class="icon">🏪</span>店舗（SoT）管理<span class="nav-badge warn">3</span></a>
+
+    <div class="nav-section">配信・連携</div>
+    <a class="nav-item" href="#"><span class="icon">🌐</span>配信（Uberall）<span class="nav-badge">5</span></a>
+    <a class="nav-item" href="#"><span class="icon">📝</span>Google 運用</a>
+    <a class="nav-item" href="#"><span class="icon">📅</span>投稿管理</a>
+    <a class="nav-item" href="#"><span class="icon">⭐</span>口コミ管理<span class="nav-badge">8</span></a>
+
+    <div class="nav-section">分析・競合</div>
+    <a class="nav-item" href="#"><span class="icon">📈</span>競合・順位（MEOチェキ）</a>
+    <a class="nav-item" href="#"><span class="icon">🔍</span>GSC・オーガニック</a>
+    <a class="nav-item" href="#"><span class="icon">🤖</span>AIO アシスト</a>
+
+    <div class="nav-section">予約・CV</div>
+    <a class="nav-item" href="#"><span class="icon">📆</span>予約・コンバージョン</a>
+    <a class="nav-item" href="#"><span class="icon">🔔</span>Webhookログ</a>
+
+    <div class="nav-section">設定</div>
+    <a class="nav-item" href="#"><span class="icon">🔗</span>API連携設定</a>
+    <a class="nav-item" href="#"><span class="icon">🛡</span>監査ログ</a>
+    <a class="nav-item" href="#"><span class="icon">⚙️</span>テナント設定</a>
+  </nav>
+  <div class="sidebar-bottom">
+    <div class="avatar">AI</div>
+    <div class="user-info">
+      <div class="user-name">管理者ユーザー</div>
+      <div class="user-role">プロダクト担当</div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-title">ダッシュボード<span>概要 / 全店舗</span></div>
+    <div class="date-badge">📅 2026年4月5日 (日)</div>
+    <div class="engine-tag">🔵 SoT → Uberall 配信中</div>
+    <button class="topbar-btn">＋ 店舗を追加</button>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- ALERT BAR -->
+    <div class="alert-bar">
+      <span class="alert-icon">⚠️</span>
+      <span class="alert-text">
+        <strong>要対応 5件:</strong> 未接続ディレクトリ 3店舗 / 必須フィールド欠損 2店舗 / 口コミ未返信 8件
+      </span>
+      <span class="alert-link">すべて確認 →</span>
+    </div>
+
+    <!-- KPI GRID -->
+    <div class="kpi-grid">
+      <div class="kpi-card primary">
+        <span class="kpi-icon">📆</span>
+        <div class="kpi-label">今月の予約数（確定）</div>
+        <div class="kpi-value">847<span class="kpi-unit">件</span></div>
+        <div class="kpi-delta up">▲ +12.4%</div>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-icon">📞</span>
+        <div class="kpi-label">GBP 通話クリック（月計）</div>
+        <div class="kpi-value">2,341</div>
+        <div class="kpi-delta up">▲ +8.1%</div>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-icon">🗺</span>
+        <div class="kpi-label">GBP 経路クリック</div>
+        <div class="kpi-value">1,887</div>
+        <div class="kpi-delta up">▲ +5.3%</div>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-icon">🔍</span>
+        <div class="kpi-label">GSC 平均掲載順位</div>
+        <div class="kpi-value">4.2<span class="kpi-unit">位</span></div>
+        <div class="kpi-delta up">▲ -0.8改善</div>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-icon">🌐</span>
+        <div class="kpi-label">Listing 同期率</div>
+        <div class="kpi-value">91<span class="kpi-unit">%</span></div>
+        <div class="kpi-delta warn">⚠ 未接続 5</div>
+      </div>
+    </div>
+
+    <!-- MAIN GRID -->
+    <div class="main-grid">
+
+      <!-- 予約/GBP 推移グラフ -->
+      <div class="card">
+        <div class="card-header">
+          <h3>予約数 × GBP行動 推移（週次）</h3>
+          <span class="badge badge-blue">直近8週</span>
+        </div>
+        <div class="tab-row">
+          <div class="tab active">予約数</div>
+          <div class="tab">GBP通話</div>
+          <div class="tab">GSC CTR</div>
+        </div>
+        <div class="card-body">
+          <div class="chart-wrap">
+            <div class="chart-col"><div class="chart-bar orange" style="height:52%" title="W1: 93件"></div></div>
+            <div class="chart-col"><div class="chart-bar orange" style="height:61%"></div></div>
+            <div class="chart-col"><div class="chart-bar orange" style="height:55%"></div></div>
+            <div class="chart-col"><div class="chart-bar orange" style="height:70%"></div></div>
+            <div class="chart-col"><div class="chart-bar orange" style="height:64%"></div></div>
+            <div class="chart-col"><div class="chart-bar orange" style="height:82%"></div></div>
+            <div class="chart-col"><div class="chart-bar orange" style="height:77%"></div></div>
+            <div class="chart-col"><div class="chart-bar orange" style="height:95%"></div></div>
+          </div>
+          <div class="chart-x">
+            <span>W1</span><span>W2</span><span>W3</span><span>W4</span>
+            <span>W5</span><span>W6</span><span>W7</span><span>W8</span>
+          </div>
+          <div class="chart-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div>予約数 / 週</div>
+            <div style="margin-left:auto;font-size:11px;color:var(--gray-600)">ソース: 自社予約DB + GA4 MP</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TODO -->
+      <div class="card">
+        <div class="card-header">
+          <h3>⚡ 次にやること（ToDo）</h3>
+          <span class="badge badge-red">5件</span>
+        </div>
+        <div class="card-body" style="padding:0 20px;">
+          <div class="todo-list">
+            <div class="todo-item">
+              <div class="todo-priority p-high"></div>
+              <div class="todo-text">
+                <div class="todo-title">未接続ディレクトリ解消</div>
+                <div class="todo-desc">directoriesMissingConnect 検出</div>
+              </div>
+              <div class="todo-meta">
+                <div class="todo-count">3</div>
+                <div class="todo-unit">店舗</div>
+                <div class="todo-action">修正 →</div>
+              </div>
+            </div>
+            <div class="todo-item">
+              <div class="todo-priority p-high"></div>
+              <div class="todo-text">
+                <div class="todo-title">口コミ未返信</div>
+                <div class="todo-desc">48時間以上経過</div>
+              </div>
+              <div class="todo-meta">
+                <div class="todo-count">8</div>
+                <div class="todo-unit">件</div>
+                <div class="todo-action">返信 →</div>
+              </div>
+            </div>
+            <div class="todo-item">
+              <div class="todo-priority p-mid"></div>
+              <div class="todo-text">
+                <div class="todo-title">必須フィールド欠損</div>
+                <div class="todo-desc">missingMandatoryFields</div>
+              </div>
+              <div class="todo-meta">
+                <div class="todo-count">2</div>
+                <div class="todo-unit">店舗</div>
+                <div class="todo-action">入力 →</div>
+              </div>
+            </div>
+            <div class="todo-item">
+              <div class="todo-priority p-mid"></div>
+              <div class="todo-text">
+                <div class="todo-title">投稿頻度不足</div>
+                <div class="todo-desc">2週間以上投稿なし</div>
+              </div>
+              <div class="todo-meta">
+                <div class="todo-count">4</div>
+                <div class="todo-unit">店舗</div>
+                <div class="todo-action">投稿 →</div>
+              </div>
+            </div>
+            <div class="todo-item">
+              <div class="todo-priority p-low"></div>
+              <div class="todo-text">
+                <div class="todo-title">構造化データ更新</div>
+                <div class="todo-desc">LocalBusiness JSON-LD 差分あり</div>
+              </div>
+              <div class="todo-meta">
+                <div class="todo-count">1</div>
+                <div class="todo-unit">店舗</div>
+                <div class="todo-action">確認 →</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /main-grid -->
+
+    <!-- BOTTOM GRID -->
+    <div class="bottom-grid">
+
+      <!-- 配信状態 (Uberall) -->
+      <div class="card">
+        <div class="card-header">
+          <h3>📡 配信状態（Uberall）</h3>
+          <span class="badge badge-blue">engine_owner: UBERALL</span>
+        </div>
+        <div class="card-body">
+          <div class="listing-grid">
+            <div class="listing-stat">
+              <div class="ls-num ls-good">94</div>
+              <div class="ls-label">同期済<br>ディレクトリ</div>
+            </div>
+            <div class="listing-stat">
+              <div class="ls-num ls-bad">5</div>
+              <div class="ls-label">未接続<br>ディレクトリ</div>
+            </div>
+            <div class="listing-stat">
+              <div class="ls-num ls-warn">2</div>
+              <div class="ls-label">必須欠損<br>フィールド</div>
+            </div>
+            <div class="listing-stat">
+              <div class="ls-num ls-good">3</div>
+              <div class="ls-label">同期処理中<br>ロケーション</div>
+            </div>
+          </div>
+          <div class="sync-progress">
+            <div class="progress-label"><span>Listing 同期率</span><span>91%</span></div>
+            <div class="progress-bar-wrap"><div class="progress-bar" style="width:91%"></div></div>
+            <div style="font-size:11px;color:var(--gray-600);margin-top:4px;">最終同期: 2026-04-05 09:32 JST</div>
+          </div>
+          <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--gray-200);">
+            <div style="font-size:11px;color:var(--gray-600);margin-bottom:6px;">直近 Webhookイベント</div>
+            <div class="webhook-item">
+              <div class="wh-dot wh-ok"></div>
+              <div class="wh-event">LISTING_UPDATED</div>
+              <div class="wh-shop">渋谷店</div>
+              <div class="wh-time">09:47</div>
+            </div>
+            <div class="webhook-item">
+              <div class="wh-dot wh-ok"></div>
+              <div class="wh-event">LISTING_SYNCED</div>
+              <div class="wh-shop">新宿店</div>
+              <div class="wh-time">09:32</div>
+            </div>
+            <div class="webhook-item">
+              <div class="wh-dot wh-warn"></div>
+              <div class="wh-event">LISTING_FAILED</div>
+              <div class="wh-shop">池袋店</div>
+              <div class="wh-time">08:15</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 競合・順位 (MEOチェキ) -->
+      <div class="card">
+        <div class="card-header">
+          <h3>📈 競合・順位（MEOチェキ）</h3>
+          <span class="badge badge-orange">日次更新</span>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <table class="rank-table">
+            <thead>
+              <tr>
+                <th style="padding-left:20px">順位</th>
+                <th>キーワード</th>
+                <th>検索面</th>
+                <th>変動</th>
+                <th style="padding-right:20px">競合差</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding-left:20px"><span class="rank-badge r1">1</span></td>
+                <td><span class="kw-chip">渋谷 ランチ</span></td>
+                <td style="font-size:11px;color:var(--gray-600)">ローカルパック</td>
+                <td><span class="rank-delta rank-up">▲3</span></td>
+                <td style="padding-right:20px;font-size:11px;color:var(--green)">+2.1pt</td>
+              </tr>
+              <tr>
+                <td style="padding-left:20px"><span class="rank-badge r2">2</span></td>
+                <td><span class="kw-chip">渋谷 カフェ 人気</span></td>
+                <td style="font-size:11px;color:var(--gray-600)">Google Maps</td>
+                <td><span class="rank-delta rank-up">▲1</span></td>
+                <td style="padding-right:20px;font-size:11px;color:var(--green)">+0.8pt</td>
+              </tr>
+              <tr>
+                <td style="padding-left:20px"><span class="rank-badge r3">3</span></td>
+                <td><span class="kw-chip">新宿 ディナー</span></td>
+                <td style="font-size:11px;color:var(--gray-600)">ローカルパック</td>
+                <td><span class="rank-delta rank-same">→</span></td>
+                <td style="padding-right:20px;font-size:11px;color:var(--gray-400)">±0</td>
+              </tr>
+              <tr>
+                <td style="padding-left:20px"><span class="rank-badge rn">5</span></td>
+                <td><span class="kw-chip">池袋 居酒屋</span></td>
+                <td style="font-size:11px;color:var(--gray-600)">Google検索</td>
+                <td><span class="rank-delta rank-down">▼2</span></td>
+                <td style="padding-right:20px;font-size:11px;color:var(--red)">-1.5pt</td>
+              </tr>
+              <tr>
+                <td style="padding-left:20px"><span class="rank-badge rn">7</span></td>
+                <td><span class="kw-chip">渋谷 テイクアウト</span></td>
+                <td style="font-size:11px;color:var(--gray-600)">Google Maps</td>
+                <td><span class="rank-delta rank-up">▲4</span></td>
+                <td style="padding-right:20px;font-size:11px;color:var(--green)">+3.2pt</td>
+              </tr>
+            </tbody>
+          </table>
+          <div style="padding:12px 20px;border-top:1px solid var(--gray-200);font-size:11px;color:var(--gray-600);display:flex;justify-content:space-between;align-items:center;">
+            <span>競合比較: 最大3店舗 | ソース: MEOチェキ API</span>
+            <span style="color:var(--orange);font-weight:700;cursor:pointer;">詳細 →</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- AIO + GSC -->
+      <div style="display:flex;flex-direction:column;gap:20px;">
+        <!-- GSC -->
+        <div class="card">
+          <div class="card-header">
+            <h3>🔍 GSC オーガニック（今月）</h3>
+            <span class="badge badge-green">AIO含む</span>
+          </div>
+          <div class="card-body">
+            <div class="gsc-row">
+              <div class="gsc-kpi">
+                <div class="val">3.8<span style="font-size:13px">%</span></div>
+                <div class="lbl">平均CTR</div>
+                <div class="chg up">▲+0.4%</div>
+              </div>
+              <div class="gsc-kpi">
+                <div class="val">4.2</div>
+                <div class="lbl">平均順位</div>
+                <div class="chg up">▲改善</div>
+              </div>
+              <div class="gsc-kpi">
+                <div class="val">12.4K</div>
+                <div class="lbl">表示回数</div>
+                <div class="chg up">▲+18%</div>
+              </div>
+            </div>
+            <div class="sparkline">
+              <div class="spark-bar" style="height:40%"></div>
+              <div class="spark-bar" style="height:55%"></div>
+              <div class="spark-bar" style="height:48%"></div>
+              <div class="spark-bar" style="height:65%"></div>
+              <div class="spark-bar" style="height:58%"></div>
+              <div class="spark-bar" style="height:72%"></div>
+              <div class="spark-bar" style="height:68%"></div>
+              <div class="spark-bar hi" style="height:85%"></div>
+            </div>
+            <div style="font-size:10px;color:var(--gray-400);margin-top:4px;text-align:right">AI Overviews含む / Search Console API</div>
+          </div>
+        </div>
+
+        <!-- AIO STATUS -->
+        <div class="card">
+          <div class="card-header">
+            <h3>🤖 AIO 対策チェック</h3>
+            <span class="badge badge-orange">4項目</span>
+          </div>
+          <div class="card-body" style="padding:0 20px;">
+            <div class="aio-item">
+              <div class="aio-icon">📋</div>
+              <div class="aio-info">
+                <div class="aio-title">NAP 整合性</div>
+                <div class="aio-desc">全ディレクトリと一致確認済</div>
+              </div>
+              <div class="aio-status s-ok">✓ OK</div>
+            </div>
+            <div class="aio-item">
+              <div class="aio-icon">🏷</div>
+              <div class="aio-info">
+                <div class="aio-title">LocalBusiness JSON-LD</div>
+                <div class="aio-desc">1店舗で差分あり・要更新</div>
+              </div>
+              <div class="aio-status s-warn">⚠ 要確認</div>
+            </div>
+            <div class="aio-item">
+              <div class="aio-icon">🌐</div>
+              <div class="aio-info">
+                <div class="aio-title">サイテーション網（Uberall）</div>
+                <div class="aio-desc">91%同期 / 125+ ディレクトリ対応</div>
+              </div>
+              <div class="aio-status s-ok">✓ OK</div>
+            </div>
+            <div class="aio-item">
+              <div class="aio-icon">📅</div>
+              <div class="aio-info">
+                <div class="aio-title">予約導線 actionLinks</div>
+                <div class="aio-desc">UTM付与・全店舗設定済</div>
+              </div>
+              <div class="aio-status s-ok">✓ OK</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /bottom-grid -->
+
+    <!-- FOOTER -->
+    <div style="margin-top:24px;padding-top:16px;border-top:1px solid var(--gray-200);display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:11px;color:var(--gray-400)">
+        MEO統合管理画面 MVP — iFLAG IFG IT Solutions | SoT → Uberall 配信 | MEOチェキ競合連携 | GA4 MP計測
+      </div>
+      <div style="display:flex;gap:12px;font-size:11px;">
+        <span style="color:var(--gray-400)">API接続: <strong style="color:var(--green)">正常</strong></span>
+        <span style="color:var(--gray-400)">最終更新: <strong style="color:var(--navy)">10:05 JST</strong></span>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+  // タブ切替
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+      this.closest('.tab-row').querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+
+  // ナビアイテムのアクティブ切替
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', function(e) {
+      e.preventDefault();
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+
+  // バー高さアニメーション
+  window.addEventListener('load', () => {
+    document.querySelectorAll('.chart-bar').forEach((bar, i) => {
+      const h = bar.style.height;
+      bar.style.height = '0%';
+      setTimeout(() => { bar.style.height = h; }, i * 40 + 300);
+    });
+  });
+</script>
+</body>
+</html>
