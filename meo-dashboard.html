@@ -951,131 +951,107 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
 </div>
 
 <script>
-const pages={dashboard:{t:'ダッシュボード',s:'概要 / 全店舗',b:'＋ 店舗を追加'},stores:{t:'店舗（SoT）管理',s:'12店舗 | <span class="gl" data-gl="eo" tabindex="0">engine_owner<span class="gl-icon">?</span></span>: Uberall',b:'📥 CSVインポート'},uberall:{t:'配信（Uberall）',s:'Listings / サイテーション',b:'🔄 全店舗Sync'},gbp:{t:'Google 運用',s:'GBP Performance',b:'＋ 投稿を作成'},posts:{t:'投稿管理',s:'GBP投稿 / AI生成',b:'✏️ 新規投稿'},reviews:{t:'口コミ管理',s:'未返信 8件',b:'🤖 AI一括返信案'},ranking:{t:'競合・順位（MEOチェキ）',s:'日次順位更新',b:'＋ KW追加'},gsc:{t:'GSC・オーガニック',s:'Search Console API | AI Overviews含む',b:'📊 CSVエクスポート'},aio:{t:'AIO アシスト',s:'構造化データ / サイテーション / 計測',b:'🔄 チェック実行'},bookings:{t:'予約・コンバージョン',s:'自社予約API + GA4 MP',b:'📊 CSVエクスポート'},webhooks:{t:'Webhookログ',s:'全種別イベント',b:'🔄 再取得'},settings:{t:'API連携設定',s:'8サービス接続管理',b:'＋ 連携追加'},audit:{t:'監査ログ',s:'全操作記録',b:'📥 ログDL'}};
+// ===== PAGE CONFIG =====
+const pages={
+  dashboard:{t:'ダッシュボード',s:'概要 / 全店舗',b:'＋ 店舗を追加'},
+  stores:{t:'店舗（SoT）管理',s:'12店舗 | NAP一元管理',b:'📥 CSVインポート'},
+  uberall:{t:'配信（Uberall）',s:'Listings / サイテーション',b:'🔄 全店舗Sync'},
+  gbp:{t:'Google 運用',s:'GBP Performance',b:'＋ 投稿を作成'},
+  posts:{t:'投稿管理',s:'GBP投稿 / AI生成',b:'✏️ 新規投稿'},
+  reviews:{t:'口コミ管理',s:'未返信 8件',b:'🤖 AI一括返信案'},
+  ranking:{t:'競合・順位（MEOチェキ）',s:'日次順位更新',b:'＋ KW追加'},
+  gsc:{t:'GSC・オーガニック',s:'Search Console API',b:'📊 CSVエクスポート'},
+  aio:{t:'AIO アシスト',s:'構造化データ / サイテーション / 計測',b:'🔄 チェック実行'},
+  bookings:{t:'予約・コンバージョン',s:'自社予約API + GA4 MP',b:'📊 CSVエクスポート'},
+  webhooks:{t:'Webhookログ',s:'全種別イベント',b:'🔄 再取得'},
+  settings:{t:'API連携設定',s:'8サービス接続管理',b:'＋ 連携追加'},
+  audit:{t:'監査ログ',s:'全操作記録',b:'📥 ログDL'}
+};
+
+// ===== NAVIGATE =====
 function nav(id){
   if(!pages[id])return;
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));
   const pg=document.getElementById('pg-'+id);
   if(pg)pg.classList.add('active');
-  const ni=document.querySelector('[data-page="'+id+'"]');
-  if(ni)ni.classList.add('active');
+  document.querySelectorAll('[data-page="'+id+'"]').forEach(n=>n.classList.add('active'));
   const p=pages[id];
   document.getElementById('ttitle').innerHTML=p.t+'<span>'+p.s+'</span>';
   document.getElementById('tbtn').textContent=p.b;
+  // ドロワー同期
+  document.querySelectorAll('[data-drawer]').forEach(n=>{
+    n.classList.toggle('active', n.dataset.page===id);
+  });
 }
-document.querySelectorAll('.ni').forEach(i=>i.addEventListener('click',()=>nav(i.dataset.page)));
+
+// メインナビ
+document.querySelectorAll('.ni[data-page]').forEach(i=>i.addEventListener('click',()=>nav(i.dataset.page)));
+
+// タブ
 document.querySelectorAll('.tabs').forEach(tr=>{
   tr.querySelectorAll('.tab').forEach(t=>{
-    t.addEventListener('click',function(){tr.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));this.classList.add('active')});
+    t.addEventListener('click',function(){
+      tr.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+});
+
+// ===== DRAWER =====
+const hamBtn=document.getElementById('ham-btn');
+const drawer=document.getElementById('drawer');
+const drawerOv=document.getElementById('drawer-overlay');
+
+function openDrawer(){
+  if(!drawer)return;
+  drawer.classList.add('open');
+  drawerOv.classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeDrawer(){
+  if(!drawer)return;
+  drawer.classList.remove('open');
+  drawerOv.classList.remove('open');
+  document.body.style.overflow='';
+}
+if(hamBtn) hamBtn.addEventListener('click',e=>{e.stopPropagation();openDrawer();});
+if(drawerOv) drawerOv.addEventListener('click',closeDrawer);
+document.querySelectorAll('[data-drawer]').forEach(item=>{
+  item.addEventListener('click',()=>{
+    nav(item.dataset.page);
+    closeDrawer();
   });
 });
 
 // ===== TOUR =====
-const TOUR_STEPS = [
-  {
-    title: 'MEO統合管理画面へようこそ！',
-    body: '全店舗のMEO施策を一画面で管理できるツールです。まず各画面の使い方をご案内します（所要時間：約2分）。',
-    tip: '💡 右下の「？」ボタンでいつでもツアーを再開できます。',
-    target: null,
-    page: null,
-    pos: 'center'
-  },
-  {
-    title: '📊 ダッシュボード',
-    body: '全店舗のKPI・予約推移・対応TODOをひと目で確認できます。赤いTODOから優先対応してください。TODOの「→」をクリックすると該当ページに直接ジャンプします。',
-    tip: '💡 毎朝の確認はここから始めましょう。',
-    target: '[data-page="dashboard"]',
-    page: 'dashboard',
-    pos: 'right'
-  },
-  {
-    title: '🏪 店舗（SoT）管理',
-    body: '全店舗のNAP情報（名前・住所・電話・URL）を管理します。ここで更新した情報がUberall経由で125以上のディレクトリに自動配信されます。赤ハイライト行＝欠損フィールドあり。',
-    tip: '💡 <span class="gl" data-gl="eo" tabindex="0">engine_owner<span class="gl-icon">?</span></span>（Uberall）以外から直接GBPを変更しないでください。',
-    target: '[data-page="stores"]',
-    page: 'stores',
-    pos: 'right'
-  },
-  {
-    title: '🌐 配信（Uberall）',
-    body: '各ディレクトリへのListing同期状態を確認します。「未接続」「必須欠損」が0件になるよう対応してください。緊急時は「全店舗一括Sync」ボタンで強制同期できます。',
-    tip: '💡 Webhookログでエラーが出たらここで原因を特定します。',
-    target: '[data-page="uberall"]',
-    page: 'uberall',
-    pos: 'right'
-  },
-  {
-    title: '⭐ 口コミ管理',
-    body: '未返信の口コミ一覧です。低評価（★3以下）は特に早急な対応が必要です。AI返信案を活用して12時間以内の返信を目標にしましょう。',
-    tip: '💡 口コミ返信率はAIO（AI Overview）掲載にも影響します。',
-    target: '[data-page="reviews"]',
-    page: 'reviews',
-    pos: 'right'
-  },
-  {
-    title: '📈 競合・順位（MEOチェキ）',
-    body: 'キーワードごとのローカルパック順位と競合店舗の順位を比較できます。▼（赤）のキーワードは施策強化のサインです。',
-    tip: '💡 順位が下がった場合のチェックリストはNotionガイドを参照してください。',
-    target: '[data-page="ranking"]',
-    page: 'ranking',
-    pos: 'right'
-  },
-  {
-    title: '🤖 AIO アシスト',
-    body: 'AI Overview（AIによる検索概要）への掲載確率を高める7項目をチェックできます。JSON-LDの差分確認と自動更新もここから行います。',
-    tip: '💡 AIO対策スコア90点以上を目標にしましょう。',
-    target: '[data-page="aio"]',
-    page: 'aio',
-    pos: 'right'
-  },
-  {
-    title: '📆 予約・コンバージョン',
-    body: 'MEO施策が実際の予約数・売上にどう貢献しているかを確認します。チャネル別CV（右パネル）でMEOオーガニック流入の割合を見ると、施策の効果が一目瞭然です。',
-    tip: '💡 MEOオーガニックが最大チャネル（43%）であることを経営層報告に活用できます。',
-    target: '[data-page="bookings"]',
-    page: 'bookings',
-    pos: 'right'
-  },
-  {
-    title: '🔗 API連携設定',
-    body: '各外部APIの接続状態を管理します。新規導入時はここでAPIキーを設定します。シークレット情報はKMS/Secret Managerで管理され、平文保存は禁止されています。',
-    tip: '💡 MEOチェキAPIは別途問い合わせが必要です。',
-    target: '[data-page="settings"]',
-    page: 'settings',
-    pos: 'right'
-  },
-  {
-    title: '🎉 チュートリアル完了！',
-    body: 'すべての主要機能をご確認いただきました。詳細な操作手順はNotionのオンボーディングガイドをご参照ください。',
-    tip: '📋 Notionガイドには各機能のFAQ・チェックリストも掲載しています。',
-    target: null,
-    page: null,
-    pos: 'center',
-    notion: true
-  }
+const TOUR_STEPS=[
+  {title:'MEO統合管理画面へようこそ！',body:'全店舗のMEO施策を1画面で管理できます。各画面の使い方を順番にご案内します（約2分）。',tip:'💡 右下の「❓」ボタンでいつでも再開できます。',target:null,page:null},
+  {title:'📊 ダッシュボード',body:'全店舗のKPI・予約推移・対応TODOをひと目で確認できます。赤いTODOから優先対応しましょう。「→」をクリックすると該当ページに直接移動します。',tip:'💡 毎朝の確認はここから始めましょう。',target:'[data-page="dashboard"]',page:'dashboard'},
+  {title:'🏪 店舗（SoT）管理',body:'全店舗の名前・住所・電話番号を管理します。ここで更新した情報がUberall経由で125以上のディレクトリに自動で配信されます。赤ハイライト行は欠損フィールドがある店舗です。',tip:'💡 GBPなど他サービスから直接変更すると情報が競合します。必ずここから更新してください。',target:'[data-page="stores"]',page:'stores'},
+  {title:'🌐 配信（Uberall）',body:'各ディレクトリへの同期状態を確認できます。「未接続」「必須欠損」を0件にすることが目標です。緊急時は「全店舗一括Sync」で強制的に同期できます。',tip:'💡 Webhookログにエラーが出たらここで原因を特定します。',target:'[data-page="uberall"]',page:'uberall'},
+  {title:'⭐ 口コミ管理',body:'未返信の口コミ一覧です。★3以下の低評価は特に早急な対応が必要です。AI返信案を活用して12時間以内の返信を目標にしましょう。',tip:'💡 口コミの返信率はGoogle検索順位にも影響します。',target:'[data-page="reviews"]',page:'reviews'},
+  {title:'📈 競合・順位（MEOチェキ）',body:'キーワードごとのローカル検索順位と競合店舗の順位を比較できます。▼（赤）のキーワードは対策強化のサインです。',tip:'💡 順位が下がった場合の対処法はNotionガイドを参照してください。',target:'[data-page="ranking"]',page:'ranking'},
+  {title:'🤖 AIO アシスト',body:'GoogleのAI検索概要（AI Overview）に掲載されやすくするための7項目をチェックできます。JSON-LDの差分確認と更新もここから行えます。',tip:'💡 AIO対策スコア90点以上を目標にしましょう。',target:'[data-page="aio"]',page:'aio'},
+  {title:'📆 予約・コンバージョン',body:'MEO施策が実際の予約数・売上にどう貢献しているかを確認します。右パネルのチャネル別CVでMEO経由の予約割合を見ると効果が一目でわかります。',tip:'💡 MEOオーガニック経由が最大チャネル（43%）であることを報告資料に活用できます。',target:'[data-page="bookings"]',page:'bookings'},
+  {title:'🔗 API連携設定',body:'各外部サービスのAPI接続状態を管理します。新規導入時はここでAPIキーを設定します。',tip:'💡 MEOチェキAPIの設定は別途問い合わせが必要です。',target:'[data-page="settings"]',page:'settings'},
+  {title:'🎉 ガイド完了！',body:'すべての主要機能の説明が終わりました。詳しい操作手順はNotionのオンボーディングガイドをご覧ください。',tip:'📋 FAQや対処チェックリストもまとめてあります。',target:null,page:null,notion:true}
 ];
 
-let currentStep = 0;
+let currentStep=0;
 
-function buildTourUI() {
-  // overlay
-  const ov = document.createElement('div');
-  ov.className = 'tour-overlay';
-  ov.id = 'tour-overlay';
+function buildTourUI(){
+  const ov=document.createElement('div');
+  ov.className='tour-overlay';ov.id='tour-overlay';
   document.body.appendChild(ov);
 
-  // highlight ring
-  const hl = document.createElement('div');
-  hl.className = 'tour-highlight';
-  hl.id = 'tour-hl';
+  const hl=document.createElement('div');
+  hl.className='tour-highlight';hl.id='tour-hl';
   document.body.appendChild(hl);
 
-  // box
-  const box = document.createElement('div');
-  box.className = 'tour-box';
-  box.id = 'tour-box';
-  box.innerHTML = `
+  const box=document.createElement('div');
+  box.className='tour-box';box.id='tour-box';
+  box.innerHTML=`
     <div class="tour-step-badge" id="tour-badge">Step 1 / ${TOUR_STEPS.length}</div>
     <h4 id="tour-title"></h4>
     <p id="tour-body"></p>
@@ -1088,333 +1064,209 @@ function buildTourUI() {
     <div class="tour-foot">
       <div class="tour-dots" id="tour-dots"></div>
       <span class="tour-skip" id="tour-skip">スキップ</span>
-      <button class="tour-prev" id="tour-prev">←</button>
+      <button class="tour-prev" id="tour-prev">戻る</button>
       <button class="tour-next" id="tour-next">次へ</button>
     </div>`;
   document.body.appendChild(box);
 
-  // help button
-  const hb = document.createElement('button');
-  hb.className = 'help-btn';
-  hb.title = 'チュートリアルを開く';
-  hb.innerHTML = '❓';
-  hb.onclick = () => startTour();
+  const hb=document.createElement('button');
+  hb.className='help-btn';hb.title='ガイドを開く';hb.innerHTML='❓';
+  hb.onclick=()=>startTour();
   document.body.appendChild(hb);
 
-  document.getElementById('tour-prev').onclick = () => goStep(currentStep - 1);
-  document.getElementById('tour-next').onclick = () => {
-    if (currentStep === TOUR_STEPS.length - 1) endTour();
-    else goStep(currentStep + 1);
+  document.getElementById('tour-prev').onclick=()=>goStep(currentStep-1);
+  document.getElementById('tour-next').onclick=()=>{
+    if(currentStep===TOUR_STEPS.length-1)endTour();
+    else goStep(currentStep+1);
   };
-  document.getElementById('tour-skip').onclick = endTour;
-  ov.onclick = endTour;
+  document.getElementById('tour-skip').onclick=endTour;
+  ov.onclick=endTour;
 }
 
-function goStep(idx) {
-  if (idx < 0 || idx >= TOUR_STEPS.length) return;
-  currentStep = idx;
-  const step = TOUR_STEPS[idx];
-
-  // navigate if needed
-  if (step.page) nav(step.page);
-
-  // update box content
-  document.getElementById('tour-badge').textContent = `Step ${idx + 1} / ${TOUR_STEPS.length}`;
-  document.getElementById('tour-title').textContent = step.title;
-  document.getElementById('tour-body').textContent = step.body;
-  document.getElementById('tour-tip').textContent = step.tip;
-  document.getElementById('tour-notion-wrap').style.display = step.notion ? 'block' : 'none';
-
-  // dots
-  const dots = document.getElementById('tour-dots');
-  dots.innerHTML = TOUR_STEPS.map((_, i) =>
-    `<div class="tour-dot ${i === idx ? 'active' : ''}"></div>`
-  ).join('');
-
-  // buttons
-  document.getElementById('tour-prev').style.display = idx === 0 ? 'none' : '';
-  document.getElementById('tour-next').textContent = idx === TOUR_STEPS.length - 1 ? '✓ 完了' : '次へ';
-
-  // position box & highlight
+function goStep(idx){
+  if(idx<0||idx>=TOUR_STEPS.length)return;
+  currentStep=idx;
+  const step=TOUR_STEPS[idx];
+  if(step.page)nav(step.page);
+  document.getElementById('tour-badge').textContent=`Step ${idx+1} / ${TOUR_STEPS.length}`;
+  document.getElementById('tour-title').textContent=step.title;
+  document.getElementById('tour-body').textContent=step.body;
+  document.getElementById('tour-tip').textContent=step.tip;
+  document.getElementById('tour-notion-wrap').style.display=step.notion?'block':'none';
+  const dots=document.getElementById('tour-dots');
+  dots.innerHTML=TOUR_STEPS.map((_,i)=>`<div class="tour-dot ${i===idx?'active':''}"></div>`).join('');
+  document.getElementById('tour-prev').style.display=idx===0?'none':'';
+  document.getElementById('tour-next').textContent=idx===TOUR_STEPS.length-1?'✓ 完了':'次へ';
   positionStep(step);
 }
 
-function positionStep(step) {
-  const box = document.getElementById('tour-box');
-  const hl = document.getElementById('tour-hl');
-  const ov = document.getElementById('tour-overlay');
-
+function positionStep(step){
+  const box=document.getElementById('tour-box');
+  const hl=document.getElementById('tour-hl');
+  const ov=document.getElementById('tour-overlay');
   ov.classList.add('active');
-
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-  const isNarrow = vw < 900; // iPad縦・スマホ
-  const bw = isNarrow ? Math.min(vw - 32, 320) : 320;
-  box.style.width = bw + 'px';
-
-  if (!step.target || step.pos === 'center') {
-    box.style.top = '50%';
-    box.style.left = '50%';
-    box.style.transform = 'translate(-50%, -50%)';
-    hl.classList.remove('active');
-    return;
+  const vw=window.innerWidth,vh=window.innerHeight;
+  const isNarrow=vw<900;
+  const bw=isNarrow?Math.min(vw-32,320):320;
+  box.style.width=bw+'px';
+  if(!step.target){
+    box.style.top='50%';box.style.left='50%';box.style.transform='translate(-50%,-50%)';
+    hl.classList.remove('active');return;
   }
-
-  const el = document.querySelector(step.target);
-  if (!el) return;
-
-  const r = el.getBoundingClientRect();
-  const pad = 12;
-
-  // highlight ring
-  hl.style.left = r.left - 4 + 'px';
-  hl.style.top = r.top - 4 + 'px';
-  hl.style.width = r.width + 8 + 'px';
-  hl.style.height = r.height + 8 + 'px';
+  const el=document.querySelector(step.target);
+  if(!el){box.style.top='50%';box.style.left='50%';box.style.transform='translate(-50%,-50%)';return;}
+  const r=el.getBoundingClientRect();
+  const pad=12;
+  hl.style.cssText=`left:${r.left-4}px;top:${r.top-4}px;width:${r.width+8}px;height:${r.height+8}px`;
   hl.classList.add('active');
-
-  let bx, by;
-
-  if (isNarrow) {
-    // iPad / スマホ: 画面上部に固定（サイドバーを隠さない位置）
-    bx = (vw - bw) / 2;
-    by = pad + 8;
-  } else {
-    // Desktop: ターゲットの右側 or 左側
-    bx = r.right + pad;
-    by = r.top - 10;
-    if (bx + bw > vw - pad) bx = r.left - bw - pad;
-    if (by + (box.offsetHeight || 220) > vh - pad) by = vh - (box.offsetHeight || 220) - pad;
-    if (by < pad) by = pad;
+  let bx,by;
+  if(isNarrow){bx=(vw-bw)/2;by=pad+8;}
+  else{
+    bx=r.right+pad;by=r.top-10;
+    if(bx+bw>vw-pad)bx=r.left-bw-pad;
+    const bh=box.offsetHeight||220;
+    if(by+bh>vh-pad)by=vh-bh-pad;
+    if(by<pad)by=pad;
   }
-
-  box.style.top = by + 'px';
-  box.style.left = bx + 'px';
-  box.style.transform = 'none';
+  box.style.top=by+'px';box.style.left=bx+'px';box.style.transform='none';
 }
 
-function startTour() {
-  currentStep = 0;
-  goStep(0);
-}
-
-function endTour() {
+function startTour(){currentStep=0;goStep(0);}
+function endTour(){
   document.getElementById('tour-overlay').classList.remove('active');
   document.getElementById('tour-hl').classList.remove('active');
-  document.getElementById('tour-box').style.top = '-9999px';
+  document.getElementById('tour-box').style.cssText='top:-9999px';
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  buildTourUI();
-  // Auto-start on first visit
-  if (!localStorage.getItem('meo_tour_done')) {
-    setTimeout(() => { startTour(); localStorage.setItem('meo_tour_done','1'); }, 800);
-  }
-});
-
-
 // ===== GLOSSARY =====
-const GLOSSARY = {
-  'sot': {
-    term: 'SoT（真実の唯一の情報源）',
-    en: 'Single Source of Truth',
-    body: '店舗の名前・住所・電話番号・URLなど、MEO管理の基準となる「正しいデータ」を管理する場所。ここで更新した情報がすべてのディレクトリに自動配信されます。',
-    ex: '💡 ここ以外（GBPやYelpなど）から直接変更すると情報が競合してしまいます。'
+const GLOSSARY={
+  sot:{
+    term:'SoT（情報の一元管理）',
+    en:'Single Source of Truth',
+    body:'店舗の名前・住所・電話番号・URLを管理する「唯一の正しい情報源」です。ここで変更した内容がUberall経由でGoogleや食べログなど125以上のサービスに自動で反映されます。',
+    ex:'💡 GBPなど他のサービスから直接変更すると情報がずれてしまうので、必ずここから更新してください。'
   },
-  'eo': {
-    term: 'engine_owner',
-    en: 'Writer Permission Controller',
-    body: 'NAP情報（名前・住所・電話・URL）を「どのサービスが書き込む権限を持つか」を示します。このシステムではUberallがengine_ownerです。',
-    ex: '💡 engine_owner以外からの変更は次回Sync時に上書きされます。'
+  eo:{
+    term:'engine_owner（書き込み権限の管理者）',
+    en:'Writer Permission Controller',
+    body:'店舗の基本情報を「どのサービスが書き込む権限を持つか」を設定する項目です。このシステムではUberallがengine_ownerに設定されており、他のサービスが勝手に上書きしないよう制御されています。',
+    ex:'💡 engine_owner以外のサービスから変更しても、次回の同期時に上書きされます。'
   },
-  'nap': {
-    term: 'NAP',
-    en: 'Name / Address / Phone',
-    body: 'MEOで最重要の3情報。Name（店舗名）・Address（住所）・Phone（電話番号）の頭文字。全ディレクトリでNAPが一致していることがローカル検索順位に直結します。',
-    ex: '💡 表記ゆれ（株式会社 vs ㈱）も不整合と判定されます。'
+  nap:{
+    term:'NAP（店舗の基本3情報）',
+    en:'Name / Address / Phone',
+    body:'MEOで最も重要な3つの情報、Name（店舗名）・Address（住所）・Phone（電話番号）の頭文字をとった言葉です。Google・食べログ・ぐるなびなど全サービスでこの3つが一致していると検索順位が上がりやすくなります。',
+    ex:'💡 「株式会社」と「㈱」など表記ゆれがあるだけで不一致と判定されます。'
   },
-  'uberall': {
-    term: 'Uberall',
-    en: 'Listing Management Platform',
-    body: '125以上のディレクトリ（Google・Yahoo!ロコ・ぐるなびなど）に店舗情報を一括配信できるサービス。このシステムのengine_ownerとして機能します。',
-    ex: '💡 Uberall経由で更新することで情報の一貫性が保たれます。'
+  uberall:{
+    term:'Uberall（情報配信プラットフォーム）',
+    en:'Listing Management Platform',
+    body:'Google・Yahoo!ロコ・ぐるなびなど125以上のサービスに店舗情報を一括で配信できる外部サービスです。このシステムの中心的な配信エンジンとして機能しています。',
+    ex:'💡 Uberall経由で更新することで、すべてのサービスの情報を一度に統一できます。'
   },
-  'meocheki': {
-    term: 'MEOチェキ',
-    en: 'Local Ranking Tracker',
-    body: 'Google マップやローカルパックでの検索順位を地点ごとに計測できる国産のMEOツール。競合店舗との順位比較も可能です。',
-    ex: '💡 任意の地点から検索した場合の順位を正確に把握できます。'
+  meocheki:{
+    term:'MEOチェキ（順位計測ツール）',
+    en:'Local Ranking Tracker',
+    body:'GoogleマップやGoogle検索での表示順位を、指定した地点から実際に検索した場合の結果として計測できる国産のツールです。競合店との順位比較もできます。',
+    ex:'💡 「渋谷駅周辺から検索した場合の順位」のように地点を指定して正確に把握できます。'
   },
-  'aio-term': {
-    term: 'AIO（AIオーバービュー）',
-    en: 'AI Overview',
-    body: 'Google検索結果の上部に表示されるAI生成の概要テキスト。ここに掲載されると検索ユーザーへのリーチが大幅に増加します。NAP整合・JSON-LD・口コミ返信率などが掲載確率に影響します。',
-    ex: '💡 AIO表示でクリック数が減る場合もあるため、GSCとあわせて監視が必要です。'
+  'aio-term':{
+    term:'AIO（GoogleのAI検索概要）',
+    en:'AI Overview',
+    body:'Google検索結果の上部に表示される、AIが自動で生成した要約テキストのことです。ここに店舗情報が掲載されると多くのユーザーに見てもらいやすくなります。NAP情報の整合・構造化データ・口コミ返信率などが掲載されやすさに影響します。',
+    ex:'💡 AI概要が表示されるとサイトへのクリックが減る場合もあるため、GSCと合わせて確認が必要です。'
   },
-  'jsonld': {
-    term: 'JSON-LD',
-    en: 'JavaScript Object Notation for Linked Data',
-    body: 'ウェブページに構造化データを埋め込む形式。LocalBusiness型で店舗情報をGoogleに正確に伝えることでAIO掲載確率が上がります。',
-    ex: '💡 SoTの情報と一致している必要があります。差分があると信頼性が下がります。'
+  jsonld:{
+    term:'JSON-LD（構造化データ）',
+    en:'JavaScript Object Notation for Linked Data',
+    body:'ウェブページの中に、Googleが店舗情報を正確に読み取れるよう決まった形式で記述するデータのことです。これがあるとAI検索概要に掲載されやすくなります。',
+    ex:'💡 SoTの情報と内容が一致している必要があります。ずれがあると信頼性が下がります。'
   },
-  'hmac': {
-    term: 'HMAC',
-    en: 'Hash-based Message Authentication Code',
-    body: 'Webhookの受信データが改ざんされていないことを確認する署名方式。送信側と受信側が共有する秘密鍵を使ってハッシュ値を計算・比較します。',
-    ex: '💡 署名検証エラーが出た場合はAPIキー（secret）が一致しているか確認してください。'
+  hmac:{
+    term:'HMAC（データ改ざん検知）',
+    en:'Hash-based Message Authentication Code',
+    body:'予約通知などのデータが送信途中に改ざんされていないかを確認する仕組みです。送受信の両側で秘密の鍵を使って計算した値を照合します。',
+    ex:'💡 「署名検証エラー」が出た場合はAPIキー（secret）が正しく設定されているか確認してください。'
   },
-  'ga4mp': {
-    term: 'GA4 MP',
-    en: 'Google Analytics 4 Measurement Protocol',
-    body: 'サーバーサイドからGA4にイベントを送信する仕組み。予約完了などのCVイベントをブラウザに関係なく計測できます。',
-    ex: '💡 予約数のダッシュボード値とGA4値に差がある場合はWebhookログを確認してください。'
+  ga4mp:{
+    term:'GA4 MP（サーバー計測）',
+    en:'Google Analytics 4 Measurement Protocol',
+    body:'予約完了などのデータを、ブラウザを経由せずサーバー側から直接Google Analyticsに送信する仕組みです。より正確なコンバージョン計測が可能になります。',
+    ex:'💡 ダッシュボードとGA4の数値に差がある場合はWebhookログを確認してください。'
   },
-  'gsc-term': {
-    term: 'GSC（Google Search Console）',
-    en: 'Google Search Console',
-    body: 'Googleがウェブサイトをどのように認識・表示しているかを確認できる無料ツール。表示回数・クリック数・平均掲載順位・CTRを分析できます。',
-    ex: '💡 表示回数は増えてもクリック率が低い場合はAIO対策を確認してください。'
+  'gsc-term':{
+    term:'GSC（Google Search Console）',
+    en:'Google Search Console',
+    body:'Googleが提供する無料ツールで、自社サイトがどのキーワードで何回表示され、何回クリックされたかを確認できます。検索流入の改善に欠かせないデータが揃っています。',
+    ex:'💡 表示回数は増えているのにクリック率が低い場合は、AI Overview対策を見直してください。'
   },
-  'gbp-term': {
-    term: 'GBP（Google ビジネスプロフィール）',
-    en: 'Google Business Profile',
-    body: 'Google マップや検索結果に表示される店舗情報ページ。口コミ・投稿・営業時間などを管理でき、MEOの中核となるサービスです。',
-    ex: '💡 GBPで直接情報を編集するとUberallとの競合が発生するため、SoT経由で更新してください。'
+  'gbp-term':{
+    term:'GBP（Googleビジネスプロフィール）',
+    en:'Google Business Profile',
+    body:'Googleマップや検索結果に表示される店舗のページです。口コミ・投稿・営業時間などを管理でき、MEO対策の中心となるサービスです。',
+    ex:'💡 GBPで直接情報を変更するとUberallとの内容がずれるため、必ずSoT（このシステム）経由で更新してください。'
   },
-  'utm': {
-    term: 'UTMパラメータ',
-    en: 'Urchin Tracking Module',
-    body: 'URLに付与するトラッキング用パラメータ。utm_source・utm_medium・utm_campaignなどを設定することで、どの経路から来訪したかをGA4で分析できます。',
-    ex: '例: ?utm_source=google&utm_medium=organic&utm_campaign=meo'
+  utm:{
+    term:'UTMパラメータ（流入経路タグ）',
+    en:'Urchin Tracking Module',
+    body:'URLの末尾に付ける文字列で「どこから来たか」を記録するために使います。これをつけることで、Google経由・食べログ経由など予約の流入元をGoogle Analyticsで正確に把握できます。',
+    ex:'例: ?utm_source=google&utm_medium=organic（Google検索経由を示す）'
   },
-  'listing': {
-    term: 'Listing（リスティング）',
-    en: 'Directory Listing',
-    body: '各ディレクトリ（Google・Yahoo!・食べログなど）に登録された店舗情報ページのこと。Uberall経由で一括管理・同期されます。',
-    ex: '💡 「未接続」状態のListingはSyncが届かないため、手動で接続作業が必要です。'
+  listing:{
+    term:'Listing（各サービスの店舗ページ）',
+    en:'Directory Listing',
+    body:'Google・Yahoo!・食べログなど各サービスに登録された店舗情報ページのことです。Uberall経由で一括管理・同期されます。',
+    ex:'💡 「未接続」状態のListingにはSyncが届かないため、手動で接続作業が必要です。'
   },
-  'webhook': {
-    term: 'Webhook（ウェブフック）',
-    en: 'Event-driven HTTP Callback',
-    body: 'イベント（予約作成・Listing更新など）が発生したとき、外部システムが自動でHTTPリクエストを送信する仕組み。リアルタイムにデータを連携できます。',
-    ex: '💡 受信したWebhookはHMAC署名検証後にDBへ保存されます。'
-  },
+  webhook:{
+    term:'Webhook（自動通知の仕組み）',
+    en:'Event-driven HTTP Callback',
+    body:'予約が入ったときやListing情報が更新されたときなど、何かイベントが起きると自動でこのシステムに通知が届く仕組みです。リアルタイムにデータを受け取れます。',
+    ex:'💡 受け取ったWebhookは改ざん検知（HMAC）を確認してからデータベースに保存されます。'
+  }
 };
 
-// ===== TOOLTIP ENGINE =====
-(function() {
-  let pop = null;
-  let hideTimer = null;
-
-  function createPop() {
-    pop = document.createElement('div');
-    pop.className = 'gl-pop';
-    pop.id = 'gl-pop';
+(function(){
+  let pop=null,hideTimer=null;
+  function createPop(){
+    pop=document.createElement('div');
+    pop.className='gl-pop';pop.id='gl-pop';
     document.body.appendChild(pop);
   }
-
-  function showPop(el, key) {
-    if (!pop) createPop();
-    const g = GLOSSARY[key];
-    if (!g) return;
+  function showPop(el,key){
+    if(!pop)createPop();
+    const g=GLOSSARY[key];if(!g)return;
     clearTimeout(hideTimer);
-    pop.innerHTML = `
-      <div class="gp-term">${g.term}</div>
-      <div class="gp-en">${g.en}</div>
-      <div class="gp-body">${g.body}</div>
-      ${g.ex ? `<div class="gp-ex">${g.ex}</div>` : ''}`;
-
-    // 位置計算
-    const r = el.getBoundingClientRect();
-    const pw = 240, ph = 180;
-    const pad = 8;
-    const vw = window.innerWidth, vh = window.innerHeight;
-
-    let px = r.left;
-    let py = r.bottom + pad;
-
-    // 下に収まらない場合は上に
-    if (py + ph > vh - pad) py = r.top - ph - pad;
-    // 右にはみ出す場合は左寄せ
-    if (px + pw > vw - pad) px = vw - pw - pad;
-    if (px < pad) px = pad;
-
-    pop.style.left = px + 'px';
-    pop.style.top = py + 'px';
-    pop.style.width = pw + 'px';
+    pop.innerHTML=`<div class="gp-term">${g.term}</div><div class="gp-en">${g.en}</div><div class="gp-body">${g.body}</div>${g.ex?`<div class="gp-ex">${g.ex}</div>`:''}`;
+    const r=el.getBoundingClientRect();
+    const pw=240,pad=8,vw=window.innerWidth,vh=window.innerHeight;
+    let px=r.left,py=r.bottom+pad;
+    pop.style.cssText=`left:0;top:0;width:${pw}px;opacity:0`;
+    document.body.appendChild(pop);
+    const ph=pop.offsetHeight||180;
+    if(py+ph>vh-pad)py=r.top-ph-pad;
+    if(px+pw>vw-pad)px=vw-pw-pad;
+    if(px<pad)px=pad;
+    pop.style.cssText=`left:${px}px;top:${py}px;width:${Math.min(pw,vw-32)}px`;
     pop.classList.add('show');
   }
-
-  function hidePop() {
-    if (!pop) return;
-    hideTimer = setTimeout(() => {
-      pop.classList.remove('show');
-    }, 120);
-  }
-
-  // イベント委譲でgl要素を検出
-  document.addEventListener('mouseover', e => {
-    const gl = e.target.closest('.gl');
-    if (gl) showPop(gl, gl.dataset.gl);
-  });
-  document.addEventListener('mouseout', e => {
-    const gl = e.target.closest('.gl');
-    if (gl) hidePop();
-  });
-  document.addEventListener('click', e => {
-    const gl = e.target.closest('.gl');
-    if (gl) {
-      e.stopPropagation();
-      if (pop && pop.classList.contains('show')) hidePop();
-      else showPop(gl, gl.dataset.gl);
-    } else {
-      hidePop();
-    }
+  function hidePop(){if(!pop)return;hideTimer=setTimeout(()=>pop.classList.remove('show'),120);}
+  document.addEventListener('mouseover',e=>{const gl=e.target.closest('.gl');if(gl)showPop(gl,gl.dataset.gl);});
+  document.addEventListener('mouseout',e=>{const gl=e.target.closest('.gl');if(gl)hidePop();});
+  document.addEventListener('click',e=>{
+    const gl=e.target.closest('.gl');
+    if(gl){e.stopPropagation();if(pop&&pop.classList.contains('show'))hidePop();else showPop(gl,gl.dataset.gl);}
+    else hidePop();
   });
 })();
 
-
-// ===== DRAWER =====
-(function() {
-  const hamBtn = document.getElementById('ham-btn');
-  const drawer = document.getElementById('drawer');
-  const drawerOverlay = document.getElementById('drawer-overlay');
-  if (!hamBtn || !drawer) return;
-
-  function openDrawer() {
-    drawer.classList.add('open');
-    drawerOverlay.classList.add('open');
-    document.body.style.overflow = 'hidden';
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded',()=>{
+  buildTourUI();
+  if(!localStorage.getItem('meo_tour_done')){
+    setTimeout(()=>{startTour();localStorage.setItem('meo_tour_done','1');},800);
   }
-  function closeDrawer() {
-    drawer.classList.remove('open');
-    drawerOverlay.classList.remove('open');
-    document.body.style.overflow = '';
-  }
-  hamBtn.addEventListener('click', e => { e.stopPropagation(); openDrawer(); });
-  drawerOverlay.addEventListener('click', closeDrawer);
-
-  // ドロワー内のナビアイテム
-  document.querySelectorAll('[data-drawer]').forEach(item => {
-    item.addEventListener('click', () => {
-      nav(item.dataset.page);
-      // ドロワーのアクティブ状態更新
-      document.querySelectorAll('[data-drawer]').forEach(n => n.classList.remove('active'));
-      item.classList.add('active');
-      closeDrawer();
-    });
-  });
-
-  // nav関数をラップしてドロワーも同期
-  const _origNav = window.nav;
-  window.nav = function(id) {
-    _origNav(id);
-    document.querySelectorAll('[data-drawer]').forEach(n => {
-      n.classList.toggle('active', n.dataset.page === id);
-    });
-  };
-})();
-
+});
 </script>
 </body>
 </html>
