@@ -267,8 +267,17 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
   /* ハンバーガーボタン表示 */
   .ham-btn { display: flex; }
 
-  /* トップバー調整 */
-  .topbar { padding: 0 12px; gap: 8px; position: -webkit-sticky; position: sticky; }
+  /* トップバー：fixedで確実に固定 */
+  .topbar {
+    padding: 0 12px;
+    gap: 8px;
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 200;
+    height: var(--hh);
+  }
+  /* topbar分のスペースを確保 */
+  .main { padding-top: var(--hh); }
   #ttitle span, .dbadge, .etag { display: none; }
   #ttitle { font-size: 14px; }
   .tbtn { padding: 5px 10px; font-size: 11px; }
