@@ -161,7 +161,7 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
 ::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--gray-200);border-radius:10px}
 
 /* TOUR */
-.tour-overlay{position:fixed;inset:0;background:rgba(5,10,25,.28);z-index:1000;display:none;backdrop-filter:blur(1px)}
+.tour-overlay{position:fixed;inset:0;background:rgba(5,10,25,.12);z-index:1000;display:none}
 .tour-overlay.active{display:block}
 .tour-box{position:fixed;z-index:1001;background:#fff;border-radius:14px;padding:24px;width:320px;box-shadow:0 24px 60px rgba(5,10,25,.25);animation:tb .3s cubic-bezier(.34,1.56,.64,1);max-height:85vh;overflow-y:auto}
 @keyframes tb{from{opacity:0;transform:scale(.88) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
@@ -277,7 +277,7 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
       <div class="kc"><span class="ki">🔑</span><div class="kl"><span class="gl" data-gl="eo" tabindex="0">engine_owner<span class="gl-icon">?</span></span></div><div class="kv" style="font-size:16px">Uberall</div><div class="kd up">CORE_NAP</div></div>
     </div>
     <div class="card">
-      <div class="ch"><h3>🏪 店舗一覧（SoT）</h3><span class="bdg bb">12店舗</span><button class="tbtn" style="margin-left:auto;padding:5px 12px;font-size:12px">📥 CSVインポート</button></div>
+      <div class="ch"><h3>🏪 店舗一覧（SoT）</h3><span class="bdg bb">12店舗</span><button class="tbtn">📥 CSVインポート</button></div>
       <div style="padding:0">
         <table class="dt">
           <thead><tr><th style="padding-left:20px">店舗名</th><th>住所</th><th>電話</th><th>カテゴリ</th><th>engine_owner</th><th>同期状態</th><th style="padding-right:20px">欠損</th></tr></thead>
@@ -314,7 +314,7 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
             <div class="ls"><div class="ln lg">3</div><div class="ll">同期処理中</div></div>
           </div>
           <div style="margin-top:14px"><div class="pl2"><span>Listing 同期率</span><span style="font-weight:700">91%</span></div><div class="pbw"><div class="pb" style="width:91%"></div></div><div style="font-size:11px;color:var(--gray-400);margin-top:4px">最終同期: 2026-04-05 09:32 JST | autoSync: ON</div></div>
-          <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--gray-200)"><button class="tbtn" style="width:100%;justify-content:center">🔄 全店舗 一括Sync（POST /locations/sync）</button></div>
+          <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--gray-200)"><button class="tbtn">🔄 全店舗 一括Sync（POST /locations/sync）</button></div>
         </div>
       </div>
       <div class="card">
@@ -474,7 +474,7 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
         <div class="ch"><h3>🏷 LocalBusiness <span class="gl" data-gl="jsonld" tabindex="0">JSON-LD<span class="gl-icon">?</span></span> 管理</h3><span class="bdg bo">バージョン管理</span></div>
         <div class="cb">
           <div style="background:var(--navy);border-radius:8px;padding:14px;font-family:'Outfit',monospace;font-size:11px;color:#7DD3FC;line-height:1.7;margin-bottom:12px"><span style="color:#94A3B8">// 渋谷本店 — v3 (最新)</span><br>{<br>&nbsp;&nbsp;<span style="color:#FCA5A5">"@type"</span>: <span style="color:#86EFAC">"Restaurant"</span>,<br>&nbsp;&nbsp;<span style="color:#FCA5A5">"name"</span>: <span style="color:#86EFAC">"サンプルフード 渋谷本店"</span>,<br>&nbsp;&nbsp;<span style="color:#FCA5A5">"telephone"</span>: <span style="color:#86EFAC">"03-XXXX-0001"</span>,<br>&nbsp;&nbsp;<span style="color:#FCA5A5">"potentialAction"</span>: {<span style="color:#FCA5A5">"@type"</span>: <span style="color:#86EFAC">"ReserveAction"</span>}<br>}</div>
-          <div style="display:flex;gap:8px;margin-bottom:10px"><button class="tbtn" style="flex:1;justify-content:center;font-size:12px">🔄 差分確認</button><button class="tbtn" style="flex:1;justify-content:center;font-size:12px;background:var(--gray-600)">📋 履歴</button></div>
+          <div style="display:flex;gap:8px;margin-bottom:10px"><button class="tbtn">🔄 差分確認</button><button class="tbtn">📋 履歴</button></div>
           <div style="padding:10px;background:var(--orange-dim);border-radius:6px;font-size:11px">⚠️ <strong>品川店</strong>: 営業時間変更がJSON-LDに未反映。SoTから自動生成して更新してください。</div>
         </div>
       </div>
@@ -576,7 +576,7 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
             <select style="padding:8px 10px;border:1px solid var(--gray-200);border-radius:6px;font-size:13px;font-family:'BIZ UDPGothic',sans-serif;color:var(--navy)"><option>渋谷本店</option><option>新宿店</option><option>池袋店</option></select>
             <select style="padding:8px 10px;border:1px solid var(--gray-200);border-radius:6px;font-size:13px;font-family:'BIZ UDPGothic',sans-serif;color:var(--navy)"><option>新メニュー告知</option><option>週末キャンペーン</option><option>季節の挨拶</option><option>予約促進</option></select>
           </div>
-          <button class="tbtn" style="width:100%;justify-content:center">🤖 AI投稿文を生成</button>
+          <button class="tbtn">🤖 AI投稿文を生成</button>
           <div style="margin-top:10px;padding:9px 12px;background:var(--gray-100);border-radius:6px;font-size:10px;color:var(--gray-600)">入力: SoT情報 + 競合差分(MEOチェキ) + 禁則語<br>出力: post_text / cta_text / utm_params / compliance_flags</div>
         </div>
       </div>
@@ -740,7 +740,7 @@ const TOUR_STEPS = [
   },
   {
     title: '🎉 チュートリアル完了！',
-    body: 'すべての主要機能をご確認いただきました。詳細な操作手順はNotionのオンボーディングガイドをご参照ください。',
+    body: 'すべての主要機能をご確認いただきました。詳細な操作手順はNotionの操作ガイドをご参照ください。',
     tip: '📋 Notionガイドには各機能のFAQ・チェックリストも掲載しています。',
     target: null,
     page: null,
@@ -775,13 +775,13 @@ function buildTourUI() {
     <div class="tip" id="tour-tip"></div>
     <div id="tour-notion-wrap" style="display:none">
       <a class="notion-link" href="https://www.notion.so/33985cf70c4c815fa74fffcc4cd59000" target="_blank">
-        📋 Notionオンボーディングガイドを開く →
+        📋 Notion操作ガイドを開く →
       </a>
     </div>
     <div class="tour-foot">
       <div class="tour-dots" id="tour-dots"></div>
       <span class="tour-skip" id="tour-skip">スキップ</span>
-      <button class="tour-prev" id="tour-prev">←</button>
+      <button class="tour-prev" id="tour-prev">戻る</button>
       <button class="tour-next" id="tour-next">次へ</button>
     </div>`;
   document.body.appendChild(box);
@@ -789,7 +789,7 @@ function buildTourUI() {
   // help button
   const hb = document.createElement('button');
   hb.className = 'help-btn';
-  hb.title = 'チュートリアルを開く';
+  hb.title = '操作ガイドを開く';
   hb.innerHTML = '❓';
   hb.onclick = () => startTour();
   document.body.appendChild(hb);
@@ -892,6 +892,7 @@ function startTour() {
 }
 
 function endTour() {
+  localStorage.setItem('meo_tour_done','1');
   document.getElementById('tour-overlay').classList.remove('active');
   document.getElementById('tour-hl').classList.remove('active');
   document.getElementById('tour-box').style.top = '-9999px';
@@ -901,7 +902,7 @@ document.addEventListener('DOMContentLoaded', () => {
   buildTourUI();
   // Auto-start on first visit
   if (!localStorage.getItem('meo_tour_done')) {
-    setTimeout(() => { startTour(); localStorage.setItem('meo_tour_done','1'); }, 800);
+    setTimeout(() => startTour(), 800);
   }
 });
 
