@@ -828,6 +828,13 @@ function goStep(idx) {
   document.getElementById('tour-prev').style.display = idx === 0 ? 'none' : '';
   document.getElementById('tour-next').textContent = idx === TOUR_STEPS.length - 1 ? '✓ 完了' : '次へ';
 
+  // ボックスをいったんリセットしてから位置計算
+  const box = document.getElementById('tour-box');
+  box.style.top = '';
+  box.style.left = '';
+  box.style.transform = '';
+  box.style.display = 'block';
+
   // position box & highlight
   positionStep(step);
 }
@@ -841,11 +848,12 @@ function positionStep(step) {
 
   const vw = window.innerWidth;
   const vh = window.innerHeight;
-  const isNarrow = vw < 900; // iPad縦・スマホ
-  const bw = isNarrow ? Math.min(vw - 32, 320) : 320;
+  const isNarrow = vw < 1024;
+  const bw = Math.min(vw - 32, 320);
   box.style.width = bw + 'px';
 
-  if (!step.target || step.pos === 'center') {
+  // iPad・スマホ、またはtarget無し → 常に中央
+  if (!step.target || step.pos === 'center' || isNarrow) {
     box.style.top = '50%';
     box.style.left = '50%';
     box.style.transform = 'translate(-50%, -50%)';
@@ -854,7 +862,12 @@ function positionStep(step) {
   }
 
   const el = document.querySelector(step.target);
-  if (!el) return;
+  if (!el) {
+    box.style.top = '50%';
+    box.style.left = '50%';
+    box.style.transform = 'translate(-50%, -50%)';
+    return;
+  }
 
   const r = el.getBoundingClientRect();
   const pad = 12;
@@ -866,22 +879,12 @@ function positionStep(step) {
   hl.style.height = r.height + 8 + 'px';
   hl.classList.add('active');
 
-  let bx, by;
-
-  if (isNarrow) {
-    // iPad / スマホ: 画面中央に表示
-    box.style.top = '50%';
-    box.style.left = '50%';
-    box.style.transform = 'translate(-50%, -50%)';
-    return;
-  } else {
-    // Desktop: ターゲットの右側 or 左側
-    bx = r.right + pad;
-    by = r.top - 10;
-    if (bx + bw > vw - pad) bx = r.left - bw - pad;
-    if (by + (box.offsetHeight || 220) > vh - pad) by = vh - (box.offsetHeight || 220) - pad;
-    if (by < pad) by = pad;
-  }
+  // Desktop: ターゲットの右側 or 左側
+  let bx = r.right + pad;
+  let by = r.top - 10;
+  if (bx + bw > vw - pad) bx = r.left - bw - pad;
+  if (by + (box.offsetHeight || 220) > vh - pad) by = vh - (box.offsetHeight || 220) - pad;
+  if (by < pad) by = pad;
 
   box.style.top = by + 'px';
   box.style.left = bx + 'px';
