@@ -167,16 +167,17 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
 /* TOUR */
 .tour-overlay{position:fixed;inset:0;background:rgba(5,10,25,.12);z-index:1000;display:none}
 .tour-overlay.active{display:block}
-.tour-wrap{position:fixed;z-index:1001;display:none;align-items:flex-end;gap:0;transition:opacity .25s ease,transform .25s ease}
+.tour-wrap{position:fixed;z-index:1001;display:none;align-items:flex-end;gap:0;transition:opacity .45s ease,transform .45s ease}
 .tour-wrap.tour-animating{opacity:0;transform:translateY(8px)}
-.tour-chara{width:120px;flex-shrink:0;align-self:flex-end;pointer-events:none;user-select:none;filter:drop-shadow(0 8px 16px rgba(5,10,25,.18));transition:opacity .2s ease}
+.tour-chara{width:120px;flex-shrink:0;align-self:flex-end;pointer-events:none;user-select:none;filter:drop-shadow(0 8px 16px rgba(5,10,25,.18));transition:opacity .3s ease}
 .tour-chara img{width:120px;display:block}
 /* 吹き出しbox */
 .tour-box{
-  background:#fff;border-radius:14px;padding:20px 20px 16px;width:300px;
+  background:#fff;border-radius:14px;padding:20px 20px 18px 20px;width:320px;
   box-shadow:0 8px 32px rgba(5,10,25,.18),0 2px 8px rgba(5,10,25,.08);
   max-height:80vh;overflow-y:auto;position:relative;
-  transition:opacity .2s ease,transform .2s ease;
+  transition:opacity .3s ease,transform .3s ease;
+  box-sizing:border-box;
 }
 /* 吹き出し三角（左向き・シャドウ付き） */
 .tour-box::after{
@@ -194,16 +195,16 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
 .tour-box h4{font-size:15px;font-weight:800;color:var(--navy);margin-bottom:8px;line-height:1.3}
 .tour-box p{font-size:13px;color:var(--gray-600);line-height:1.65;margin-bottom:14px}
 .tour-box .tip{background:var(--gray-100);border-left:3px solid var(--orange);padding:8px 12px;border-radius:0 6px 6px 0;font-size:12px;color:var(--navy);margin-bottom:14px}
-.tour-foot{display:flex;align-items:center;gap:8px;padding-right:4px}
-.tour-dots{display:flex;gap:5px;flex:1}
-.tour-dot{width:7px;height:7px;border-radius:50%;background:var(--gray-200);transition:background .2s}
+.tour-foot{display:flex;align-items:center;gap:6px}
+.tour-dots{display:flex;gap:5px;flex:1;min-width:0}
+.tour-dot{width:7px;height:7px;border-radius:50%;background:var(--gray-200);transition:background .2s;flex-shrink:0}
 .tour-dot.active{background:var(--orange)}
-.tour-prev,.tour-next{border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:'BIZ UDPGothic',sans-serif;transition:all .2s;flex-shrink:0}
+.tour-prev,.tour-next{border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:'BIZ UDPGothic',sans-serif;transition:all .2s;flex-shrink:0;white-space:nowrap}
 .tour-prev{background:var(--gray-100);color:var(--gray-600)}
 .tour-prev:hover{background:var(--gray-200)}
 .tour-next{background:var(--orange);color:#fff}
 .tour-next:hover{background:var(--orange-light)}
-.tour-skip{font-size:11px;color:var(--gray-400);cursor:pointer;padding:4px;text-decoration:underline;white-space:nowrap}
+.tour-skip{font-size:11px;color:var(--gray-400);cursor:pointer;padding:4px 2px;text-decoration:underline;white-space:nowrap;flex-shrink:0}
 .tour-highlight{position:fixed;border-radius:10px;box-shadow:0 0 0 4000px rgba(5,10,25,.25),0 0 0 3px var(--orange),0 0 16px rgba(240,90,26,.5);z-index:999;pointer-events:none;transition:all .4s cubic-bezier(.4,0,.2,1);display:none}
 .tour-highlight.active{display:block}
 /* HELP BTN */
@@ -906,7 +907,7 @@ function goStep(idx) {
       requestAnimationFrame(() => {
         wrap.classList.remove('tour-animating');
       });
-    }, 200);
+    }, 350);
   }
 }
 
@@ -921,7 +922,7 @@ function positionStep(step) {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
   const isNarrow = vw < 1100;
-  const bw = Math.min(vw - 32, 300);
+  const bw = Math.min(vw - 160, 320);  // キャラ幅120px+余白を除いた最大320px
   box.style.width = bw + 'px';
 
   // iPad・スマホ、またはtarget無し → 常に中央
