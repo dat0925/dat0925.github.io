@@ -36,7 +36,7 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
 #ttitle span{color:var(--gray-400);font-weight:400;font-size:13px;margin-left:8px}
 .dbadge{background:var(--gray-100);border:1px solid var(--gray-200);border-radius:6px;padding:5px 12px;font-size:12px;color:var(--gray-600);font-family:'Outfit',sans-serif}
 .etag{display:inline-flex;align-items:center;gap:4px;background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.25);border-radius:4px;padding:4px 10px;font-size:10px;font-family:'Outfit',sans-serif;font-weight:700;color:var(--cyan)}
-.tbtn{background:var(--orange);color:#fff;border:none;border-radius:7px;padding:7px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:'BIZ UDPGothic',sans-serif;transition:background .2s;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.tbtn{background:var(--orange);color:#fff;border:none;border-radius:7px;padding:0 16px;height:34px;font-size:13px;font-weight:700;cursor:pointer;font-family:'BIZ UDPGothic',sans-serif;transition:background .2s;display:flex;align-items:center;gap:6px;white-space:nowrap;flex-shrink:0}
 .tbtn:hover{background:var(--orange-light)}
 .page{display:none;padding:24px 28px;flex:1;animation:fu .35s ease both}
 .page.active{display:block}
@@ -207,7 +207,7 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
   <nav>
     <div class="ns">メイン</div>
     <div class="ni active" data-page="dashboard"><span class="ic">📊</span>ダッシュボード</div>
-    <div class="ni" data-page="stores"><span class="ic">🏪</span>店舗（<span class="gl" data-gl="sot" tabindex="0">SoT<span class="gl-icon">?</span></span>）管理<span class="nb w">3</span></div>
+    <div class="ni" data-page="stores"><span class="ic">🏪</span>店舗情報管理<span class="nb w">3</span></div>
     <div class="ns">配信・連携</div>
     <div class="ni" data-page="uberall"><span class="ic">🌐</span>配信（Uberall）<span class="nb">5</span></div>
     <div class="ni" data-page="gbp"><span class="ic">📍</span>Google 運用</div>
@@ -644,7 +644,7 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
 </div>
 
 <script>
-const pages={dashboard:{t:'ダッシュボード',s:'概要 / 全店舗',b:'＋ 店舗を追加'},stores:{t:'店舗（SoT）管理',s:'12店舗 | <span class="gl" data-gl="eo" tabindex="0">engine_owner<span class="gl-icon">?</span></span>: Uberall',b:'📥 CSVインポート'},uberall:{t:'配信（Uberall）',s:'Listings / サイテーション',b:'🔄 全店舗Sync'},gbp:{t:'Google 運用',s:'GBP Performance',b:'＋ 投稿を作成'},posts:{t:'投稿管理',s:'GBP投稿 / AI生成',b:'✏️ 新規投稿'},reviews:{t:'口コミ管理',s:'未返信 8件',b:'🤖 AI一括返信案'},ranking:{t:'競合・順位（MEOチェキ）',s:'日次順位更新',b:'＋ KW追加'},gsc:{t:'GSC・オーガニック',s:'Search Console API | AI Overviews含む',b:'📊 CSVエクスポート'},aio:{t:'AIO アシスト',s:'構造化データ / サイテーション / 計測',b:'🔄 チェック実行'},bookings:{t:'予約・コンバージョン',s:'自社予約API + GA4 MP',b:'📊 CSVエクスポート'},webhooks:{t:'Webhookログ',s:'全種別イベント',b:'🔄 再取得'},settings:{t:'API連携設定',s:'8サービス接続管理',b:'＋ 連携追加'},audit:{t:'監査ログ',s:'全操作記録',b:'📥 ログDL'}};
+const pages={dashboard:{t:'ダッシュボード',s:'概要 / 全店舗',b:'＋ 店舗を追加'},stores:{t:'店舗情報管理',s:'12店舗 | <span class="gl" data-gl="eo" tabindex="0">engine_owner<span class="gl-icon">?</span></span>: Uberall',b:'📥 CSVインポート'},uberall:{t:'配信（Uberall）',s:'Listings / サイテーション',b:'🔄 全店舗Sync'},gbp:{t:'Google 運用',s:'GBP Performance',b:'＋ 投稿を作成'},posts:{t:'投稿管理',s:'GBP投稿 / AI生成',b:'✏️ 新規投稿'},reviews:{t:'口コミ管理',s:'未返信 8件',b:'🤖 AI一括返信案'},ranking:{t:'競合・順位（MEOチェキ）',s:'日次順位更新',b:'＋ KW追加'},gsc:{t:'GSC・オーガニック',s:'Search Console API | AI Overviews含む',b:'📊 CSVエクスポート'},aio:{t:'AIO アシスト',s:'構造化データ / サイテーション / 計測',b:'🔄 チェック実行'},bookings:{t:'予約・コンバージョン',s:'自社予約API + GA4 MP',b:'📊 CSVエクスポート'},webhooks:{t:'Webhookログ',s:'全種別イベント',b:'🔄 再取得'},settings:{t:'API連携設定',s:'8サービス接続管理',b:'＋ 連携追加'},audit:{t:'監査ログ',s:'全操作記録',b:'📥 ログDL'}};
 function nav(id){
   if(!pages[id])return;
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -683,9 +683,9 @@ const TOUR_STEPS = [
     pos: 'right'
   },
   {
-    title: '🏪 店舗（SoT）管理',
+    title: '🏪 店舗情報管理',
     body: '全店舗のNAP情報（名前・住所・電話・URL）を管理します。ここで更新した情報がUberall経由で125以上のディレクトリに自動配信されます。赤ハイライト行＝欠損フィールドあり。',
-    tip: '💡 <span class="gl" data-gl="eo" tabindex="0">engine_owner<span class="gl-icon">?</span></span>（Uberall）以外から直接GBPを変更しないでください。',
+    tip: '💡 Uberall以外から直接GBPを変更しないでください。',
     target: '[data-page="stores"]',
     page: 'stores',
     pos: 'right'
@@ -869,9 +869,11 @@ function positionStep(step) {
   let bx, by;
 
   if (isNarrow) {
-    // iPad / スマホ: 画面上部に固定（サイドバーを隠さない位置）
-    bx = (vw - bw) / 2;
-    by = pad + 8;
+    // iPad / スマホ: 画面中央に表示
+    box.style.top = '50%';
+    box.style.left = '50%';
+    box.style.transform = 'translate(-50%, -50%)';
+    return;
   } else {
     // Desktop: ターゲットの右側 or 左側
     bx = r.right + pad;
