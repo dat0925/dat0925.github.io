@@ -161,9 +161,9 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
 ::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--gray-200);border-radius:10px}
 
 /* TOUR */
-.tour-overlay{position:fixed;inset:0;background:rgba(5,10,25,.6);z-index:1000;display:none;backdrop-filter:blur(2px)}
+.tour-overlay{position:fixed;inset:0;background:rgba(5,10,25,.28);z-index:1000;display:none;backdrop-filter:blur(1px)}
 .tour-overlay.active{display:block}
-.tour-box{position:fixed;z-index:1001;background:#fff;border-radius:14px;padding:24px;width:320px;box-shadow:0 24px 60px rgba(5,10,25,.25);animation:tb .3s cubic-bezier(.34,1.56,.64,1)}
+.tour-box{position:fixed;z-index:1001;background:#fff;border-radius:14px;padding:24px;width:320px;box-shadow:0 24px 60px rgba(5,10,25,.25);animation:tb .3s cubic-bezier(.34,1.56,.64,1);max-height:85vh;overflow-y:auto}
 @keyframes tb{from{opacity:0;transform:scale(.88) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
 .tour-step-badge{font-family:'Outfit',sans-serif;font-size:11px;font-weight:700;color:var(--orange);background:var(--orange-dim);padding:3px 8px;border-radius:20px;display:inline-block;margin-bottom:10px}
 .tour-box h4{font-size:16px;font-weight:800;color:var(--navy);margin-bottom:8px;line-height:1.3}
@@ -179,7 +179,7 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
 .tour-next{background:var(--orange);color:#fff}
 .tour-next:hover{background:var(--orange-light)}
 .tour-skip{font-size:11px;color:var(--gray-400);cursor:pointer;padding:4px;text-decoration:underline;white-space:nowrap}
-.tour-highlight{position:fixed;border-radius:10px;box-shadow:0 0 0 4000px rgba(5,10,25,.55),0 0 0 3px var(--orange),0 0 20px var(--orange);z-index:999;pointer-events:none;transition:all .4s cubic-bezier(.4,0,.2,1);display:none}
+.tour-highlight{position:fixed;border-radius:10px;box-shadow:0 0 0 4000px rgba(5,10,25,.25),0 0 0 3px var(--orange),0 0 16px rgba(240,90,26,.5);z-index:999;pointer-events:none;transition:all .4s cubic-bezier(.4,0,.2,1);display:none}
 .tour-highlight.active{display:block}
 /* HELP BTN */
 .help-btn{position:fixed;bottom:24px;right:24px;width:44px;height:44px;border-radius:50%;background:var(--navy);color:#fff;border:none;font-size:20px;cursor:pointer;box-shadow:0 4px 16px rgba(13,27,62,.35);z-index:200;transition:transform .2s,box-shadow .2s;display:flex;align-items:center;justify-content:center}
@@ -828,8 +828,13 @@ function positionStep(step) {
 
   ov.classList.add('active');
 
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const isNarrow = vw < 900; // iPad縦・スマホ
+  const bw = isNarrow ? Math.min(vw - 32, 320) : 320;
+  box.style.width = bw + 'px';
+
   if (!step.target || step.pos === 'center') {
-    // center
     box.style.top = '50%';
     box.style.left = '50%';
     box.style.transform = 'translate(-50%, -50%)';
@@ -837,27 +842,33 @@ function positionStep(step) {
     return;
   }
 
-  // find target element
   const el = document.querySelector(step.target);
   if (!el) return;
 
   const r = el.getBoundingClientRect();
-  const bw = 320, bh = 200;
-  const pad = 16;
+  const pad = 12;
 
-  // highlight
+  // highlight ring
   hl.style.left = r.left - 4 + 'px';
   hl.style.top = r.top - 4 + 'px';
   hl.style.width = r.width + 8 + 'px';
   hl.style.height = r.height + 8 + 'px';
   hl.classList.add('active');
 
-  // box to right of sidebar
-  let bx = r.right + pad;
-  let by = r.top - 10;
-  if (bx + bw > window.innerWidth - pad) bx = r.left - bw - pad;
-  if (by + bh > window.innerHeight - pad) by = window.innerHeight - bh - pad;
-  if (by < pad) by = pad;
+  let bx, by;
+
+  if (isNarrow) {
+    // iPad / スマホ: 画面上部に固定（サイドバーを隠さない位置）
+    bx = (vw - bw) / 2;
+    by = pad + 8;
+  } else {
+    // Desktop: ターゲットの右側 or 左側
+    bx = r.right + pad;
+    by = r.top - 10;
+    if (bx + bw > vw - pad) bx = r.left - bw - pad;
+    if (by + (box.offsetHeight || 220) > vh - pad) by = vh - (box.offsetHeight || 220) - pad;
+    if (by < pad) by = pad;
+  }
 
   box.style.top = by + 'px';
   box.style.left = bx + 'px';
