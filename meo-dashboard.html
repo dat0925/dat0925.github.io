@@ -175,18 +175,22 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
 .tour-box{
   background:#fff;border-radius:14px;padding:20px 20px 18px 20px;width:320px;
   box-shadow:0 8px 32px rgba(5,10,25,.18),0 2px 8px rgba(5,10,25,.08);
-  max-height:80vh;overflow-y:auto;position:relative;
+  max-height:80vh;overflow:visible;position:relative;
   transition:opacity .3s ease,transform .3s ease;
   box-sizing:border-box;
 }
-/* 吹き出し三角（左向き・シャドウ付き） */
-.tour-box::after{
-  content:'';position:absolute;bottom:32px;left:-16px;
+/* スクロールが必要な場合の内側ラッパー */
+.tour-box-inner{max-height:calc(80vh - 40px);overflow-y:auto;}
+/* 吹き出し三角：キャラクター側（左）に向けて突き出す */
+.tour-box::before{
+  content:'';position:absolute;
+  left:-14px;top:50%;transform:translateY(-50%);
   width:0;height:0;
-  border-top:10px solid transparent;
-  border-bottom:10px solid transparent;
-  border-right:16px solid #fff;
-  filter:drop-shadow(-3px 1px 3px rgba(5,10,25,.12));
+  border-top:12px solid transparent;
+  border-bottom:12px solid transparent;
+  border-right:14px solid #fff;
+  filter:drop-shadow(-2px 0px 3px rgba(5,10,25,.10));
+  pointer-events:none;
 }
 @keyframes tb{from{opacity:0;transform:scale(.92) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
 .tour-chara-switch{position:absolute;top:10px;right:10px;background:var(--gray-100);border:none;border-radius:20px;padding:3px 10px;font-size:10px;color:var(--gray-600);cursor:pointer;font-family:'BIZ UDPGothic',sans-serif;transition:background .2s}
@@ -814,21 +818,23 @@ function buildTourUI() {
   box.className = 'tour-box';
   box.id = 'tour-box';
   box.innerHTML = `
-    <button class="tour-chara-switch" id="tour-chara-switch">${tourChara === 'men' ? '👩 女性に変更' : '👨 男性に変更'}</button>
-    <div class="tour-step-badge" id="tour-badge">Step 1 / ${TOUR_STEPS.length}</div>
-    <h4 id="tour-title"></h4>
-    <p id="tour-body"></p>
-    <div class="tip" id="tour-tip"></div>
-    <div id="tour-notion-wrap" style="display:none">
-      <a class="notion-link" href="https://www.notion.so/33985cf70c4c815fa74fffcc4cd59000" target="_blank">
-        📋 Notion操作ガイドを開く →
-      </a>
-    </div>
-    <div class="tour-foot">
-      <div class="tour-dots" id="tour-dots"></div>
-      <span class="tour-skip" id="tour-skip">スキップ</span>
-      <button class="tour-prev" id="tour-prev">戻る</button>
-      <button class="tour-next" id="tour-next">次へ</button>
+    <div class="tour-box-inner">
+      <button class="tour-chara-switch" id="tour-chara-switch">${tourChara === 'men' ? '👩 女性に変更' : '👨 男性に変更'}</button>
+      <div class="tour-step-badge" id="tour-badge">Step 1 / ${TOUR_STEPS.length}</div>
+      <h4 id="tour-title"></h4>
+      <p id="tour-body"></p>
+      <div class="tip" id="tour-tip"></div>
+      <div id="tour-notion-wrap" style="display:none">
+        <a class="notion-link" href="https://www.notion.so/33985cf70c4c815fa74fffcc4cd59000" target="_blank">
+          📋 Notion操作ガイドを開く →
+        </a>
+      </div>
+      <div class="tour-foot">
+        <div class="tour-dots" id="tour-dots"></div>
+        <span class="tour-skip" id="tour-skip">スキップ</span>
+        <button class="tour-prev" id="tour-prev">戻る</button>
+        <button class="tour-next" id="tour-next">次へ</button>
+      </div>
     </div>`;
 
   wrap.appendChild(chara);
