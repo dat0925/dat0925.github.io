@@ -39,7 +39,7 @@ nav{flex:1;padding:8px 0;overflow-y:scroll;-webkit-overflow-scrolling:touch;min-
 .doc-link{display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:6px;font-size:12px;font-weight:700;font-family:'BIZ UDPGothic',sans-serif;text-decoration:none;transition:background .2s;white-space:nowrap;flex-shrink:0}
 .doc-link.manual{background:rgba(13,27,62,.07);color:var(--navy);border:1px solid var(--gray-200)}.doc-link.manual:hover{background:rgba(13,27,62,.13)}
 .doc-link.spec{background:var(--orange-dim);color:var(--orange);border:1px solid rgba(240,90,26,.25)}.doc-link.spec:hover{background:rgba(240,90,26,.25)}
-.tbtn{background:var(--orange);color:#fff;border:none;border-radius:7px;padding:0 16px;height:34px;font-size:13px;font-weight:700;cursor:pointer;font-family:'BIZ UDPGothic',sans-serif;transition:background .2s;display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;flex-shrink:0}#tbtn{min-width:180px}
+.tbtn{background:var(--orange);color:#fff;border:none;border-radius:7px;padding:0 16px;height:34px;font-size:13px;font-weight:700;cursor:pointer;font-family:'BIZ UDPGothic',sans-serif;transition:background .2s;display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;flex-shrink:0}
 .tbtn:hover{background:var(--orange-light)}
 .page{display:none;padding:24px 28px;flex:1;opacity:0;transform:translateY(10px)}
 .page.active{display:block}
@@ -679,7 +679,7 @@ nav{flex:1;padding:8px 0;overflow-y:scroll;-webkit-overflow-scrolling:touch;min-
   <!-- USER LIST PAGE -->
   <div class="page" id="pg-user-list">
     <div class="card">
-      <div class="ch"><h3>👥 ユーザー一覧</h3><span class="bdg bb">3名登録中</span><button class="tbtn" style="height:30px;font-size:12px;padding:0 12px;margin-left:auto" onclick="nav('user-new')">＋ 新規作成</button></div>
+      <div class="ch"><h3>👥 ユーザー一覧</h3><span class="bdg bb">3名登録中</span></div>
       <div style="padding:0">
         <table class="dt">
           <thead><tr><th style="padding-left:20px">ユーザー</th><th>メールアドレス</th><th>ロール</th><th>最終ログイン</th><th>ステータス</th><th style="padding-right:20px">操作</th></tr></thead>
@@ -771,7 +771,7 @@ nav{flex:1;padding:8px 0;overflow-y:scroll;-webkit-overflow-scrolling:touch;min-
 </div>
 
 <script>
-const pages={dashboard:{t:'ダッシュボード',s:'概要 / 全店舗',b:'＋ 店舗を追加'},stores:{t:'店舗情報管理',s:'12店舗 | <span class="gl" data-gl="eo" tabindex="0">engine_owner<span class="gl-icon">?</span></span>: Uberall',b:'📥 CSVインポート'},uberall:{t:'配信（Uberall）',s:'Listings / サイテーション',b:'🔄 全店舗Sync'},gbp:{t:'Google 運用',s:'GBP Performance',b:'＋ 投稿を作成'},posts:{t:'投稿管理',s:'GBP投稿 / AI生成',b:'✏️ 新規投稿'},reviews:{t:'口コミ管理',s:'未返信 8件',b:'🤖 AI一括返信案'},ranking:{t:'競合・順位（MEOチェキ）',s:'日次順位更新',b:'＋ KW追加'},gsc:{t:'GSC・オーガニック',s:'Search Console API | AI Overviews含む',b:'📊 CSVエクスポート'},aio:{t:'AIO アシスト',s:'構造化データ / サイテーション / 計測',b:'🔄 チェック実行'},bookings:{t:'予約・コンバージョン',s:'自社予約API + GA4 MP',b:'📊 CSVエクスポート'},webhooks:{t:'Webhookログ',s:'全種別イベント',b:'🔄 再取得'},settings:{t:'API連携設定',s:'8サービス接続管理',b:'＋ 連携追加'},audit:{t:'監査ログ',s:'全操作記録',b:'📥 ログDL'},'user-list':{t:'ユーザー管理',s:'ユーザー一覧',b:'＋ 新規作成'},'user-new':{t:'ユーザー管理',s:'新規ユーザー作成',b:'＋ 新規作成'}};
+const pages={dashboard:{t:'ダッシュボード',s:'概要 / 全店舗',b:'＋ 店舗を追加'},stores:{t:'店舗情報管理',s:'12店舗 | <span class="gl" data-gl="eo" tabindex="0">engine_owner<span class="gl-icon">?</span></span>: Uberall',b:'📥 CSVインポート'},uberall:{t:'配信（Uberall）',s:'Listings / サイテーション',b:''},gbp:{t:'Google 運用',s:'GBP Performance',b:'＋ 投稿を作成'},posts:{t:'投稿管理',s:'GBP投稿 / AI生成',b:'✏️ 新規投稿'},reviews:{t:'口コミ管理',s:'未返信 8件',b:'🤖 AI一括返信案'},ranking:{t:'競合・順位（MEOチェキ）',s:'日次順位更新',b:'＋ KW追加'},gsc:{t:'GSC・オーガニック',s:'Search Console API | AI Overviews含む',b:'📊 CSVエクスポート'},aio:{t:'AIO アシスト',s:'構造化データ / サイテーション / 計測',b:'🔄 チェック実行'},bookings:{t:'予約・コンバージョン',s:'自社予約API + GA4 MP',b:'📊 CSVエクスポート'},webhooks:{t:'Webhookログ',s:'全種別イベント',b:'🔄 再取得'},settings:{t:'API連携設定',s:'8サービス接続管理',b:'＋ 連携追加'},audit:{t:'監査ログ',s:'全操作記録',b:'📥 ログDL'},'user-list':{t:'ユーザー管理',s:'ユーザー一覧',b:''},'user-new':{t:'ユーザー管理',s:'新規ユーザー作成',b:'＋ 新規作成'}};
 function nav(id){
   if(!pages[id])return;
   document.querySelectorAll('.page').forEach(p=>{p.classList.remove('active');p.classList.remove('page-in');});
@@ -786,7 +786,9 @@ function nav(id){
   if(ni)ni.classList.add('active');
   const p=pages[id];
   document.getElementById('ttitle').innerHTML=p.t+'<span>'+p.s+'</span>';
-  document.getElementById('tbtn').textContent=p.b;
+  const tbtn=document.getElementById('tbtn');
+  tbtn.textContent=p.b;
+  tbtn.style.display=p.b?'':'none';
 }
 document.querySelectorAll('.ni').forEach(i=>i.addEventListener('click',()=>nav(i.dataset.page)));
 document.querySelectorAll('.tabs').forEach(tr=>{
