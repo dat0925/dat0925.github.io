@@ -9,7 +9,7 @@
 <style>
 :root{--navy:#0D1B3E;--navy-mid:#152347;--navy-light:#1E3160;--navy-border:#2A4070;--orange:#F05A1A;--orange-light:#FF7A45;--orange-dim:rgba(240,90,26,.15);--white:#FFF;--gray-100:#F4F6FA;--gray-200:#E8ECF4;--gray-400:#9AABC8;--gray-600:#5A6E94;--green:#22C55E;--yellow:#FACC15;--red:#EF4444;--cyan:#06B6D4;--sw:240px;--hh:60px}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'BIZ UDPGothic',sans-serif;background:var(--gray-100);color:var(--navy);display:flex;min-height:100vh;overflow-x:hidden}
+body{font-family:'BIZ UDPGothic',sans-serif;background:var(--gray-100);color:var(--navy);display:flex;min-height:100vh;min-height:-webkit-fill-available;overflow-x:hidden}
 .sidebar{width:var(--sw);min-height:100vh;background:var(--navy);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow:hidden}
 .sidebar::before{content:'';position:absolute;top:-80px;right:-80px;width:220px;height:220px;background:radial-gradient(circle,rgba(240,90,26,.18) 0%,transparent 70%);pointer-events:none}
 .logo{padding:20px 20px 16px;border-bottom:1px solid var(--navy-border)}
@@ -30,16 +30,17 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
 .nb.w{background:var(--yellow);color:var(--navy)}
 .sbot{border-top:1px solid var(--navy-border);padding:12px 16px;display:flex;align-items:center;gap:10px}
 .av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--orange),#FF7A45);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;font-family:'Outfit',sans-serif}
-.main{margin-left:var(--sw);flex:1;display:flex;flex-direction:column;min-height:100vh}
-.topbar{height:var(--hh);background:#fff;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;padding:0 28px;gap:16px;position:sticky;top:0;z-index:90}
+.main{margin-left:var(--sw);flex:1;display:flex;flex-direction:column;min-height:100vh;min-height:-webkit-fill-available}
+.topbar{height:var(--hh);background:#fff;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;padding:0 28px;gap:16px;position:-webkit-sticky;position:sticky;top:0;z-index:90}
 #ttitle{font-family:'Outfit',sans-serif;font-weight:700;font-size:16px;color:var(--navy);flex:1}
 #ttitle span{color:var(--gray-400);font-weight:400;font-size:13px;margin-left:8px}
 .dbadge{background:var(--gray-100);border:1px solid var(--gray-200);border-radius:6px;padding:5px 12px;font-size:12px;color:var(--gray-600);font-family:'Outfit',sans-serif}
 .etag{display:inline-flex;align-items:center;gap:4px;background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.25);border-radius:4px;padding:4px 10px;font-size:10px;font-family:'Outfit',sans-serif;font-weight:700;color:var(--cyan)}
 .tbtn{background:var(--orange);color:#fff;border:none;border-radius:7px;padding:7px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:'BIZ UDPGothic',sans-serif;transition:background .2s;display:flex;align-items:center;gap:6px;white-space:nowrap}
 .tbtn:hover{background:var(--orange-light)}
-.page{display:none;padding:24px 28px;flex:1;animation:fu .35s ease both}
-.page.active{display:block}
+.page{display:none;padding:24px 28px;flex:1}
+.page.active{display:block;-webkit-animation:fu .35s ease both;animation:fu .35s ease both}
+@-webkit-keyframes fu{from{opacity:0;-webkit-transform:translateY(14px)}to{opacity:1;-webkit-transform:translateY(0)}}
 @keyframes fu{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 .alert-bar{background:linear-gradient(90deg,rgba(240,90,26,.08) 0%,transparent 100%);border:1px solid rgba(240,90,26,.3);border-radius:8px;padding:10px 16px;display:flex;align-items:center;gap:12px;margin-bottom:20px}
 .alert-bar .at{font-size:13px;color:var(--navy);flex:1}
@@ -207,7 +208,7 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
   /* サイドバー非表示 */
   .sidebar { display: none !important; }
   /* メインをフルワイド */
-  .main { margin-left: 0; margin-top: var(--hh); }
+  .main { margin-left: 0; margin-top: 0; }
   /* トップバー */
   .topbar { padding: 0 13px; gap: 8px; }
   #ttitle span, .dbadge, .etag { display: none; }
