@@ -187,6 +187,17 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
 /* NOTION LINK */
 .notion-link{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--gray-600);padding:5px 10px;border:1px solid var(--gray-200);border-radius:6px;text-decoration:none;transition:all .2s;margin-top:8px}
 .notion-link:hover{background:var(--gray-100);color:var(--navy)}
+
+/* GLOSSARY TOOLTIP */
+.gl{display:inline-flex;align-items:center;gap:2px;position:relative;cursor:pointer}
+.gl-icon{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:var(--gray-400);color:#fff;font-size:9px;font-weight:800;font-family:'Outfit',sans-serif;vertical-align:middle;margin-left:3px;flex-shrink:0;transition:background .2s;user-select:none}
+.gl:hover .gl-icon,.gl:focus .gl-icon{background:var(--orange)}
+.gl-pop{position:fixed;z-index:2000;background:var(--navy);color:#fff;border-radius:10px;padding:12px 14px;width:240px;font-size:12px;line-height:1.65;box-shadow:0 8px 32px rgba(5,10,25,.35);pointer-events:none;opacity:0;transform:translateY(6px) scale(.96);transition:opacity .18s,transform .18s;font-family:'BIZ UDPGothic',sans-serif}
+.gl-pop.show{opacity:1;transform:translateY(0) scale(1)}
+.gl-pop .gp-term{font-family:'Outfit',sans-serif;font-weight:800;font-size:13px;color:var(--orange);margin-bottom:5px}
+.gl-pop .gp-en{font-size:10px;color:var(--gray-400);margin-bottom:6px;font-family:'Outfit',sans-serif}
+.gl-pop .gp-body{color:rgba(255,255,255,.88)}
+.gl-pop .gp-ex{margin-top:7px;padding-top:7px;border-top:1px solid rgba(255,255,255,.1);font-size:11px;color:var(--cyan)}
 </style>
 </head>
 <body>
@@ -196,7 +207,7 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
   <nav>
     <div class="ns">メイン</div>
     <div class="ni active" data-page="dashboard"><span class="ic">📊</span>ダッシュボード</div>
-    <div class="ni" data-page="stores"><span class="ic">🏪</span>店舗（SoT）管理<span class="nb w">3</span></div>
+    <div class="ni" data-page="stores"><span class="ic">🏪</span>店舗（<span class="gl" data-gl="sot" tabindex="0">SoT<span class="gl-icon">?</span></span>）管理<span class="nb w">3</span></div>
     <div class="ns">配信・連携</div>
     <div class="ni" data-page="uberall"><span class="ic">🌐</span>配信（Uberall）<span class="nb">5</span></div>
     <div class="ni" data-page="gbp"><span class="ic">📍</span>Google 運用</div>
@@ -205,7 +216,7 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
     <div class="ns">分析・競合</div>
     <div class="ni" data-page="ranking"><span class="ic">📈</span>競合・順位（MEOチェキ）</div>
     <div class="ni" data-page="gsc"><span class="ic">🔍</span>GSC・オーガニック</div>
-    <div class="ni" data-page="aio"><span class="ic">🤖</span>AIO アシスト</div>
+    <div class="ni" data-page="aio"><span class="ic">🤖</span><span class="gl" data-gl="aio-term" tabindex="0">AIO<span class="gl-icon">?</span></span> アシスト</div>
     <div class="ns">予約・CV</div>
     <div class="ni" data-page="bookings"><span class="ic">📆</span>予約・コンバージョン</div>
     <div class="ni" data-page="webhooks"><span class="ic">🔔</span>Webhookログ</div>
@@ -231,8 +242,8 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
       <div class="kc p"><span class="ki">📆</span><div class="kl">今月の予約数（確定）</div><div class="kv">847<span class="ku">件</span></div><div class="kd up">▲ +12.4%</div></div>
       <div class="kc"><span class="ki">📞</span><div class="kl">GBP 通話クリック（月）</div><div class="kv">2,341</div><div class="kd up">▲ +8.1%</div></div>
       <div class="kc"><span class="ki">🗺</span><div class="kl">GBP 経路クリック</div><div class="kv">1,887</div><div class="kd up">▲ +5.3%</div></div>
-      <div class="kc"><span class="ki">🔍</span><div class="kl">GSC 平均掲載順位</div><div class="kv">4.2<span class="ku">位</span></div><div class="kd up">▲ 改善</div></div>
-      <div class="kc"><span class="ki">🌐</span><div class="kl">Listing 同期率</div><div class="kv">91<span class="ku">%</span></div><div class="kd wn">⚠ 未接続5</div></div>
+      <div class="kc"><span class="ki">🔍</span><div class="kl"><span class="gl" data-gl="gsc-term" tabindex="0">GSC<span class="gl-icon">?</span></span> 平均掲載順位</div><div class="kv">4.2<span class="ku">位</span></div><div class="kd up">▲ 改善</div></div>
+      <div class="kc"><span class="ki">🌐</span><div class="kl"><span class="gl" data-gl="listing" tabindex="0">Listing<span class="gl-icon">?</span></span> 同期率</div><div class="kv">91<span class="ku">%</span></div><div class="kd wn">⚠ 未接続5</div></div>
     </div>
     <div class="g2">
       <div class="card">
@@ -240,7 +251,7 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
         <div class="cb">
           <div class="cwrap"><div class="ccol"><div class="cbar or" style="height:52%"></div></div><div class="ccol"><div class="cbar or" style="height:61%"></div></div><div class="ccol"><div class="cbar or" style="height:55%"></div></div><div class="ccol"><div class="cbar or" style="height:70%"></div></div><div class="ccol"><div class="cbar or" style="height:64%"></div></div><div class="ccol"><div class="cbar or" style="height:82%"></div></div><div class="ccol"><div class="cbar or" style="height:77%"></div></div><div class="ccol"><div class="cbar or" style="height:95%"></div></div></div>
           <div class="cx"><span>W1</span><span>W2</span><span>W3</span><span>W4</span><span>W5</span><span>W6</span><span>W7</span><span>W8</span></div>
-          <div class="cleg"><div class="cli"><div class="cld" style="background:var(--orange)"></div>予約数 / 週</div><div style="margin-left:auto;font-size:10px;color:var(--gray-400)">自社予約DB + GA4 MP</div></div>
+          <div class="cleg"><div class="cli"><div class="cld" style="background:var(--orange)"></div>予約数 / 週</div><div style="margin-left:auto;font-size:10px;color:var(--gray-400)">自社予約DB + <span class="gl" data-gl="ga4mp" tabindex="0">GA4 MP<span class="gl-icon">?</span></span></div></div>
         </div>
       </div>
       <div class="card">
@@ -260,10 +271,10 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
   <div class="page" id="pg-stores">
     <div class="kgrid">
       <div class="kc p"><span class="ki">🏪</span><div class="kl">管理店舗数</div><div class="kv">12<span class="ku">店</span></div><div class="kd up">▲ +1</div></div>
-      <div class="kc"><span class="ki">✅</span><div class="kl">NAP 整合率</div><div class="kv">95<span class="ku">%</span></div><div class="kd up">▲ +2%</div></div>
+      <div class="kc"><span class="ki">✅</span><div class="kl"><span class="gl" data-gl="nap" tabindex="0">NAP<span class="gl-icon">?</span></span> 整合率</div><div class="kv">95<span class="ku">%</span></div><div class="kd up">▲ +2%</div></div>
       <div class="kc"><span class="ki">⚠️</span><div class="kl">欠損フィールド</div><div class="kv">2<span class="ku">店</span></div><div class="kd dn">要対応</div></div>
       <div class="kc"><span class="ki">🔄</span><div class="kl">Uberall同期済</div><div class="kv">10<span class="ku">店</span></div><div class="kd wn">2店処理中</div></div>
-      <div class="kc"><span class="ki">🔑</span><div class="kl">engine_owner</div><div class="kv" style="font-size:16px">Uberall</div><div class="kd up">CORE_NAP</div></div>
+      <div class="kc"><span class="ki">🔑</span><div class="kl"><span class="gl" data-gl="eo" tabindex="0">engine_owner<span class="gl-icon">?</span></span></div><div class="kv" style="font-size:16px">Uberall</div><div class="kd up">CORE_NAP</div></div>
     </div>
     <div class="card">
       <div class="ch"><h3>🏪 店舗一覧（SoT）</h3><span class="bdg bb">12店舗</span><button class="tbtn" style="margin-left:auto;padding:5px 12px;font-size:12px">📥 CSVインポート</button></div>
@@ -278,7 +289,7 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
             <tr><td style="padding-left:20px;font-weight:700">上野店</td><td style="font-size:12px;color:var(--gray-600)">東京都台東区…</td><td style="font-size:12px">03-XXXX-0005</td><td><span class="kch">カフェ</span></td><td><span class="bdg bb">Uberall</span></td><td><span class="bdg bg">同期済</span></td><td style="padding-right:20px;color:var(--green);font-size:12px">なし</td></tr>
           </tbody>
         </table>
-        <div style="padding:10px 20px;border-top:1px solid var(--gray-200);font-size:11px;color:var(--gray-400)">12店舗中5件表示 | CORE_NAP writer = Uberall（engine_owner）</div>
+        <div style="padding:10px 20px;border-top:1px solid var(--gray-200);font-size:11px;color:var(--gray-400)">12店舗中5件表示 | CORE_NAP writer = Uberall（<span class="gl" data-gl="eo" tabindex="0">engine_owner<span class="gl-icon">?</span></span>）</div>
       </div>
     </div>
   </div>
@@ -294,7 +305,7 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
     </div>
     <div class="g2">
       <div class="card">
-        <div class="ch"><h3>📡 Listing 同期状態</h3><span class="bdg bo">Uberall API</span></div>
+        <div class="ch"><h3>📡 <span class="gl" data-gl="listing" tabindex="0">Listing<span class="gl-icon">?</span></span> 同期状態</h3><span class="bdg bo">Uberall API</span></div>
         <div class="cb">
           <div class="lgrid">
             <div class="ls"><div class="ln lg">94</div><div class="ll">同期済<br>ディレクトリ</div></div>
@@ -318,7 +329,7 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
       </div>
     </div>
     <div class="card">
-      <div class="ch"><h3>🔔 Webhook イベントログ</h3><span class="bdg bb">直近20件</span></div>
+      <div class="ch"><h3>🔔 <span class="gl" data-gl="webhook" tabindex="0">Webhook<span class="gl-icon">?</span></span> イベントログ</h3><span class="bdg bb">直近20件</span></div>
       <div class="cb" style="padding:0 20px">
         <div class="whi"><div class="wd wok"></div><div class="we">LISTING_UPDATED</div><div class="ws">渋谷本店 / Google</div><div class="wt">09:47</div></div>
         <div class="whi"><div class="wd wok"></div><div class="we">LISTING_SYNCED</div><div class="ws">新宿店 / Yahoo!ロコ</div><div class="wt">09:32</div></div>
@@ -382,7 +393,7 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
       <div class="kc"><span class="ki">🏪</span><div class="kl">競合比較対象</div><div class="kv">3<span class="ku">店</span></div><div class="kd wn">MEOチェキ</div></div>
     </div>
     <div class="card">
-      <div class="ch"><h3>📈 キーワード順位一覧（MEOチェキ API）</h3><span class="bdg bo">日次更新</span><span style="font-size:11px;color:var(--gray-400);margin-left:8px">ソース: MEOチェキ / 地点: 渋谷・新宿・豊島区</span></div>
+      <div class="ch"><h3>📈 キーワード順位一覧（<span class="gl" data-gl="meocheki" tabindex="0">MEOチェキ<span class="gl-icon">?</span></span> API）</h3><span class="bdg bo">日次更新</span><span style="font-size:11px;color:var(--gray-400);margin-left:8px">ソース: MEOチェキ / 地点: 渋谷・新宿・豊島区</span></div>
       <div class="tabs"><div class="tab active">ローカルパック</div><div class="tab">Google Maps</div><div class="tab">Web検索</div></div>
       <div style="padding:0">
         <table class="dt">
@@ -440,27 +451,27 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
   <!-- AIO -->
   <div class="page" id="pg-aio">
     <div class="kgrid">
-      <div class="kc p"><span class="ki">🤖</span><div class="kl">AIO対策スコア</div><div class="kv">78<span class="ku">点</span></div><div class="kd wn">目標90点</div></div>
+      <div class="kc p"><span class="ki">🤖</span><div class="kl"><span class="gl" data-gl="aio-term" tabindex="0">AIO<span class="gl-icon">?</span></span>対策スコア</div><div class="kv">78<span class="ku">点</span></div><div class="kd wn">目標90点</div></div>
       <div class="kc"><span class="ki">✅</span><div class="kl">NAP 整合性</div><div class="kv" style="font-size:16px">OK</div><div class="kd up">全店舗一致</div></div>
-      <div class="kc"><span class="ki">🏷</span><div class="kl">JSON-LD 適用率</div><div class="kv">11<span class="ku">/12</span></div><div class="kd wn">1店差分あり</div></div>
+      <div class="kc"><span class="ki">🏷</span><div class="kl"><span class="gl" data-gl="jsonld" tabindex="0">JSON-LD<span class="gl-icon">?</span></span> 適用率</div><div class="kv">11<span class="ku">/12</span></div><div class="kd wn">1店差分あり</div></div>
       <div class="kc"><span class="ki">🌐</span><div class="kl">サイテーション同期率</div><div class="kv">91<span class="ku">%</span></div><div class="kd wn">5件未接続</div></div>
       <div class="kc"><span class="ki">📅</span><div class="kl">予約導線 設定済</div><div class="kv">12<span class="ku">/12</span></div><div class="kd up">全店舗OK</div></div>
     </div>
     <div class="g2">
       <div class="card">
-        <div class="ch"><h3>🤖 AIO 対策チェック</h3></div>
+        <div class="ch"><h3>🤖 <span class="gl" data-gl="aio-term" tabindex="0">AIO<span class="gl-icon">?</span></span> 対策チェック</h3></div>
         <div class="cb" style="padding:0 20px">
-          <div class="ai"><span style="font-size:18px">📋</span><div class="ain"><div class="ait">NAP 整合性（全ディレクトリ）</div><div class="aid">名称・住所・電話・URLがUberall経由で一致</div></div><div class="ais sok">✓ OK</div></div>
-          <div class="ai"><span style="font-size:18px">🏷</span><div class="ain"><div class="ait">LocalBusiness JSON-LD</div><div class="aid">品川店で差分あり — 営業時間変更未反映</div></div><div class="ais swn">⚠ 要更新</div></div>
+          <div class="ai"><span style="font-size:18px">📋</span><div class="ain"><div class="ait"><span class="gl" data-gl="nap" tabindex="0">NAP<span class="gl-icon">?</span></span> 整合性（全ディレクトリ）</div><div class="aid">名称・住所・電話・URLがUberall経由で一致</div></div><div class="ais sok">✓ OK</div></div>
+          <div class="ai"><span style="font-size:18px">🏷</span><div class="ain"><div class="ait">LocalBusiness <span class="gl" data-gl="jsonld" tabindex="0">JSON-LD<span class="gl-icon">?</span></span></div><div class="aid">品川店で差分あり — 営業時間変更未反映</div></div><div class="ais swn">⚠ 要更新</div></div>
           <div class="ai"><span style="font-size:18px">🌐</span><div class="ain"><div class="ait">サイテーション網（Uberall 125+）</div><div class="aid">91%同期済 / 5件未接続あり</div></div><div class="ais swn">⚠ 要対応</div></div>
-          <div class="ai"><span style="font-size:18px">📅</span><div class="ain"><div class="ait">予約導線 actionLinks + UTM</div><div class="aid">全店舗設定済 / utm_medium=organic</div></div><div class="ais sok">✓ OK</div></div>
+          <div class="ai"><span style="font-size:18px">📅</span><div class="ain"><div class="ait">予約導線 actionLinks + <span class="gl" data-gl="utm" tabindex="0">UTM<span class="gl-icon">?</span></span></div><div class="aid">全店舗設定済 / utm_medium=organic</div></div><div class="ais sok">✓ OK</div></div>
           <div class="ai"><span style="font-size:18px">📝</span><div class="ain"><div class="ait">投稿頻度（GBP投稿）</div><div class="aid">4店舗で2週間以上投稿なし</div></div><div class="ais swn">⚠ 要投稿</div></div>
           <div class="ai"><span style="font-size:18px">⭐</span><div class="ain"><div class="ait">レビュー返信率</div><div class="aid">未返信8件 / 平均返信時間14h</div></div><div class="ais swn">⚠ 要返信</div></div>
-          <div class="ai"><span style="font-size:18px">🔍</span><div class="ain"><div class="ait">GSC CTR トレンド</div><div class="aid">長尾クエリ増加中 / AIO由来推定23%</div></div><div class="ais sok">✓ 上昇中</div></div>
+          <div class="ai"><span style="font-size:18px">🔍</span><div class="ain"><div class="ait"><span class="gl" data-gl="gsc-term" tabindex="0">GSC<span class="gl-icon">?</span></span> CTR トレンド</div><div class="aid">長尾クエリ増加中 / AIO由来推定23%</div></div><div class="ais sok">✓ 上昇中</div></div>
         </div>
       </div>
       <div class="card">
-        <div class="ch"><h3>🏷 LocalBusiness JSON-LD 管理</h3><span class="bdg bo">バージョン管理</span></div>
+        <div class="ch"><h3>🏷 LocalBusiness <span class="gl" data-gl="jsonld" tabindex="0">JSON-LD<span class="gl-icon">?</span></span> 管理</h3><span class="bdg bo">バージョン管理</span></div>
         <div class="cb">
           <div style="background:var(--navy);border-radius:8px;padding:14px;font-family:'Outfit',monospace;font-size:11px;color:#7DD3FC;line-height:1.7;margin-bottom:12px"><span style="color:#94A3B8">// 渋谷本店 — v3 (最新)</span><br>{<br>&nbsp;&nbsp;<span style="color:#FCA5A5">"@type"</span>: <span style="color:#86EFAC">"Restaurant"</span>,<br>&nbsp;&nbsp;<span style="color:#FCA5A5">"name"</span>: <span style="color:#86EFAC">"サンプルフード 渋谷本店"</span>,<br>&nbsp;&nbsp;<span style="color:#FCA5A5">"telephone"</span>: <span style="color:#86EFAC">"03-XXXX-0001"</span>,<br>&nbsp;&nbsp;<span style="color:#FCA5A5">"potentialAction"</span>: {<span style="color:#FCA5A5">"@type"</span>: <span style="color:#86EFAC">"ReserveAction"</span>}<br>}</div>
           <div style="display:flex;gap:8px;margin-bottom:10px"><button class="tbtn" style="flex:1;justify-content:center;font-size:12px">🔄 差分確認</button><button class="tbtn" style="flex:1;justify-content:center;font-size:12px;background:var(--gray-600)">📋 履歴</button></div>
@@ -494,11 +505,11 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
               <tr><td style="padding-left:20px;font-size:11px;color:var(--gray-600)">bkg_983</td><td style="font-size:12px">上野店</td><td style="font-size:12px">4/9 12:30</td><td style="font-size:12px">5名</td><td style="font-size:12px;font-weight:700">¥22,500</td><td style="padding-right:20px"><span class="bkst bsn">NO_SHOW</span></td></tr>
             </tbody>
           </table>
-          <div style="padding:10px 20px;font-size:10px;color:var(--gray-400);border-top:1px solid var(--gray-200)">自社予約API + HMAC-SHA256署名検証 | GA4 MP: event_name=purchase</div>
+          <div style="padding:10px 20px;font-size:10px;color:var(--gray-400);border-top:1px solid var(--gray-200)">自社予約API + <span class="gl" data-gl="hmac" tabindex="0">HMAC<span class="gl-icon">?</span></span>-SHA256署名検証 | GA4 MP: event_name=purchase</div>
         </div>
       </div>
       <div class="card">
-        <div class="ch"><h3>📊 チャネル別 CV</h3><span class="bdg bg">UTM分析</span></div>
+        <div class="ch"><h3>📊 チャネル別 CV</h3><span class="bdg bg"><span class="gl" data-gl="utm" tabindex="0">UTM<span class="gl-icon">?</span></span>分析</span></div>
         <div class="cb">
           <div style="display:flex;flex-direction:column;gap:10px">
             <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>Google オーガニック（MEO）</span><span style="font-weight:700">43%</span></div><div style="background:var(--gray-200);border-radius:4px;height:10px"><div style="width:43%;background:var(--orange);border-radius:4px;height:100%"></div></div></div>
@@ -523,7 +534,7 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
       <div class="kc"><span class="ki">🔁</span><div class="kl">冪等性チェック</div><div class="kv">100<span class="ku">%</span></div><div class="kd up">重複なし</div></div>
     </div>
     <div class="card">
-      <div class="ch"><h3>🔔 Webhook イベントログ（全種別）</h3><span class="bdg bb">直近50件</span></div>
+      <div class="ch"><h3>🔔 <span class="gl" data-gl="webhook" tabindex="0">Webhook<span class="gl-icon">?</span></span> イベントログ（全種別）</h3><span class="bdg bb">直近50件</span></div>
       <div class="tabs"><div class="tab active">全件</div><div class="tab">予約</div><div class="tab">Listing</div><div class="tab">エラー</div></div>
       <div class="cb" style="padding:0 20px">
         <div class="whi"><div class="wd wok"></div><div class="we">booking.created</div><div class="ws">渋谷本店 / bkg_987</div><div class="wam">¥12,000</div><div class="wt">10:34:12</div></div>
@@ -582,7 +593,7 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
       <div class="kc"><span class="ki">👁</span><div class="kl">GBP 表示回数</div><div class="kv">48.2<span class="ku">K</span></div><div class="kd up">▲ +11%</div></div>
     </div>
     <div class="card">
-      <div class="ch"><h3>📊 GBP Performance（週次）</h3><span class="bdg bg">日次取得</span></div>
+      <div class="ch"><h3>📊 <span class="gl" data-gl="gbp-term" tabindex="0">GBP<span class="gl-icon">?</span></span> Performance（週次）</h3><span class="bdg bg">日次取得</span></div>
       <div class="cb">
         <div class="cwrap"><div class="ccol"><div class="cbar gr" style="height:48%"></div></div><div class="ccol"><div class="cbar gr" style="height:55%"></div></div><div class="ccol"><div class="cbar gr" style="height:50%"></div></div><div class="ccol"><div class="cbar gr" style="height:68%"></div></div><div class="ccol"><div class="cbar gr" style="height:62%"></div></div><div class="ccol"><div class="cbar gr" style="height:78%"></div></div><div class="ccol"><div class="cbar gr" style="height:72%"></div></div><div class="ccol"><div class="cbar gr" style="height:90%"></div></div></div>
         <div class="cx"><span>W1</span><span>W2</span><span>W3</span><span>W4</span><span>W5</span><span>W6</span><span>W7</span><span>W8</span></div>
@@ -633,7 +644,7 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
 </div>
 
 <script>
-const pages={dashboard:{t:'ダッシュボード',s:'概要 / 全店舗',b:'＋ 店舗を追加'},stores:{t:'店舗（SoT）管理',s:'12店舗 | engine_owner: Uberall',b:'📥 CSVインポート'},uberall:{t:'配信（Uberall）',s:'Listings / サイテーション',b:'🔄 全店舗Sync'},gbp:{t:'Google 運用',s:'GBP Performance',b:'＋ 投稿を作成'},posts:{t:'投稿管理',s:'GBP投稿 / AI生成',b:'✏️ 新規投稿'},reviews:{t:'口コミ管理',s:'未返信 8件',b:'🤖 AI一括返信案'},ranking:{t:'競合・順位（MEOチェキ）',s:'日次順位更新',b:'＋ KW追加'},gsc:{t:'GSC・オーガニック',s:'Search Console API | AI Overviews含む',b:'📊 CSVエクスポート'},aio:{t:'AIO アシスト',s:'構造化データ / サイテーション / 計測',b:'🔄 チェック実行'},bookings:{t:'予約・コンバージョン',s:'自社予約API + GA4 MP',b:'📊 CSVエクスポート'},webhooks:{t:'Webhookログ',s:'全種別イベント',b:'🔄 再取得'},settings:{t:'API連携設定',s:'8サービス接続管理',b:'＋ 連携追加'},audit:{t:'監査ログ',s:'全操作記録',b:'📥 ログDL'}};
+const pages={dashboard:{t:'ダッシュボード',s:'概要 / 全店舗',b:'＋ 店舗を追加'},stores:{t:'店舗（SoT）管理',s:'12店舗 | <span class="gl" data-gl="eo" tabindex="0">engine_owner<span class="gl-icon">?</span></span>: Uberall',b:'📥 CSVインポート'},uberall:{t:'配信（Uberall）',s:'Listings / サイテーション',b:'🔄 全店舗Sync'},gbp:{t:'Google 運用',s:'GBP Performance',b:'＋ 投稿を作成'},posts:{t:'投稿管理',s:'GBP投稿 / AI生成',b:'✏️ 新規投稿'},reviews:{t:'口コミ管理',s:'未返信 8件',b:'🤖 AI一括返信案'},ranking:{t:'競合・順位（MEOチェキ）',s:'日次順位更新',b:'＋ KW追加'},gsc:{t:'GSC・オーガニック',s:'Search Console API | AI Overviews含む',b:'📊 CSVエクスポート'},aio:{t:'AIO アシスト',s:'構造化データ / サイテーション / 計測',b:'🔄 チェック実行'},bookings:{t:'予約・コンバージョン',s:'自社予約API + GA4 MP',b:'📊 CSVエクスポート'},webhooks:{t:'Webhookログ',s:'全種別イベント',b:'🔄 再取得'},settings:{t:'API連携設定',s:'8サービス接続管理',b:'＋ 連携追加'},audit:{t:'監査ログ',s:'全操作記録',b:'📥 ログDL'}};
 function nav(id){
   if(!pages[id])return;
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -674,7 +685,7 @@ const TOUR_STEPS = [
   {
     title: '🏪 店舗（SoT）管理',
     body: '全店舗のNAP情報（名前・住所・電話・URL）を管理します。ここで更新した情報がUberall経由で125以上のディレクトリに自動配信されます。赤ハイライト行＝欠損フィールドあり。',
-    tip: '💡 engine_owner（Uberall）以外から直接GBPを変更しないでください。',
+    tip: '💡 <span class="gl" data-gl="eo" tabindex="0">engine_owner<span class="gl-icon">?</span></span>（Uberall）以外から直接GBPを変更しないでください。',
     target: '[data-page="stores"]',
     page: 'stores',
     pos: 'right'
@@ -893,6 +904,167 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => { startTour(); localStorage.setItem('meo_tour_done','1'); }, 800);
   }
 });
+
+
+// ===== GLOSSARY =====
+const GLOSSARY = {
+  'sot': {
+    term: 'SoT（真実の唯一の情報源）',
+    en: 'Single Source of Truth',
+    body: '店舗の名前・住所・電話番号・URLなど、MEO管理の基準となる「正しいデータ」を管理する場所。ここで更新した情報がすべてのディレクトリに自動配信されます。',
+    ex: '💡 ここ以外（GBPやYelpなど）から直接変更すると情報が競合してしまいます。'
+  },
+  'eo': {
+    term: 'engine_owner',
+    en: 'Writer Permission Controller',
+    body: 'NAP情報（名前・住所・電話・URL）を「どのサービスが書き込む権限を持つか」を示します。このシステムではUberallがengine_ownerです。',
+    ex: '💡 engine_owner以外からの変更は次回Sync時に上書きされます。'
+  },
+  'nap': {
+    term: 'NAP',
+    en: 'Name / Address / Phone',
+    body: 'MEOで最重要の3情報。Name（店舗名）・Address（住所）・Phone（電話番号）の頭文字。全ディレクトリでNAPが一致していることがローカル検索順位に直結します。',
+    ex: '💡 表記ゆれ（株式会社 vs ㈱）も不整合と判定されます。'
+  },
+  'uberall': {
+    term: 'Uberall',
+    en: 'Listing Management Platform',
+    body: '125以上のディレクトリ（Google・Yahoo!ロコ・ぐるなびなど）に店舗情報を一括配信できるサービス。このシステムのengine_ownerとして機能します。',
+    ex: '💡 Uberall経由で更新することで情報の一貫性が保たれます。'
+  },
+  'meocheki': {
+    term: 'MEOチェキ',
+    en: 'Local Ranking Tracker',
+    body: 'Google マップやローカルパックでの検索順位を地点ごとに計測できる国産のMEOツール。競合店舗との順位比較も可能です。',
+    ex: '💡 任意の地点から検索した場合の順位を正確に把握できます。'
+  },
+  'aio-term': {
+    term: 'AIO（AIオーバービュー）',
+    en: 'AI Overview',
+    body: 'Google検索結果の上部に表示されるAI生成の概要テキスト。ここに掲載されると検索ユーザーへのリーチが大幅に増加します。NAP整合・JSON-LD・口コミ返信率などが掲載確率に影響します。',
+    ex: '💡 AIO表示でクリック数が減る場合もあるため、GSCとあわせて監視が必要です。'
+  },
+  'jsonld': {
+    term: 'JSON-LD',
+    en: 'JavaScript Object Notation for Linked Data',
+    body: 'ウェブページに構造化データを埋め込む形式。LocalBusiness型で店舗情報をGoogleに正確に伝えることでAIO掲載確率が上がります。',
+    ex: '💡 SoTの情報と一致している必要があります。差分があると信頼性が下がります。'
+  },
+  'hmac': {
+    term: 'HMAC',
+    en: 'Hash-based Message Authentication Code',
+    body: 'Webhookの受信データが改ざんされていないことを確認する署名方式。送信側と受信側が共有する秘密鍵を使ってハッシュ値を計算・比較します。',
+    ex: '💡 署名検証エラーが出た場合はAPIキー（secret）が一致しているか確認してください。'
+  },
+  'ga4mp': {
+    term: 'GA4 MP',
+    en: 'Google Analytics 4 Measurement Protocol',
+    body: 'サーバーサイドからGA4にイベントを送信する仕組み。予約完了などのCVイベントをブラウザに関係なく計測できます。',
+    ex: '💡 予約数のダッシュボード値とGA4値に差がある場合はWebhookログを確認してください。'
+  },
+  'gsc-term': {
+    term: 'GSC（Google Search Console）',
+    en: 'Google Search Console',
+    body: 'Googleがウェブサイトをどのように認識・表示しているかを確認できる無料ツール。表示回数・クリック数・平均掲載順位・CTRを分析できます。',
+    ex: '💡 表示回数は増えてもクリック率が低い場合はAIO対策を確認してください。'
+  },
+  'gbp-term': {
+    term: 'GBP（Google ビジネスプロフィール）',
+    en: 'Google Business Profile',
+    body: 'Google マップや検索結果に表示される店舗情報ページ。口コミ・投稿・営業時間などを管理でき、MEOの中核となるサービスです。',
+    ex: '💡 GBPで直接情報を編集するとUberallとの競合が発生するため、SoT経由で更新してください。'
+  },
+  'utm': {
+    term: 'UTMパラメータ',
+    en: 'Urchin Tracking Module',
+    body: 'URLに付与するトラッキング用パラメータ。utm_source・utm_medium・utm_campaignなどを設定することで、どの経路から来訪したかをGA4で分析できます。',
+    ex: '例: ?utm_source=google&utm_medium=organic&utm_campaign=meo'
+  },
+  'listing': {
+    term: 'Listing（リスティング）',
+    en: 'Directory Listing',
+    body: '各ディレクトリ（Google・Yahoo!・食べログなど）に登録された店舗情報ページのこと。Uberall経由で一括管理・同期されます。',
+    ex: '💡 「未接続」状態のListingはSyncが届かないため、手動で接続作業が必要です。'
+  },
+  'webhook': {
+    term: 'Webhook（ウェブフック）',
+    en: 'Event-driven HTTP Callback',
+    body: 'イベント（予約作成・Listing更新など）が発生したとき、外部システムが自動でHTTPリクエストを送信する仕組み。リアルタイムにデータを連携できます。',
+    ex: '💡 受信したWebhookはHMAC署名検証後にDBへ保存されます。'
+  },
+};
+
+// ===== TOOLTIP ENGINE =====
+(function() {
+  let pop = null;
+  let hideTimer = null;
+
+  function createPop() {
+    pop = document.createElement('div');
+    pop.className = 'gl-pop';
+    pop.id = 'gl-pop';
+    document.body.appendChild(pop);
+  }
+
+  function showPop(el, key) {
+    if (!pop) createPop();
+    const g = GLOSSARY[key];
+    if (!g) return;
+    clearTimeout(hideTimer);
+    pop.innerHTML = `
+      <div class="gp-term">${g.term}</div>
+      <div class="gp-en">${g.en}</div>
+      <div class="gp-body">${g.body}</div>
+      ${g.ex ? `<div class="gp-ex">${g.ex}</div>` : ''}`;
+
+    // 位置計算
+    const r = el.getBoundingClientRect();
+    const pw = 240, ph = 180;
+    const pad = 8;
+    const vw = window.innerWidth, vh = window.innerHeight;
+
+    let px = r.left;
+    let py = r.bottom + pad;
+
+    // 下に収まらない場合は上に
+    if (py + ph > vh - pad) py = r.top - ph - pad;
+    // 右にはみ出す場合は左寄せ
+    if (px + pw > vw - pad) px = vw - pw - pad;
+    if (px < pad) px = pad;
+
+    pop.style.left = px + 'px';
+    pop.style.top = py + 'px';
+    pop.style.width = pw + 'px';
+    pop.classList.add('show');
+  }
+
+  function hidePop() {
+    if (!pop) return;
+    hideTimer = setTimeout(() => {
+      pop.classList.remove('show');
+    }, 120);
+  }
+
+  // イベント委譲でgl要素を検出
+  document.addEventListener('mouseover', e => {
+    const gl = e.target.closest('.gl');
+    if (gl) showPop(gl, gl.dataset.gl);
+  });
+  document.addEventListener('mouseout', e => {
+    const gl = e.target.closest('.gl');
+    if (gl) hidePop();
+  });
+  document.addEventListener('click', e => {
+    const gl = e.target.closest('.gl');
+    if (gl) {
+      e.stopPropagation();
+      if (pop && pop.classList.contains('show')) hidePop();
+      else showPop(gl, gl.dataset.gl);
+    } else {
+      hidePop();
+    }
+  });
+})();
 
 </script>
 </body>
