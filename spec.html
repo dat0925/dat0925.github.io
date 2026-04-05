@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>⚙️ 技術仕様書 — MEO統合管理画面</title>
+<link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0D1B3E;--navy-mid:#152347;--navy-light:#1E3160;
+  --orange:#F05A1A;--orange-light:#FF7A45;--orange-dim:rgba(240,90,26,.12);
+  --gray-50:#F8FAFC;--gray-100:#F4F6FA;--gray-200:#E8ECF4;
+  --gray-400:#9AABC8;--gray-600:#5A6E94;
+  --green:#22C55E;--cyan:#06B6D4;--red:#EF4444;--yellow:#FACC15;
+  --code-bg:#0F1C3F;--sidebar:260px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'BIZ UDPGothic',sans-serif;background:var(--gray-50);color:var(--navy);display:flex;min-height:100vh}
+
+/* ===== SIDEBAR ===== */
+.sidebar{width:var(--sidebar);position:fixed;top:0;left:0;bottom:0;background:var(--navy);display:flex;flex-direction:column;z-index:100;overflow-y:auto}
+.sidebar-header{padding:24px 20px 20px;border-bottom:1px solid rgba(255,255,255,.08)}
+.back-link{display:inline-flex;align-items:center;gap:6px;font-family:'Outfit',sans-serif;font-size:12px;color:var(--gray-400);text-decoration:none;margin-bottom:14px;transition:color .2s}
+.back-link:hover{color:#fff}
+.doc-badge{display:inline-flex;align-items:center;gap:6px;background:var(--orange-dim);border:1px solid rgba(240,90,26,.3);border-radius:6px;padding:4px 10px;font-size:10px;font-family:'Outfit',sans-serif;font-weight:700;color:var(--orange);margin-bottom:10px}
+.sidebar-title{font-family:'Outfit',sans-serif;font-weight:800;font-size:16px;color:#fff;line-height:1.3}
+.sidebar-title span{display:block;font-size:11px;font-weight:400;color:var(--gray-400);margin-top:3px}
+.toc{padding:16px 0;flex:1}
+.toc-section{padding:10px 20px 4px;font-size:9px;color:var(--gray-600);letter-spacing:.12em;font-family:'Outfit',sans-serif;font-weight:600;text-transform:uppercase}
+.toc-item{display:flex;align-items:center;gap:8px;padding:8px 20px;font-size:13px;color:var(--gray-400);cursor:pointer;transition:all .15s;border-left:2px solid transparent;text-decoration:none}
+.toc-item:hover,.toc-item.active{color:#fff;background:rgba(240,90,26,.1);border-left-color:var(--orange)}
+.sidebar-foot{padding:16px 20px;border-top:1px solid rgba(255,255,255,.08)}
+.other-doc{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;font-size:12px;color:var(--gray-400);text-decoration:none;transition:all .15s}
+.other-doc:hover{background:rgba(255,255,255,.06);color:#fff}
+
+/* ===== MAIN ===== */
+.main{margin-left:var(--sidebar);flex:1;min-height:100vh}
+.topbar{position:sticky;top:0;z-index:90;height:56px;background:#fff;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;padding:0 40px;gap:16px}
+.topbar-title{font-family:'Outfit',sans-serif;font-weight:700;font-size:14px;color:var(--navy);flex:1}
+.topbar-link{display:inline-flex;align-items:center;gap:5px;padding:5px 14px;border-radius:6px;font-size:12px;font-weight:700;font-family:'BIZ UDPGothic',sans-serif;text-decoration:none;transition:all .2s;white-space:nowrap}
+.topbar-link.dash{background:var(--navy);color:#fff}.topbar-link.dash:hover{background:var(--navy-mid)}
+.topbar-link.manual{background:var(--gray-100);color:var(--navy);border:1px solid var(--gray-200)}.topbar-link.manual:hover{background:var(--gray-200)}
+.content{max-width:860px;margin:0 auto;padding:48px 40px 80px}
+
+/* ===== HERO ===== */
+.hero{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-light) 100%);border-radius:16px;padding:40px 40px 36px;margin-bottom:48px;position:relative;overflow:hidden}
+.hero::after{content:'⚙️';position:absolute;right:32px;bottom:-10px;font-size:80px;opacity:.12}
+.hero-badge{display:inline-flex;align-items:center;gap:5px;background:var(--orange-dim);border:1px solid rgba(240,90,26,.35);border-radius:20px;padding:4px 12px;font-size:11px;font-family:'Outfit',sans-serif;font-weight:700;color:var(--orange);margin-bottom:14px}
+.hero h1{font-family:'Outfit',sans-serif;font-weight:800;font-size:28px;color:#fff;line-height:1.25;margin-bottom:10px}
+.hero p{font-size:14px;color:var(--gray-400);line-height:1.7;max-width:560px}
+.hero-meta{display:flex;gap:20px;margin-top:20px;flex-wrap:wrap}
+.hero-stat{font-size:12px;color:var(--gray-400);display:flex;align-items:center;gap:5px}
+.hero-stat strong{color:#fff;font-family:'Outfit',sans-serif;font-weight:700}
+
+/* ===== SECTION ===== */
+.section{margin-bottom:56px;scroll-margin-top:80px}
+.section-header{display:flex;align-items:center;gap:12px;margin-bottom:24px;padding-bottom:14px;border-bottom:2px solid var(--gray-200)}
+.section-tag{font-family:'Outfit',sans-serif;font-weight:800;font-size:11px;color:var(--orange);background:var(--orange-dim);border:1px solid rgba(240,90,26,.25);border-radius:6px;padding:3px 10px;white-space:nowrap}
+.section h2{font-family:'Outfit',sans-serif;font-weight:800;font-size:20px;color:var(--navy)}
+.section p{font-size:14px;color:var(--gray-600);line-height:1.75;margin-bottom:16px}
+.section h3{font-family:'Outfit',sans-serif;font-weight:700;font-size:15px;color:var(--navy);margin:24px 0 10px;display:flex;align-items:center;gap:8px}
+.section h3::before{content:'';display:block;width:3px;height:15px;background:var(--orange);border-radius:2px}
+
+/* ===== TABLE ===== */
+.tbl{width:100%;border-collapse:collapse;margin:12px 0 20px;font-size:13px}
+.tbl th{background:var(--navy);color:#fff;padding:10px 14px;text-align:left;font-family:'Outfit',sans-serif;font-weight:700;font-size:12px}
+.tbl th:first-child{border-radius:8px 0 0 0}.tbl th:last-child{border-radius:0 8px 0 0}
+.tbl td{padding:10px 14px;border-bottom:1px solid var(--gray-200);color:var(--navy);vertical-align:top;line-height:1.55}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:nth-child(even) td{background:var(--gray-50)}
+.tbl code{background:var(--gray-100);padding:2px 6px;border-radius:4px;font-size:12px;font-family:'Outfit',monospace;color:var(--orange)}
+
+/* ===== CODE ===== */
+.code-block{background:var(--code-bg);border-radius:10px;padding:20px;margin:12px 0 20px;overflow-x:auto;position:relative}
+.code-block pre{font-family:'Outfit',monospace;font-size:12.5px;line-height:1.8;color:#94A3B8;white-space:pre}
+.code-lang{position:absolute;top:10px;right:14px;font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;color:rgba(148,163,184,.5);letter-spacing:.08em}
+.code-block .kw{color:#C792EA}  /* keyword */
+.code-block .st{color:#C3E88D}  /* string */
+.code-block .cm{color:#546E7A}  /* comment */
+.code-block .nm{color:#FFCB6B}  /* name/key */
+.code-block .vl{color:#F78C6C}  /* value/number */
+.code-block .url{color:#80CBC4} /* url */
+
+/* ===== FILE TREE ===== */
+.file-tree{background:var(--code-bg);border-radius:10px;padding:20px;margin:12px 0 20px;font-family:'Outfit',monospace;font-size:13px;line-height:1.9;color:#94A3B8}
+.file-tree .dir{color:#FFCB6B}
+.file-tree .file{color:#C3E88D}
+.file-tree .note{color:#546E7A;font-size:11px}
+
+/* ===== CARD GRID ===== */
+.card-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:12px 0 20px}
+.card{background:#fff;border:1px solid var(--gray-200);border-radius:10px;padding:16px}
+.card-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.card-icon{font-size:18px}
+.card-title{font-family:'Outfit',sans-serif;font-weight:700;font-size:13px;color:var(--navy)}
+.card-sub{font-size:11px;color:var(--gray-400);font-family:'Outfit',sans-serif}
+.card-body{font-size:12px;color:var(--gray-600);line-height:1.6}
+.card-tag{display:inline-block;font-size:10px;font-family:'Outfit',sans-serif;font-weight:700;padding:2px 8px;border-radius:4px;background:var(--orange-dim);color:var(--orange);margin-top:6px}
+
+/* ===== PAGE MAP ===== */
+.page-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 20px}
+.pg-card{background:#fff;border:1px solid var(--gray-200);border-radius:8px;padding:12px;font-size:12px}
+.pg-id{font-family:'Outfit',monospace;font-size:10px;color:var(--orange);background:var(--orange-dim);padding:2px 6px;border-radius:4px;margin-bottom:6px;display:inline-block}
+.pg-name{font-family:'Outfit',sans-serif;font-weight:700;font-size:13px;color:var(--navy);margin-bottom:4px}
+.pg-desc{color:var(--gray-600);font-size:11px;line-height:1.5}
+
+/* ===== BADGE ===== */
+.badge{display:inline-flex;align-items:center;font-size:11px;font-family:'Outfit',sans-serif;font-weight:700;padding:2px 8px;border-radius:4px;white-space:nowrap}
+.badge.red{background:rgba(239,68,68,.12);color:var(--red)}
+.badge.green{background:rgba(34,197,94,.12);color:var(--green)}
+.badge.orange{background:var(--orange-dim);color:var(--orange)}
+.badge.cyan{background:rgba(6,182,212,.12);color:var(--cyan)}
+
+/* ===== TIP ===== */
+.tip{background:var(--gray-100);border-left:3px solid var(--cyan);border-radius:0 8px 8px 0;padding:10px 16px;margin:10px 0;font-size:13px;color:var(--navy);line-height:1.6}
+.warn{background:#FFF8F0;border-left:3px solid var(--orange);border-radius:0 8px 8px 0;padding:10px 16px;margin:10px 0;font-size:13px;color:var(--navy);line-height:1.6}
+
+/* ===== GLOSSARY ===== */
+.gl-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:12px 0}
+.gl-item{background:#fff;border:1px solid var(--gray-200);border-radius:8px;padding:12px 14px}
+.gl-term{font-family:'Outfit',sans-serif;font-weight:700;font-size:13px;color:var(--orange);margin-bottom:2px}
+.gl-en{font-size:10px;color:var(--gray-400);font-family:'Outfit',sans-serif;margin-bottom:4px}
+.gl-body{font-size:12px;color:var(--gray-600);line-height:1.55}
+
+/* ===== MOBILE ===== */
+@media(max-width:960px){
+  .sidebar{display:none}.main{margin-left:0}.content{padding:24px 20px 60px}
+  .card-grid,.page-grid,.gl-grid{grid-template-columns:1fr}
+  .hero{padding:28px 24px}.hero h1{font-size:22px}
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <a href="meo-dashboard.html" class="back-link">← ダッシュボードに戻る</a>
+    <div class="doc-badge">⚙️ 技術仕様書</div>
+    <div class="sidebar-title">MEO統合管理画面<span>アーキテクチャ・API・データ構造</span></div>
+  </div>
+  <nav class="toc">
+    <div class="toc-section">構成</div>
+    <a href="#files" class="toc-item">📁 ファイル構造</a>
+    <a href="#pages" class="toc-item">🗂 ページ構成（13画面）</a>
+    <a href="#design" class="toc-item">🎨 CSS設計・デザイントークン</a>
+    <div class="toc-section">データ</div>
+    <a href="#data" class="toc-item">🗄 データ構造</a>
+    <a href="#db" class="toc-item">💾 DBテーブル設計</a>
+    <div class="toc-section">API</div>
+    <a href="#api-uberall" class="toc-item">🌐 Uberall API</a>
+    <a href="#api-gbp" class="toc-item">📍 GBP / Performance API</a>
+    <a href="#api-gsc" class="toc-item">🔍 GSC / GA4 API</a>
+    <a href="#api-booking" class="toc-item">📆 予約API / Webhook</a>
+    <div class="toc-section">実装詳細</div>
+    <a href="#onboarding" class="toc-item">🧭 オンボーディング実装</a>
+    <a href="#security" class="toc-item">🔐 セキュリティ仕様</a>
+    <a href="#glossary" class="toc-item">📚 用語集</a>
+  </nav>
+  <div class="sidebar-foot">
+    <a href="manual.html" class="other-doc">📖 操作マニュアルを見る →</a>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title">⚙️ 技術仕様書</div>
+    <a href="manual.html" class="topbar-link manual">📖 マニュアル</a>
+    <a href="meo-dashboard.html" class="topbar-link dash">🖥 ダッシュボードへ</a>
+  </div>
+
+  <div class="content">
+
+    <!-- HERO -->
+    <div class="hero">
+      <div class="hero-badge">⚙️ 技術仕様書</div>
+      <h1>MEO統合管理画面<br>Technical Specification</h1>
+      <p>ファイル構造・データモデル・API設計・フロントエンド実装を網羅した技術ドキュメントです。開発・保守・拡張の際に参照してください。</p>
+      <div class="hero-meta">
+        <div class="hero-stat"><strong>1ファイル</strong> SPA構成</div>
+        <div class="hero-stat"><strong>13ページ</strong> 機能画面</div>
+        <div class="hero-stat"><strong>8 API</strong> 連携</div>
+        <div class="hero-stat">GitHub Pages <strong>master</strong></div>
+      </div>
+    </div>
+
+    <!-- FILE STRUCTURE -->
+    <div class="section" id="files">
+      <div class="section-header">
+        <span class="section-tag">📁 FILES</span>
+        <h2>ファイル構造</h2>
+      </div>
+      <p>GitHub Pages（<code>dat0925.github.io</code> / masterブランチ）にデプロイ。ビルドツール・依存ライブラリなし。外部CDNはGoogle Fontsのみ。</p>
+      <div class="file-tree">
+        <span class="dir">dat0925.github.io/</span>   <span class="note"># リポジトリルート（GitHub Pages: master）</span><br>
+├── <span class="file">meo-dashboard.html</span>  <span class="note"># メインSPA（全機能・CSS・JS 単一ファイル）</span><br>
+├── <span class="file">manual.html</span>         <span class="note"># 操作マニュアル（本ドキュメントの姉妹ページ）</span><br>
+├── <span class="file">spec.html</span>           <span class="note"># 技術仕様書（このページ）</span><br>
+├── <span class="file">men-right.png</span>       <span class="note"># オンボーディングキャラクター（男性・478×660px RGBA）</span><br>
+└── <span class="file">women-right.png</span>     <span class="note"># オンボーディングキャラクター（女性・432×661px RGBA）</span>
+      </div>
+      <h3>単一ファイルSPA採用の理由</h3>
+      <div class="card-grid">
+        <div class="card"><div class="card-head"><div class="card-icon">🚀</div><div><div class="card-title">デプロイ簡易性</div></div></div><div class="card-body">GitHub PagesにPushするだけで即反映。ビルドステップ・CI不要。</div></div>
+        <div class="card"><div class="card-head"><div class="card-icon">🔗</div><div><div class="card-title">ルーティング不要</div></div></div><div class="card-body">SPAのページ切り替えはJS制御。サーバーサイドルーティング設定が不要。</div></div>
+        <div class="card"><div class="card-head"><div class="card-icon">📦</div><div><div class="card-title">依存ゼロ</div></div></div><div class="card-body">React/Vue/Vite等のフレームワーク・バンドラー不使用。Google Fonts CDNのみ。</div></div>
+        <div class="card"><div class="card-head"><div class="card-icon">⚡</div><div><div class="card-title">即時ロード</div></div></div><div class="card-body">ネットワークリクエストが最小。モバイル・低速回線でも高速表示。</div></div>
+      </div>
+    </div>
+
+    <!-- PAGE STRUCTURE -->
+    <div class="section" id="pages">
+      <div class="section-header">
+        <span class="section-tag">🗂 PAGES</span>
+        <h2>ページ構成（13画面）</h2>
+      </div>
+      <p>すべての画面は <code>.page</code> クラスのdiv要素。 <code>nav(id)</code> 関数でactiveを切り替えてSPA遷移を実現します。</p>
+      <div class="page-grid">
+        <div class="pg-card"><div class="pg-id">dashboard</div><div class="pg-name">📊 ダッシュボード</div><div class="pg-desc">KPIカード・予約推移グラフ・ToDoリスト</div></div>
+        <div class="pg-card"><div class="pg-id">stores</div><div class="pg-name">🏪 店舗情報管理</div><div class="pg-desc">NAP CRUD・CSVインポート・同期状態</div></div>
+        <div class="pg-card"><div class="pg-id">uberall</div><div class="pg-name">🌐 配信（Uberall）</div><div class="pg-desc">Listing同期状態・未接続・欠損一覧</div></div>
+        <div class="pg-card"><div class="pg-id">gbp</div><div class="pg-name">📍 Google 運用</div><div class="pg-desc">GBP Performance週次グラフ</div></div>
+        <div class="pg-card"><div class="pg-id">reviews</div><div class="pg-name">⭐ 口コミ管理</div><div class="pg-desc">口コミ一覧・AI返信提案・評価分布</div></div>
+        <div class="pg-card"><div class="pg-id">ranking</div><div class="pg-name">📈 競合・順位</div><div class="pg-desc">MEOチェキ順位表・競合差分析</div></div>
+        <div class="pg-card"><div class="pg-id">gsc</div><div class="pg-name">🔍 GSC・オーガニック</div><div class="pg-desc">クリック推移・上位クエリ一覧</div></div>
+        <div class="pg-card"><div class="pg-id">aio</div><div class="pg-name">🤖 AIO アシスト</div><div class="pg-desc">対策チェック・JSON-LD管理</div></div>
+        <div class="pg-card"><div class="pg-id">bookings</div><div class="pg-name">📆 予約・CV</div><div class="pg-desc">予約一覧・チャネル別CV分析</div></div>
+        <div class="pg-card"><div class="pg-id">webhooks</div><div class="pg-name">🔔 Webhookログ</div><div class="pg-desc">全イベント・エラーログ</div></div>
+        <div class="pg-card"><div class="pg-id">posts</div><div class="pg-name">📝 投稿管理</div><div class="pg-desc">GBP投稿・AI生成・承認フロー</div></div>
+        <div class="pg-card"><div class="pg-id">settings</div><div class="pg-name">🔗 API連携設定</div><div class="pg-desc">8サービス接続管理</div></div>
+        <div class="pg-card"><div class="pg-id">audit</div><div class="pg-name">🛡 監査ログ</div><div class="pg-desc">全操作記録</div></div>
+      </div>
+      <h3>ページ切り替え実装</h3>
+      <div class="code-block">
+        <div class="code-lang">JavaScript</div>
+        <pre><span class="cm">// ページメタ情報（タイトル・サブタイトル・ボタンラベル）</span>
+<span class="kw">const</span> <span class="nm">pages</span> = {
+  <span class="nm">dashboard</span>: { t: <span class="st">'ダッシュボード'</span>, s: <span class="st">'概要 / 全店舗'</span>, b: <span class="st">'＋ 店舗を追加'</span> },
+  <span class="nm">stores</span>:    { t: <span class="st">'店舗情報管理'</span>, s: <span class="st">'12店舗 | engine_owner: Uberall'</span>, b: <span class="st">'📥 CSVインポート'</span> },
+  <span class="cm">// ... 13ページ分定義</span>
+};
+
+<span class="kw">function</span> <span class="nm">nav</span>(id) {
+  <span class="cm">// 全 .page から active を外す</span>
+  document.querySelectorAll(<span class="st">'.page'</span>).forEach(p => p.classList.remove(<span class="st">'active'</span>));
+  <span class="cm">// 対象ページを表示</span>
+  document.getElementById(<span class="st">'pg-'</span> + id)?.classList.add(<span class="st">'active'</span>);
+  <span class="cm">// topbar のタイトル・ボタンを更新</span>
+  document.getElementById(<span class="st">'ttitle'</span>).innerHTML = pages[id].t + <span class="st">`&lt;span&gt;`</span> + pages[id].s + <span class="st">`&lt;/span&gt;`</span>;
+  document.getElementById(<span class="st">'tbtn'</span>).textContent = pages[id].b;
+}</pre>
+      </div>
+    </div>
+
+    <!-- DESIGN -->
+    <div class="section" id="design">
+      <div class="section-header">
+        <span class="section-tag">🎨 CSS</span>
+        <h2>CSS設計・デザイントークン</h2>
+      </div>
+      <div class="code-block">
+        <div class="code-lang">CSS Variables</div>
+        <pre><span class="cm">/* カラーパレット */</span>
+<span class="nm">--navy</span>:       <span class="vl">#0D1B3E</span>;  <span class="cm">/* プライマリ（サイドバー背景）*/</span>
+<span class="nm">--navy-mid</span>:   <span class="vl">#152347</span>;
+<span class="nm">--navy-light</span>: <span class="vl">#1E3160</span>;
+<span class="nm">--orange</span>:     <span class="vl">#F05A1A</span>;  <span class="cm">/* アクセント（ボタン・強調）*/</span>
+<span class="nm">--orange-dim</span>: <span class="vl">rgba(240,90,26,.15)</span>;
+<span class="nm">--gray-100</span>:   <span class="vl">#F4F6FA</span>;  <span class="cm">/* ページ背景 */</span>
+<span class="nm">--gray-200</span>:   <span class="vl">#E8ECF4</span>;  <span class="cm">/* ボーダー */</span>
+<span class="nm">--gray-400</span>:   <span class="vl">#9AABC8</span>;  <span class="cm">/* サブテキスト */</span>
+
+<span class="cm">/* レイアウト定数 */</span>
+<span class="nm">--sw</span>: <span class="vl">240px</span>;  <span class="cm">/* サイドバー幅 */</span>
+<span class="nm">--hh</span>: <span class="vl">60px</span>;   <span class="cm">/* topbar高さ */</span></pre>
+      </div>
+      <h3>レイアウト構造</h3>
+      <div class="code-block">
+        <div class="code-lang">CSS Layout</div>
+        <pre><span class="cm">/* Flexboxで横並び */</span>
+<span class="nm">body</span>       { display: flex; }
+<span class="nm">.sidebar</span>  { width: var(--sw); position: fixed; }  <span class="cm">/* 固定サイドバー */</span>
+<span class="nm">.main</span>     { margin-left: var(--sw); flex: 1; }
+
+<span class="cm">/* ページ表示制御 */</span>
+<span class="nm">.page</span>        { display: none; }   <span class="cm">/* 非アクティブは非表示 */</span>
+<span class="nm">.page.active</span> { display: block; }  <span class="cm">/* アクティブのみ表示 */</span>
+
+<span class="cm">/* topbarはsticky（スクロールしても固定）*/</span>
+<span class="nm">.topbar</span> { position: sticky; top: 0; z-index: 90; }</span></pre>
+      </div>
+      <h3>フォント</h3>
+      <table class="tbl">
+        <tr><th>フォント</th><th>用途</th><th>ウェイト</th></tr>
+        <tr><td>BIZ UDPGothic</td><td>本文・ボタン・テーブル（日本語）</td><td>400, 700</td></tr>
+        <tr><td>Outfit</td><td>見出し・数値・バッジ・ラベル（英数字）</td><td>300〜800</td></tr>
+      </table>
+    </div>
+
+    <!-- DATA STRUCTURE -->
+    <div class="section" id="data">
+      <div class="section-header">
+        <span class="section-tag">🗄 DATA</span>
+        <h2>データ構造（モックデータ）</h2>
+      </div>
+      <p>現状はHTMLにハードコードされたモックデータです。本番実装時は各APIから取得してレンダリングします。</p>
+
+      <h3>店舗（SoT: Single Source of Truth）</h3>
+      <div class="code-block">
+        <div class="code-lang">JavaScript</div>
+        <pre>{
+  <span class="nm">id</span>:           <span class="st">"loc_001"</span>,
+  <span class="nm">name</span>:         <span class="st">"渋谷本店"</span>,
+  <span class="nm">address</span>:      <span class="st">"東京都渋谷区…"</span>,
+  <span class="nm">phone</span>:        <span class="st">"03-XXXX-0001"</span>,
+  <span class="nm">category</span>:    <span class="st">"レストラン"</span>,
+  <span class="nm">engineOwner</span>: <span class="st">"Uberall"</span>,      <span class="cm">// 書き込み権限サービス</span>
+  <span class="nm">syncStatus</span>:  <span class="st">"同期済"</span>,        <span class="cm">// 同期済 | 処理中 | 未接続</span>
+  <span class="nm">missingFields</span>: [],            <span class="cm">// 欠損フィールド一覧</span>
+  <span class="nm">fieldGroups</span>: {
+    <span class="nm">CORE_NAP</span>:   <span class="st">"Uberall"</span>,  <span class="cm">// 名称/住所/電話/URL/営業時間</span>
+    <span class="nm">ENGAGEMENT</span>: <span class="st">"GBP直連携"</span>, <span class="cm">// 投稿/口コミ/Q&A</span>
+    <span class="nm">MEDIA</span>:      <span class="st">"Uberall"</span>,  <span class="cm">// 写真/動画</span>
+    <span class="nm">TRACKING</span>:   <span class="st">"自社"</span>      <span class="cm">// UTM/予約導線</span>
+  }
+}</pre>
+      </div>
+
+      <h3>KPIカード</h3>
+      <div class="code-block">
+        <div class="code-lang">JavaScript</div>
+        <pre>{
+  <span class="nm">monthlyBookings</span>: { value: <span class="vl">847</span>,  unit: <span class="st">"件"</span>, delta: <span class="st">"+12.4%"</span>, trend: <span class="st">"up"</span> },
+  <span class="nm">gbpCallClicks</span>:  { value: <span class="vl">2341</span>, delta: <span class="st">"+8.1%"</span>,  trend: <span class="st">"up"</span> },
+  <span class="nm">gbpRouteClicks</span>: { value: <span class="vl">1887</span>, delta: <span class="st">"+5.3%"</span>,  trend: <span class="st">"up"</span> },
+  <span class="nm">gscRanking</span>:     { value: <span class="vl">4.2</span>,  unit: <span class="st">"位"</span>, delta: <span class="st">"改善"</span>,  trend: <span class="st">"up"</span> },
+  <span class="nm">listingSyncRate</span>:{ value: <span class="vl">91</span>,   unit: <span class="st">"%"</span>,  warning: <span class="st">"未接続5"</span> }
+}</pre>
+      </div>
+
+      <h3>口コミ</h3>
+      <div class="code-block">
+        <div class="code-lang">JavaScript</div>
+        <pre>{
+  <span class="nm">id</span>:       <span class="st">"rev_001"</span>,
+  <span class="nm">reviewer</span>: <span class="st">"山田 太郎"</span>,
+  <span class="nm">shop</span>:     <span class="st">"渋谷本店"</span>,
+  <span class="nm">rating</span>:   <span class="vl">5</span>,
+  <span class="nm">text</span>:     <span class="st">"ランチが美味しくてスタッフも親切でした。"</span>,
+  <span class="nm">date</span>:     <span class="st">"2日前"</span>,
+  <span class="nm">status</span>:   <span class="st">"unreplied"</span>,  <span class="cm">// unreplied | replied | priority</span>
+  <span class="nm">replyText</span>: <span class="kw">null</span>
+}</pre>
+      </div>
+
+      <h3>予約イベント（Webhook受信）</h3>
+      <div class="code-block">
+        <div class="code-lang">JavaScript</div>
+        <pre>{
+  <span class="nm">bookingId</span>: <span class="st">"bkg_987"</span>,
+  <span class="nm">shop</span>:      <span class="st">"渋谷本店"</span>,
+  <span class="nm">visitDate</span>: <span class="st">"2026-04-10T19:00:00+09:00"</span>,
+  <span class="nm">guests</span>:    <span class="vl">2</span>,
+  <span class="nm">amount</span>:    <span class="vl">12000</span>,
+  <span class="nm">status</span>:    <span class="st">"CONFIRMED"</span>,  <span class="cm">// CONFIRMED|CANCELED|COMPLETED|NO_SHOW</span>
+  <span class="nm">eventId</span>:   <span class="st">"evt_xxx"</span>,    <span class="cm">// 冪等性チェック用</span>
+  <span class="nm">signature</span>: <span class="st">"HMAC-SHA256検証済"</span>
+}</pre>
+      </div>
+    </div>
+
+    <!-- DB TABLES -->
+    <div class="section" id="db">
+      <div class="section-header">
+        <span class="section-tag">💾 DB</span>
+        <h2>DBテーブル設計（ULPM）</h2>
+      </div>
+      <p>ULPM（Unified Location Profile Manager）が本システムのデータ基盤。SoTの一元管理とAPI連携の橋渡しを担います。</p>
+      <table class="tbl">
+        <tr><th>テーブル</th><th>用途</th><th>主要カラム</th></tr>
+        <tr><td><code>locations</code></td><td>SoT（店舗マスタ）</td><td>NAP情報・営業時間・属性・engine_owner・FieldGroup設定</td></tr>
+        <tr><td><code>integration</code></td><td>API認証情報</td><td>service_name・credential_ref（KMS参照）・status</td></tr>
+        <tr><td><code>external_location</code></td><td>外部IDマッピング</td><td>location_id・service・external_id（Uberall/Google location ID）</td></tr>
+        <tr><td><code>listing_status</code></td><td>同期状態管理</td><td>location_id・directory・status・error_code・synced_at</td></tr>
+        <tr><td><code>ranking_serp</code></td><td>MEOチェキ順位データ</td><td>keyword・location_id・rank・search_surface・measured_at・point</td></tr>
+        <tr><td><code>booking</code></td><td>予約CV管理</td><td>booking_id・status・amount・visit_date・event_id（冪等性）</td></tr>
+        <tr><td><code>webhook_event</code></td><td>Webhookイベントログ</td><td>event_type・payload・signature_valid・received_at</td></tr>
+        <tr><td><code>metric_daily</code></td><td>KPI日次集計</td><td>location_id・metric_type・value・date（GBP/GSC/予約）</td></tr>
+        <tr><td><code>audit_log</code></td><td>全操作監査ログ</td><td>user_id・action・target・before_json・after_json・created_at</td></tr>
+      </table>
+    </div>
+
+    <!-- API: UBERALL -->
+    <div class="section" id="api-uberall">
+      <div class="section-header">
+        <span class="section-tag">🌐 API</span>
+        <h2>Uberall API</h2>
+      </div>
+      <table class="tbl">
+        <tr><th>項目</th><th>内容</th></tr>
+        <tr><td>認証</td><td>X-API-KEY ヘッダー または Bearer Token</td></tr>
+        <tr><td>Base URL</td><td><code>https://uberall.com/api/</code></td></tr>
+        <tr><td>役割</td><td>SoT → 125以上のディレクトリへのListing配信エンジン</td></tr>
+      </table>
+      <div class="code-block">
+        <div class="code-lang">REST Endpoints</div>
+        <pre><span class="cm">GET</span>  <span class="url">/locations</span>                 <span class="cm"># 全店舗取得</span>
+<span class="cm">POST</span> <span class="url">/locations</span>                 <span class="cm"># 店舗作成</span>
+<span class="cm">PUT</span>  <span class="url">/locations/{id}</span>             <span class="cm"># 店舗更新（NAP変更）</span>
+<span class="cm">POST</span> <span class="url">/locations/sync</span>             <span class="cm"># 全店舗 一括同期</span>
+<span class="cm">GET</span>  <span class="url">/locations/{id}/listings</span>   <span class="cm"># Listing同期状態取得</span>
+
+<span class="cm"># レスポンスキー（同期状態）</span>
+<span class="nm">directoriesMissingConnect</span>  <span class="cm">→ 未接続ディレクトリ数</span>
+<span class="nm">missingMandatoryFields</span>     <span class="cm">→ 必須欠損フィールド数</span>
+<span class="nm">listingsInSync</span>             <span class="cm">→ 同期済みディレクトリ数</span>
+
+<span class="cm"># 注意: QPM制限考慮・差分取得でバッチ設計が必要</span></pre>
+      </div>
+    </div>
+
+    <!-- API: GBP -->
+    <div class="section" id="api-gbp">
+      <div class="section-header">
+        <span class="section-tag">📍 API</span>
+        <h2>GBP API / GBP Performance API</h2>
+      </div>
+      <table class="tbl">
+        <tr><th>API</th><th>認証</th><th>Scope</th></tr>
+        <tr><td>Google Business Profile API</td><td>OAuth 2.0</td><td>https://www.googleapis.com/auth/business.manage</td></tr>
+        <tr><td>GBP Performance API</td><td>OAuth 2.0</td><td>同上</td></tr>
+      </table>
+      <div class="code-block">
+        <div class="code-lang">REST Endpoints</div>
+        <pre><span class="cm"># GBP API</span>
+<span class="cm">GET</span>  <span class="url">/accounts/{account}/locations</span>                         <span class="cm"># 店舗一覧</span>
+<span class="cm">POST</span> <span class="url">/accounts/{account}/locations/{id}/localPosts</span>          <span class="cm"># 投稿作成</span>
+<span class="cm">GET</span>  <span class="url">/accounts/{account}/locations/{id}/reviews</span>             <span class="cm"># 口コミ取得</span>
+<span class="cm">PUT</span>  <span class="url">/accounts/{account}/locations/{id}/reviews/{id}/reply</span>  <span class="cm"># 返信</span>
+
+<span class="cm"># GBP Performance API</span>
+<span class="cm">GET</span>  <span class="url">businessprofileperformance.googleapis.com/v1</span>
+     <span class="url">/locations/{name}:getDailyMetricsTimeSeries</span>
+     ?dailyMetric=<span class="nm">CALL_CLICKS</span>
+     &dailyMetric=<span class="nm">WEBSITE_CLICKS</span>
+     &dailyMetric=<span class="nm">BUSINESS_DIRECTION_REQUESTS</span>
+     &dailyRange.start_date.year=<span class="vl">2026</span></pre>
+      </div>
+    </div>
+
+    <!-- API: GSC / GA4 -->
+    <div class="section" id="api-gsc">
+      <div class="section-header">
+        <span class="section-tag">🔍 API</span>
+        <h2>GSC API / GA4 Measurement Protocol</h2>
+      </div>
+      <div class="code-block">
+        <div class="code-lang">Google Search Console API</div>
+        <pre><span class="cm"># 認証: OAuth 2.0</span>
+<span class="cm">POST</span> <span class="url">https://searchconsole.googleapis.com/webmasters/v3</span>
+     <span class="url">/sites/{siteUrl}/searchAnalytics/query</span>
+
+{
+  <span class="nm">startDate</span>:  <span class="st">"2026-03-01"</span>,
+  <span class="nm">endDate</span>:    <span class="st">"2026-04-01"</span>,
+  <span class="nm">dimensions</span>: [<span class="st">"query"</span>, <span class="st">"page"</span>],
+  <span class="nm">rowLimit</span>:   <span class="vl">100</span>
+}
+
+<span class="cm"># 注意: AI Overviews由来クリック含む・QPM制限あり</span></pre>
+      </div>
+      <div class="code-block">
+        <div class="code-lang">GA4 Measurement Protocol（サーバーサイドCV送信）</div>
+        <pre><span class="cm">POST</span> <span class="url">https://www.google-analytics.com/mp/collect</span>
+     ?measurement_id=<span class="nm">G-XXXXXXXX</span>&api_secret=<span class="nm">XXXXXXXX</span>
+
+{
+  <span class="nm">client_id</span>: <span class="st">"..."</span>,
+  <span class="nm">events</span>: [{
+    <span class="nm">name</span>: <span class="st">"purchase"</span>,
+    <span class="nm">params</span>: {
+      <span class="nm">currency</span>:       <span class="st">"JPY"</span>,
+      <span class="nm">value</span>:          <span class="vl">12000</span>,
+      <span class="nm">transaction_id</span>: <span class="st">"bkg_987"</span>,
+      <span class="nm">utm_medium</span>:     <span class="st">"organic"</span>
+    }
+  }]
+}</pre>
+      </div>
+    </div>
+
+    <!-- API: BOOKING -->
+    <div class="section" id="api-booking">
+      <div class="section-header">
+        <span class="section-tag">📆 API</span>
+        <h2>自社予約API / Webhook設計</h2>
+      </div>
+      <table class="tbl">
+        <tr><th>項目</th><th>仕様</th></tr>
+        <tr><td>通信方式</td><td>REST API（同期）＋ Webhook（非同期通知）</td></tr>
+        <tr><td>認証</td><td>OAuth 2.0（Client Credentials）＋ JWT（有効期限15分）</td></tr>
+        <tr><td>Webhookイベント</td><td>booking.created / booking.updated / booking.canceled</td></tr>
+      </table>
+      <div class="code-block">
+        <div class="code-lang">Webhook署名検証</div>
+        <pre><span class="cm"># 署名生成（送信側）</span>
+signature = HMAC-SHA256(secret, timestamp + <span class="st">"."</span> + raw_body)
+header: X-Signature: sha256={signature}
+
+<span class="cm"># 検証（受信側）</span>
+<span class="vl">1</span>. X-Signature ヘッダーから signature を取得
+<span class="vl">2</span>. 同じ計算式で expected_signature を生成
+<span class="vl">3</span>. hmac.compare_digest() で定数時間比較
+
+<span class="cm"># リプレイ攻撃防止</span>
+- timestamp が ±<span class="vl">5</span>分超の場合は拒否
+- event_id の重複チェック（冪等性）→ 重複は無視
+
+<span class="cm"># リトライ</span>
+- 失敗時: 指数バックオフ（1s → 2s → 4s → 8s ...）</pre>
+      </div>
+    </div>
+
+    <!-- ONBOARDING -->
+    <div class="section" id="onboarding">
+      <div class="section-header">
+        <span class="section-tag">🧭 IMPL</span>
+        <h2>オンボーディングツアー実装</h2>
+      </div>
+      <h3>構成要素</h3>
+      <div class="card-grid">
+        <div class="card"><div class="card-head"><div class="card-icon">🎭</div><div><div class="card-title">tour-overlay</div><div class="card-sub">背景ディム</div></div></div><div class="card-body">position:fixed; inset:0; rgba背景。active クラスで表示制御。</div></div>
+        <div class="card"><div class="card-head"><div class="card-icon">🔆</div><div><div class="card-title">tour-highlight</div><div class="card-sub">対象要素ハイライト</div></div></div><div class="card-body">box-shadowで4000px大の擬似オーバーレイ。getBoundingClientRect()で位置追従。</div></div>
+        <div class="card"><div class="card-head"><div class="card-icon">💬</div><div><div class="card-title">tour-wrap</div><div class="card-sub">キャラ＋吹き出し</div></div></div><div class="card-body">display:flex でキャラクター画像と吹き出しボックスを横並び配置。</div></div>
+        <div class="card"><div class="card-head"><div class="card-icon">👤</div><div><div class="card-title">キャラクター切替</div><div class="card-sub">localStorage永続化</div></div></div><div class="card-body">men-right.png / women-right.png。選択はlocalStorageに保存。</div></div>
+      </div>
+      <h3>表示制御（display:none 方式）</h3>
+      <div class="code-block">
+        <div class="code-lang">JavaScript — 重要: display管理</div>
+        <pre><span class="cm">// NG: top:-9999px（要素はDOMに存在したまま）</span>
+<span class="cm">// OK: display:none（完全に非表示・レイアウトに影響しない）</span>
+
+<span class="cm">// CSS初期状態</span>
+<span class="nm">.tour-wrap</span> { display: <span class="kw">none</span>; }  <span class="cm">/* リロード後も非表示を保証 */</span>
+
+<span class="cm">// goStep(): 位置計算後に表示（チラつき防止）</span>
+wrap.style.display = <span class="st">'none'</span>;   <span class="cm">// 先に非表示</span>
+positionStep(step);             <span class="cm">// 位置計算</span>
+<span class="cm">// positionStep 内で最後に:</span>
+wrap.style.display = <span class="st">'flex'</span>;  <span class="cm">// 表示</span>
+
+<span class="cm">// endTour(): 完全非表示＋スタイルリセット</span>
+wrap.style.display   = <span class="st">'none'</span>;
+wrap.style.top       = <span class="st">''</span>;
+wrap.style.left      = <span class="st">''</span>;
+wrap.style.transform = <span class="st">''</span>;</pre>
+      </div>
+      <h3>位置計算ロジック</h3>
+      <div class="code-block">
+        <div class="code-lang">JavaScript</div>
+        <pre><span class="kw">function</span> <span class="nm">positionStep</span>(step) {
+  <span class="kw">const</span> isNarrow = window.innerWidth < <span class="vl">1100</span>;  <span class="cm">// iPad以下は中央固定</span>
+
+  <span class="kw">if</span> (!step.target || step.pos === <span class="st">'center'</span> || isNarrow) {
+    <span class="cm">// 画面下部中央に固定（モバイル・iPad・Step1）</span>
+    wrap.style.bottom    = <span class="st">'24px'</span>;
+    wrap.style.left      = <span class="st">'50%'</span>;
+    wrap.style.transform = <span class="st">'translateX(-50%)'</span>;
+    wrap.style.display   = <span class="st">'flex'</span>;
+  } <span class="kw">else</span> {
+    <span class="cm">// デスクトップ: ターゲット要素の右横</span>
+    <span class="kw">const</span> r = el.getBoundingClientRect();
+    <span class="cm">// 画面右端にはみ出す場合は左側に反転</span>
+    <span class="kw">let</span> bx = r.right + <span class="vl">12</span>;
+    <span class="kw">if</span> (bx + wrapW > vw - <span class="vl">12</span>) bx = r.left - wrapW - <span class="vl">12</span>;
+  }
+}</pre>
+      </div>
+      <div class="tip">💡 <code>isNarrow</code> の閾値を1024px → <strong>1100px</strong>に設定。iPad（1024px）でも確実に中央表示になるよう対応済み。</div>
+    </div>
+
+    <!-- SECURITY -->
+    <div class="section" id="security">
+      <div class="section-header">
+        <span class="section-tag">🔐 SEC</span>
+        <h2>セキュリティ仕様</h2>
+      </div>
+      <table class="tbl">
+        <tr><th>項目</th><th>仕様</th><th>根拠</th></tr>
+        <tr><td>APIキー管理</td><td>KMS / Secret Manager格納（DB平文保存禁止）</td><td>漏洩リスク最小化</td></tr>
+        <tr><td>通信暗号化</td><td>TLS 1.2以上必須</td><td>中間者攻撃防止</td></tr>
+        <tr><td>Webhook署名</td><td>HMAC-SHA256（timestamp + body）</td><td>なりすまし防止</td></tr>
+        <tr><td>リプレイ防止</td><td>±5分超拒否 + event_id重複排除</td><td>同一リクエスト再利用防止</td></tr>
+        <tr><td>JWT有効期限</td><td>15分（予約API認証トークン）</td><td>トークン漏洩時の被害最小化</td></tr>
+        <tr><td>監査ログ</td><td>全操作（SoT更新・同期実行・API設定変更）を記録</td><td>コンプライアンス・追跡可能性</td></tr>
+      </table>
+      <div class="warn">⚠️ GitHub Pagesはパブリックリポジトリ前提の静的ホスティングです。本番APIキー・認証情報は絶対にHTMLにハードコードしないでください。</div>
+    </div>
+
+    <!-- GLOSSARY -->
+    <div class="section" id="glossary">
+      <div class="section-header">
+        <span class="section-tag">📚 TERMS</span>
+        <h2>用語集</h2>
+      </div>
+      <div class="gl-grid">
+        <div class="gl-item"><div class="gl-term">SoT</div><div class="gl-en">Single Source of Truth</div><div class="gl-body">正しいデータの唯一の情報源。この画面で管理する店舗情報がSoT。</div></div>
+        <div class="gl-item"><div class="gl-term">NAP</div><div class="gl-en">Name / Address / Phone</div><div class="gl-body">MEO最重要の3情報。全ディレクトリで一致が必要。</div></div>
+        <div class="gl-item"><div class="gl-term">engine_owner</div><div class="gl-en">Write Permission Controller</div><div class="gl-body">NAP情報の書き込み権限を持つサービス。本システムではUberall。</div></div>
+        <div class="gl-item"><div class="gl-term">Listing</div><div class="gl-en">Directory Listing</div><div class="gl-body">各ディレクトリ（Google/Yahoo/ぐるなびなど）への店舗情報掲載エントリ。</div></div>
+        <div class="gl-item"><div class="gl-term">AIO</div><div class="gl-en">AI Overviews</div><div class="gl-body">Google検索のAI概要機能。MEO施策でのAIO対策が重要。</div></div>
+        <div class="gl-item"><div class="gl-term">JSON-LD</div><div class="gl-en">JSON Linked Data</div><div class="gl-body">構造化データの記述形式。LocalBusiness typeでGoogleに店舗情報を正確に伝える。</div></div>
+        <div class="gl-item"><div class="gl-term">ULPM</div><div class="gl-en">Unified Location Profile Manager</div><div class="gl-body">本システムのデータ基盤。SoTの一元管理とAPI連携の橋渡し。</div></div>
+        <div class="gl-item"><div class="gl-term">HMAC</div><div class="gl-en">Hash-based Message Authentication Code</div><div class="gl-body">Webhookの署名方式。SHA-256を使用。</div></div>
+        <div class="gl-item"><div class="gl-term">QPM</div><div class="gl-en">Queries Per Minute</div><div class="gl-body">API呼び出し数制限。差分取得・バッチ設計で対処が必要。</div></div>
+        <div class="gl-item"><div class="gl-term">UTM</div><div class="gl-en">Urchin Tracking Module</div><div class="gl-body">GA4流入計測パラメータ。utm_source/medium/campaignなど。</div></div>
+        <div class="gl-item"><div class="gl-term">MEO</div><div class="gl-en">Map Engine Optimization</div><div class="gl-body">Googleマップ等のローカル検索最適化。SEOのローカル版。</div></div>
+        <div class="gl-item"><div class="gl-term">SPA</div><div class="gl-en">Single Page Application</div><div class="gl-body">単一HTMLファイルでページ遷移を擬似的に実現するアーキテクチャ。</div></div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+const sections = document.querySelectorAll('.section[id]');
+const tocItems = document.querySelectorAll('.toc-item');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      tocItems.forEach(t => t.classList.remove('active'));
+      const a = document.querySelector(`.toc-item[href="#${e.target.id}"]`);
+      if (a) a.classList.add('active');
+    }
+  });
+}, { threshold: 0.2, rootMargin: '-56px 0px -55% 0px' });
+sections.forEach(s => observer.observe(s));
+tocItems[0]?.classList.add('active');
+</script>
+</body>
+</html>

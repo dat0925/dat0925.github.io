@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>📖 操作マニュアル — MEO統合管理画面</title>
+<link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0D1B3E;--navy-mid:#152347;--navy-light:#1E3160;
+  --orange:#F05A1A;--orange-light:#FF7A45;--orange-dim:rgba(240,90,26,.12);
+  --gray-50:#F8FAFC;--gray-100:#F4F6FA;--gray-200:#E8ECF4;
+  --gray-400:#9AABC8;--gray-600:#5A6E94;
+  --green:#22C55E;--yellow:#FACC15;--red:#EF4444;--cyan:#06B6D4;
+  --sidebar:260px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'BIZ UDPGothic',sans-serif;background:var(--gray-50);color:var(--navy);display:flex;min-height:100vh}
+
+/* ===== SIDEBAR ===== */
+.sidebar{
+  width:var(--sidebar);position:fixed;top:0;left:0;bottom:0;
+  background:var(--navy);display:flex;flex-direction:column;z-index:100;overflow-y:auto;
+}
+.sidebar-header{padding:24px 20px 20px;border-bottom:1px solid rgba(255,255,255,.08)}
+.back-link{display:inline-flex;align-items:center;gap:6px;font-family:'Outfit',sans-serif;font-size:12px;color:var(--gray-400);text-decoration:none;margin-bottom:14px;transition:color .2s}
+.back-link:hover{color:#fff}
+.doc-badge{display:inline-flex;align-items:center;gap:6px;background:var(--orange-dim);border:1px solid rgba(240,90,26,.3);border-radius:6px;padding:4px 10px;font-size:10px;font-family:'Outfit',sans-serif;font-weight:700;color:var(--orange);margin-bottom:10px}
+.sidebar-title{font-family:'Outfit',sans-serif;font-weight:800;font-size:16px;color:#fff;line-height:1.3}
+.sidebar-title span{display:block;font-size:11px;font-weight:400;color:var(--gray-400);margin-top:3px}
+.toc{padding:16px 0;flex:1}
+.toc-section{padding:10px 20px 4px;font-size:9px;color:var(--gray-600);letter-spacing:.12em;font-family:'Outfit',sans-serif;font-weight:600;text-transform:uppercase}
+.toc-item{display:flex;align-items:center;gap:8px;padding:8px 20px;font-size:13px;color:var(--gray-400);cursor:pointer;transition:all .15s;border-left:2px solid transparent;text-decoration:none}
+.toc-item:hover,.toc-item.active{color:#fff;background:rgba(240,90,26,.1);border-left-color:var(--orange)}
+.toc-item .step{font-family:'Outfit',sans-serif;font-size:10px;font-weight:700;background:rgba(255,255,255,.08);border-radius:4px;padding:1px 6px;margin-left:auto}
+.sidebar-foot{padding:16px 20px;border-top:1px solid rgba(255,255,255,.08)}
+.other-doc{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;font-size:12px;color:var(--gray-400);text-decoration:none;transition:all .15s}
+.other-doc:hover{background:rgba(255,255,255,.06);color:#fff}
+
+/* ===== MAIN ===== */
+.main{margin-left:var(--sidebar);flex:1;min-height:100vh}
+.topbar{
+  position:sticky;top:0;z-index:90;
+  height:56px;background:#fff;border-bottom:1px solid var(--gray-200);
+  display:flex;align-items:center;padding:0 40px;gap:16px;
+}
+.topbar-title{font-family:'Outfit',sans-serif;font-weight:700;font-size:14px;color:var(--navy);flex:1}
+.topbar-link{display:inline-flex;align-items:center;gap:5px;padding:5px 14px;border-radius:6px;font-size:12px;font-weight:700;font-family:'BIZ UDPGothic',sans-serif;text-decoration:none;transition:all .2s;white-space:nowrap}
+.topbar-link.dash{background:var(--navy);color:#fff}.topbar-link.dash:hover{background:var(--navy-mid)}
+.topbar-link.spec{background:var(--orange-dim);color:var(--orange);border:1px solid rgba(240,90,26,.25)}.topbar-link.spec:hover{background:rgba(240,90,26,.22)}
+
+.content{max-width:800px;margin:0 auto;padding:48px 40px 80px}
+
+/* ===== HERO ===== */
+.hero{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-light) 100%);border-radius:16px;padding:40px 40px 36px;margin-bottom:48px;position:relative;overflow:hidden}
+.hero::after{content:'📖';position:absolute;right:32px;bottom:-10px;font-size:80px;opacity:.12}
+.hero-badge{display:inline-flex;align-items:center;gap:5px;background:var(--orange-dim);border:1px solid rgba(240,90,26,.35);border-radius:20px;padding:4px 12px;font-size:11px;font-family:'Outfit',sans-serif;font-weight:700;color:var(--orange);margin-bottom:14px}
+.hero h1{font-family:'Outfit',sans-serif;font-weight:800;font-size:28px;color:#fff;line-height:1.25;margin-bottom:10px}
+.hero p{font-size:14px;color:var(--gray-400);line-height:1.7;max-width:520px}
+.hero-meta{display:flex;gap:20px;margin-top:20px;flex-wrap:wrap}
+.hero-stat{font-size:12px;color:var(--gray-400);display:flex;align-items:center;gap:5px}
+.hero-stat strong{color:#fff;font-family:'Outfit',sans-serif;font-weight:700}
+
+/* ===== OVERVIEW TABLE ===== */
+.overview-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:48px}
+.ov-card{background:#fff;border:1px solid var(--gray-200);border-radius:10px;padding:16px;display:flex;gap:12px;align-items:flex-start}
+.ov-icon{font-size:20px;flex-shrink:0;margin-top:1px}
+.ov-label{font-size:12px;color:var(--gray-400);margin-bottom:3px;font-family:'Outfit',sans-serif}
+.ov-text{font-size:13px;color:var(--navy);line-height:1.5;font-weight:700}
+
+/* ===== SECTION ===== */
+.section{margin-bottom:56px;scroll-margin-top:80px}
+.section-header{display:flex;align-items:center;gap:12px;margin-bottom:24px;padding-bottom:14px;border-bottom:2px solid var(--gray-200)}
+.section-number{font-family:'Outfit',sans-serif;font-weight:800;font-size:11px;color:var(--orange);background:var(--orange-dim);border:1px solid rgba(240,90,26,.25);border-radius:6px;padding:3px 10px;white-space:nowrap}
+.section h2{font-family:'Outfit',sans-serif;font-weight:800;font-size:20px;color:var(--navy)}
+.section p{font-size:14px;color:var(--gray-600);line-height:1.75;margin-bottom:16px}
+.section h3{font-family:'Outfit',sans-serif;font-weight:700;font-size:15px;color:var(--navy);margin:24px 0 10px}
+
+/* ===== GOAL BOX ===== */
+.goal{background:var(--orange-dim);border-left:3px solid var(--orange);border-radius:0 8px 8px 0;padding:10px 16px;margin-bottom:20px;font-size:13px;color:var(--navy);display:flex;align-items:center;gap:8px}
+.goal strong{font-family:'Outfit',sans-serif;font-weight:700}
+
+/* ===== TABLE ===== */
+.tbl{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:13px}
+.tbl th{background:var(--navy);color:#fff;padding:10px 14px;text-align:left;font-family:'Outfit',sans-serif;font-weight:700;font-size:12px}
+.tbl th:first-child{border-radius:8px 0 0 0}.tbl th:last-child{border-radius:0 8px 0 0}
+.tbl td{padding:10px 14px;border-bottom:1px solid var(--gray-200);color:var(--navy);vertical-align:top;line-height:1.55}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:nth-child(even) td{background:var(--gray-50)}
+
+/* ===== STEPS ===== */
+.steps{display:flex;flex-direction:column;gap:12px;margin:16px 0}
+.step-item{display:flex;gap:14px;align-items:flex-start}
+.step-num{width:26px;height:26px;background:var(--orange);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Outfit',sans-serif;font-weight:800;font-size:12px;flex-shrink:0;margin-top:1px}
+.step-body{font-size:13px;color:var(--navy);line-height:1.65;padding-top:3px}
+.step-body strong{font-family:'Outfit',sans-serif}
+
+/* ===== TIP / ALERT ===== */
+.tip{background:var(--gray-100);border-left:3px solid var(--cyan);border-radius:0 8px 8px 0;padding:10px 16px;margin:12px 0;font-size:13px;color:var(--navy);line-height:1.6}
+.warn{background:#FFF8F0;border-left:3px solid var(--orange);border-radius:0 8px 8px 0;padding:10px 16px;margin:12px 0;font-size:13px;color:var(--navy);line-height:1.6}
+
+/* ===== BADGE ===== */
+.badge{display:inline-flex;align-items:center;font-size:11px;font-family:'Outfit',sans-serif;font-weight:700;padding:2px 8px;border-radius:4px;white-space:nowrap}
+.badge.red{background:rgba(239,68,68,.12);color:var(--red)}
+.badge.yellow{background:rgba(250,204,21,.2);color:#92680F}
+.badge.blue{background:rgba(6,182,212,.12);color:var(--cyan)}
+.badge.green{background:rgba(34,197,94,.12);color:var(--green)}
+
+/* ===== DETAILS ===== */
+details{background:#fff;border:1px solid var(--gray-200);border-radius:8px;margin:10px 0}
+summary{padding:12px 16px;font-size:13px;font-weight:700;cursor:pointer;color:var(--navy);list-style:none;display:flex;align-items:center;gap:8px}
+summary::before{content:'▶';font-size:10px;color:var(--orange);transition:transform .2s}
+details[open] summary::before{transform:rotate(90deg)}
+.details-body{padding:0 16px 14px;font-size:13px;color:var(--gray-600);line-height:1.7}
+
+/* ===== FAQ ===== */
+.faq-list{display:flex;flex-direction:column;gap:8px}
+
+/* ===== CODE ===== */
+.code-block{background:var(--navy);border-radius:8px;padding:16px;margin:12px 0;font-family:'Outfit',monospace;font-size:12px;color:#7DD3FC;line-height:1.75;overflow-x:auto}
+
+/* ===== MOBILE ===== */
+@media(max-width:900px){
+  .sidebar{display:none}
+  .main{margin-left:0}
+  .content{padding:24px 20px 60px}
+  .overview-grid{grid-template-columns:1fr}
+  .hero{padding:28px 24px}
+  .hero h1{font-size:22px}
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <a href="meo-dashboard.html" class="back-link">← ダッシュボードに戻る</a>
+    <div class="doc-badge">📖 操作マニュアル</div>
+    <div class="sidebar-title">MEO統合管理画面<span>機能ガイド・操作手順</span></div>
+  </div>
+  <nav class="toc">
+    <div class="toc-section">はじめに</div>
+    <a href="#overview" class="toc-item">🗺 この画面でできること</a>
+    <div class="toc-section">操作ガイド</div>
+    <a href="#s1" class="toc-item">📊 ダッシュボード<span class="step">Step 1</span></a>
+    <a href="#s2" class="toc-item">🏪 店舗情報（SoT）<span class="step">Step 2</span></a>
+    <a href="#s3" class="toc-item">🌐 配信（Uberall）<span class="step">Step 3</span></a>
+    <a href="#s4" class="toc-item">⭐ 口コミ管理<span class="step">Step 4</span></a>
+    <a href="#s5" class="toc-item">📈 競合・順位<span class="step">Step 5</span></a>
+    <a href="#s6" class="toc-item">🔍 GSC・オーガニック<span class="step">Step 6</span></a>
+    <a href="#s7" class="toc-item">🤖 AIOアシスト<span class="step">Step 7</span></a>
+    <a href="#s8" class="toc-item">📆 予約・CV分析<span class="step">Step 8</span></a>
+    <a href="#s9" class="toc-item">🔔 Webhookログ<span class="step">Step 9</span></a>
+    <a href="#s10" class="toc-item">🔗 API連携設定<span class="step">Step 10</span></a>
+    <div class="toc-section">サポート</div>
+    <a href="#faq" class="toc-item">❓ よくある質問</a>
+  </nav>
+  <div class="sidebar-foot">
+    <a href="spec.html" class="other-doc">⚙️ 技術仕様書を見る →</a>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title">📖 操作マニュアル</div>
+    <a href="spec.html" class="topbar-link spec">⚙️ 技術仕様</a>
+    <a href="meo-dashboard.html" class="topbar-link dash">🖥 ダッシュボードへ</a>
+  </div>
+
+  <div class="content">
+
+    <!-- HERO -->
+    <div class="hero" id="overview">
+      <div class="hero-badge">📖 操作マニュアル</div>
+      <h1>MEO統合管理画面<br>操作ガイド</h1>
+      <p>全店舗のMEO施策を一画面で管理するツールの使い方を、ステップごとに丁寧に解説します。初めての方はStep 1から順番にお読みください。</p>
+      <div class="hero-meta">
+        <div class="hero-stat"><strong>10</strong> 画面の解説</div>
+        <div class="hero-stat"><strong>約5分</strong> で読める</div>
+        <div class="hero-stat"><strong>FAQ</strong> 付き</div>
+      </div>
+    </div>
+
+    <!-- OVERVIEW -->
+    <div class="overview-grid">
+      <div class="ov-card"><div class="ov-icon">🏪</div><div><div class="ov-label">店舗管理</div><div class="ov-text">NAP情報をワンライターで管理し、125以上のディレクトリへ自動配信</div></div></div>
+      <div class="ov-card"><div class="ov-icon">⭐</div><div><div class="ov-label">口コミ管理</div><div class="ov-text">未返信口コミをゼロに。AI返信提案で効率的に対応</div></div></div>
+      <div class="ov-card"><div class="ov-icon">📈</div><div><div class="ov-label">競合・順位分析</div><div class="ov-text">MEOチェキAPIで競合との順位差をリアルタイム把握</div></div></div>
+      <div class="ov-card"><div class="ov-icon">🤖</div><div><div class="ov-label">AIO対策</div><div class="ov-text">Google AI Overview掲載に必要な構造化データ・サイテーションを管理</div></div></div>
+      <div class="ov-card"><div class="ov-icon">📆</div><div><div class="ov-label">予約・CV計測</div><div class="ov-text">MEOオーガニック流入（43%）が予約にどう貢献しているか可視化</div></div></div>
+      <div class="ov-card"><div class="ov-icon">🔔</div><div><div class="ov-label">Webhook監視</div><div class="ov-text">API連携のリアルタイムログでシステム異常を即検知</div></div></div>
+    </div>
+
+    <!-- STEP 1 -->
+    <div class="section" id="s1">
+      <div class="section-header">
+        <span class="section-number">Step 1</span>
+        <h2>📊 ダッシュボードを見る</h2>
+      </div>
+      <div class="goal"><strong>🎯 目的：</strong>全店舗の状況をひと目で把握し、今日の優先タスクを確認する</div>
+      <h3>画面の読み方</h3>
+      <p>ダッシュボードは毎朝の確認の起点です。上段のKPIカード・予約推移グラフ・ToDoリストの3要素で構成されています。</p>
+      <table class="tbl">
+        <tr><th>エリア</th><th>内容</th><th>確認ポイント</th></tr>
+        <tr><td>KPIカード（上段）</td><td>今月の予約数・GBPクリック・GSC順位・Listing同期率</td><td>前月比の矢印（▲/▼）を確認</td></tr>
+        <tr><td>予約推移グラフ</td><td>週次の予約数トレンド（8週分）</td><td>右肩上がりか、急落がないか</td></tr>
+        <tr><td>ToDoリスト</td><td>要対応タスクが優先度順に表示</td><td>赤から順番に対応</td></tr>
+      </table>
+      <h3>ToDoの優先度</h3>
+      <table class="tbl">
+        <tr><th>優先度</th><th>色</th><th>代表的な対応例</th></tr>
+        <tr><td><span class="badge red">高（緊急）</span></td><td>🔴 赤</td><td>未接続ディレクトリ / 口コミ未返信</td></tr>
+        <tr><td><span class="badge yellow">中</span></td><td>🟡 黄</td><td>必須フィールド欠損 / 投稿不足</td></tr>
+        <tr><td><span class="badge blue">低</span></td><td>🔵 青</td><td>JSON-LD差分 / 軽微な設定漏れ</td></tr>
+      </table>
+      <div class="tip">💡 ToDoの「→」リンクをクリックすると、対応ページに直接ジャンプします。毎朝このページから確認を始めましょう。</div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="section" id="s2">
+      <div class="section-header">
+        <span class="section-number">Step 2</span>
+        <h2>🏪 店舗情報（SoT）を管理する</h2>
+      </div>
+      <div class="goal"><strong>🎯 目的：</strong>全店舗の「正しい情報」を登録・維持し、自動配信の基盤を整える</div>
+      <h3>SoT（Single Source of Truth）とは？</h3>
+      <p>店舗の名前・住所・電話番号・URLなど、<strong>NAP情報の唯一の正解データ</strong>です。この画面で更新した情報がUberall経由で125以上のディレクトリに自動反映されます。</p>
+      <h3>操作手順</h3>
+      <div class="steps">
+        <div class="step-item"><div class="step-num">1</div><div class="step-body">サイドバーの <strong>「🏪 店舗（SoT）管理」</strong> をクリック</div></div>
+        <div class="step-item"><div class="step-num">2</div><div class="step-body">一覧から対象店舗を確認。<strong>赤ハイライト行 ＝ 欠損フィールドあり</strong></div></div>
+        <div class="step-item"><div class="step-num">3</div><div class="step-body">「設定 →」から欠損フィールドを修正して保存</div></div>
+        <div class="step-item"><div class="step-num">4</div><div class="step-body">同期状態が「未接続」の場合は配信（Uberall）ページで接続作業を行う</div></div>
+      </div>
+      <div class="warn">⚠️ <strong>重要：</strong>Uberall以外（GBP直接・Yelp等）から店舗情報を変更しないでください。次回Sync時に上書きされ、情報競合が発生します。</div>
+      <details>
+        <summary>engine_ownerとは？</summary>
+        <div class="details-body">NAP情報（名称・住所・電話・URL）の<strong>書き込み権限を持つサービス</strong>のこと。この画面ではUberallがengine_ownerです。SoT経由でのみ更新することで、情報の一貫性を担保します。</div>
+      </details>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="section" id="s3">
+      <div class="section-header">
+        <span class="section-number">Step 3</span>
+        <h2>🌐 配信（Uberall）を管理する</h2>
+      </div>
+      <div class="goal"><strong>🎯 目的：</strong>全ディレクトリへの配信状態を確認し、未接続・欠損をゼロにする</div>
+      <h3>Listing同期の仕組み</h3>
+      <div class="code-block">SoT（この画面）→ Uberall API → 125以上のディレクトリ<br>（Google / Yahoo! / ぐるなび / 食べログ / Apple Maps など）</div>
+      <h3>よくあるアラートと対処法</h3>
+      <table class="tbl">
+        <tr><th>アラート</th><th>意味</th><th>対処</th></tr>
+        <tr><td><code>directoriesMissingConnect</code></td><td>ディレクトリへの接続が切れている</td><td>「接続 →」から再接続</td></tr>
+        <tr><td><code>missingMandatoryFields</code></td><td>必須フィールド（営業時間・カテゴリ等）が未入力</td><td>店舗SoTページで入力</td></tr>
+        <tr><td><code>LISTING_FAILED</code></td><td>同期処理がエラー終了</td><td>Webhookログで詳細確認</td></tr>
+        <tr><td><code>LISTING_PENDING</code></td><td>処理中・タイムアウト</td><td>しばらく待って再試行</td></tr>
+      </table>
+      <div class="tip">💡 緊急時は「🔄 全店舗 一括Sync」ボタンで全店舗の同期を強制実行できます。通常は5〜30分で反映されます。</div>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="section" id="s4">
+      <div class="section-header">
+        <span class="section-number">Step 4</span>
+        <h2>⭐ 口コミを管理する</h2>
+      </div>
+      <div class="goal"><strong>🎯 目的：</strong>未返信口コミをゼロに保ち、評価を維持・向上させる</div>
+      <h3>返信の手順</h3>
+      <div class="steps">
+        <div class="step-item"><div class="step-num">1</div><div class="step-body">サイドバー「⭐ 口コミ管理」をクリックし「未返信」タブを確認</div></div>
+        <div class="step-item"><div class="step-num">2</div><div class="step-body"><strong>低評価（★3以下）</strong>を最優先で対応。「⚠️ 低評価・優先」バッジが目印</div></div>
+        <div class="step-item"><div class="step-num">3</div><div class="step-body">「✏️ 返信する」ボタン → 「AI返信案 →」で自動生成された返信文を活用</div></div>
+        <div class="step-item"><div class="step-num">4</div><div class="step-body">内容を確認・編集して投稿。返信後は「✅ 返信済」に変わる</div></div>
+      </div>
+      <h3>ベストプラクティス</h3>
+      <table class="tbl">
+        <tr><th>指標</th><th>目標</th><th>現状</th></tr>
+        <tr><td>返信時間</td><td>12時間以内</td><td>平均14h（改善余地あり）</td></tr>
+        <tr><td>★1-2の割合</td><td>10%以下</td><td>要モニタリング</td></tr>
+        <tr><td>優先返信</td><td>★3以下を最優先</td><td>「低評価・優先」タグを活用</td></tr>
+      </table>
+    </div>
+
+    <!-- STEP 5 -->
+    <div class="section" id="s5">
+      <div class="section-header">
+        <span class="section-number">Step 5</span>
+        <h2>📈 競合・順位を確認する</h2>
+      </div>
+      <div class="goal"><strong>🎯 目的：</strong>キーワードごとの順位と競合店舗との差を把握し、施策を立案する</div>
+      <p>データはMEOチェキAPIより日次取得。ローカルパック / Google Maps / Web検索の3面で計測します。</p>
+      <h3>順位表の読み方</h3>
+      <table class="tbl">
+        <tr><th>列</th><th>内容</th></tr>
+        <tr><td>順位バッジ</td><td>🥇金=1位 🥈銀=2位 🥉銅=3位 それ以外=グレー</td></tr>
+        <tr><td>変動</td><td>▲ 上昇（緑） ▼ 下降（赤） → 変化なし</td></tr>
+        <tr><td>競合A/B</td><td>設定した競合店舗の順位</td></tr>
+        <tr><td>競合差</td><td>自店と競合のスコア差（プラスが有利）</td></tr>
+      </table>
+      <details>
+        <summary>順位が下がったときのチェックリスト</summary>
+        <div class="details-body">
+          <div class="steps">
+            <div class="step-item"><div class="step-num">①</div><div class="step-body">GBP投稿が2週間以上滞っていないか（→ 投稿管理ページ）</div></div>
+            <div class="step-item"><div class="step-num">②</div><div class="step-body">口コミ返信率が低くなっていないか（→ 口コミ管理ページ）</div></div>
+            <div class="step-item"><div class="step-num">③</div><div class="step-body">NAP情報に変更・欠損がないか（→ 店舗SoTページ）</div></div>
+            <div class="step-item"><div class="step-num">④</div><div class="step-body">JSON-LDに差分がないか（→ AIOアシストページ）</div></div>
+            <div class="step-item"><div class="step-num">⑤</div><div class="step-body">サイテーション同期率が落ちていないか（→ 配信ページ）</div></div>
+          </div>
+        </div>
+      </details>
+    </div>
+
+    <!-- STEP 6 -->
+    <div class="section" id="s6">
+      <div class="section-header">
+        <span class="section-number">Step 6</span>
+        <h2>🔍 GSC・オーガニック流入を分析する</h2>
+      </div>
+      <div class="goal"><strong>🎯 目的：</strong>オーガニック検索からの流入を最大化する</div>
+      <table class="tbl">
+        <tr><th>指標</th><th>説明</th><th>目安</th></tr>
+        <tr><td>表示回数</td><td>検索結果に表示された回数</td><td>月次前比 +10%以上が理想</td></tr>
+        <tr><td>クリック数</td><td>検索結果からクリックされた回数</td><td>CTR 4%以上を目標</td></tr>
+        <tr><td>平均CTR</td><td>クリック率（クリック÷表示）</td><td>業種平均 3〜5%</td></tr>
+        <tr><td>平均掲載順位</td><td>Googleでの平均表示順位</td><td>3位以内を目指す</td></tr>
+        <tr><td>AIO表示推定</td><td>AI Overviewsへの掲載推定割合</td><td>上昇トレンドが重要</td></tr>
+      </table>
+      <div class="warn">⚠️ AI Overviews（AIO）が普及するとCTRが下がる場合があります。表示回数が増えてもクリックが伸びない場合はAIO対策ページを確認してください。</div>
+    </div>
+
+    <!-- STEP 7 -->
+    <div class="section" id="s7">
+      <div class="section-header">
+        <span class="section-number">Step 7</span>
+        <h2>🤖 AIOアシストで対策する</h2>
+      </div>
+      <div class="goal"><strong>🎯 目的：</strong>Google AI Overview（AI概要）に掲載されやすい状態を維持する</div>
+      <h3>AIO対策 7チェック項目</h3>
+      <table class="tbl">
+        <tr><th>#</th><th>チェック項目</th><th>重要度</th></tr>
+        <tr><td>1</td><td>NAP整合性（全ディレクトリ）</td><td>⭐⭐⭐ 最重要</td></tr>
+        <tr><td>2</td><td>LocalBusiness JSON-LD</td><td>⭐⭐⭐ 最重要</td></tr>
+        <tr><td>3</td><td>サイテーション網（Uberall 125+）</td><td>⭐⭐⭐ 最重要</td></tr>
+        <tr><td>4</td><td>予約導線 actionLinks + UTM</td><td>⭐⭐</td></tr>
+        <tr><td>5</td><td>GBP投稿頻度（週1以上推奨）</td><td>⭐⭐</td></tr>
+        <tr><td>6</td><td>レビュー返信率</td><td>⭐⭐</td></tr>
+        <tr><td>7</td><td>GSC CTRトレンド</td><td>⭐</td></tr>
+      </table>
+      <h3>JSON-LD更新の手順</h3>
+      <div class="steps">
+        <div class="step-item"><div class="step-num">1</div><div class="step-body">AIOアシストページの「🔄 差分確認」をクリック</div></div>
+        <div class="step-item"><div class="step-num">2</div><div class="step-body">SoT情報と現在のJSON-LDの差分を確認</div></div>
+        <div class="step-item"><div class="step-num">3</div><div class="step-body">差分がある場合は「SoTから自動生成」で更新</div></div>
+        <div class="step-item"><div class="step-num">4</div><div class="step-body">「📋 履歴」でバージョン比較が可能</div></div>
+      </div>
+    </div>
+
+    <!-- STEP 8 -->
+    <div class="section" id="s8">
+      <div class="section-header">
+        <span class="section-number">Step 8</span>
+        <h2>📆 予約・CV分析を見る</h2>
+      </div>
+      <div class="goal"><strong>🎯 目的：</strong>MEO施策が実際の予約・売上にどう貢献しているかを把握する</div>
+      <h3>チャネル別CVの構成（現状）</h3>
+      <div class="code-block">MEOオーガニック（43%） &gt; Google広告（22%） &gt; GBP直接（18%）<br>&gt; 食べログ等（12%） &gt; その他（5%）</div>
+      <div class="tip">💡 MEOオーガニックが最大流入チャネル（43%）です。この数値を経営層への報告資料に活用できます。</div>
+      <h3>予約ステータスの意味</h3>
+      <table class="tbl">
+        <tr><th>ステータス</th><th>意味</th></tr>
+        <tr><td><span class="badge green">CONFIRMED</span></td><td>確定予約</td></tr>
+        <tr><td><span class="badge blue">COMPLETED</span></td><td>来店完了</td></tr>
+        <tr><td><span class="badge red">CANCELED</span></td><td>キャンセル済み</td></tr>
+        <tr><td><span class="badge yellow">NO_SHOW</span></td><td>無断キャンセル</td></tr>
+      </table>
+    </div>
+
+    <!-- STEP 9 -->
+    <div class="section" id="s9">
+      <div class="section-header">
+        <span class="section-number">Step 9</span>
+        <h2>🔔 Webhookログを確認する</h2>
+      </div>
+      <div class="goal"><strong>🎯 目的：</strong>システム間の連携が正常に動作しているかを監視する</div>
+      <table class="tbl">
+        <tr><th>種別</th><th>イベント例</th><th>確認ポイント</th></tr>
+        <tr><td>予約系</td><td>booking.created / updated / canceled</td><td>署名検証エラーがないか</td></tr>
+        <tr><td>Listing系</td><td>LISTING_UPDATED / SYNCED / FAILED</td><td>FAILED発生時は原因特定</td></tr>
+      </table>
+      <h3>エラー発生時の対処</h3>
+      <div class="steps">
+        <div class="step-item"><div class="step-num">1</div><div class="step-body"><strong>LISTING_FAILED</strong> → 欠損フィールドを確認 → 店舗SoTで修正</div></div>
+        <div class="step-item"><div class="step-num">2</div><div class="step-body"><strong>署名検証エラー</strong> → 予約API側のsecretキーを確認 → 設定ページで更新</div></div>
+        <div class="step-item"><div class="step-num">3</div><div class="step-body"><strong>LISTING_PENDING（タイムアウト）</strong> → Uberall APIの状態確認 → 一括Syncを実行</div></div>
+      </div>
+    </div>
+
+    <!-- STEP 10 -->
+    <div class="section" id="s10">
+      <div class="section-header">
+        <span class="section-number">Step 10</span>
+        <h2>🔗 API連携設定を行う</h2>
+      </div>
+      <div class="goal"><strong>🎯 目的：</strong>各APIを正しく接続・管理する</div>
+      <table class="tbl">
+        <tr><th>優先度</th><th>サービス</th><th>理由</th></tr>
+        <tr><td><span class="badge red">🔴 必須</span></td><td>Uberall / GBP / GSC / GA4 / 自社予約API</td><td>コア機能に直結</td></tr>
+        <tr><td><span class="badge yellow">🟡 推奨</span></td><td>MEOチェキ</td><td>競合分析に必要</td></tr>
+        <tr><td><span class="badge blue">🔵 任意</span></td><td>Yext / Synup.dev</td><td>Uberallの補完</td></tr>
+      </table>
+      <div class="warn">🔐 APIキー・シークレットはKMS/Secret Managerに格納してください。DB平文保存禁止・TLS 1.2以上必須。</div>
+    </div>
+
+    <!-- FAQ -->
+    <div class="section" id="faq">
+      <div class="section-header">
+        <span class="section-number">FAQ</span>
+        <h2>❓ よくある質問</h2>
+      </div>
+      <div class="faq-list">
+        <details>
+          <summary>NAP情報を変更したのに反映に時間がかかる</summary>
+          <div class="details-body">配信（Uberall）ページで同期状態を確認してください。<code>LISTING_PENDING</code>の場合は処理中です。通常5〜30分で反映されます。緊急の場合は「一括Sync」を実行してください。</div>
+        </details>
+        <details>
+          <summary>口コミに返信したのに管理画面に反映されない</summary>
+          <div class="details-body">GBP APIの反映には数分かかります。ページをリロードしてください。それでも反映されない場合はAPI連携設定でGBPの接続状態を確認してください。</div>
+        </details>
+        <details>
+          <summary>順位が急に下がった</summary>
+          <div class="details-body">Step 5の「対処チェックリスト」を確認してください。特にNAP整合性（欠損・変更）とGBP投稿頻度が原因になることが多いです。</div>
+        </details>
+        <details>
+          <summary>予約数がダッシュボードとGA4で数値が違う</summary>
+          <div class="details-body">GA4は計測タイミングの遅延（最大24h）があります。また、Webhookの署名検証エラーで一部イベントが除外されている可能性があります。Webhookログページでエラーがないか確認してください。</div>
+        </details>
+        <details>
+          <summary>engine_owner（Uberall）以外からGBPを更新してしまった</summary>
+          <div class="details-body">GBP側で直接変更した場合、次回のUberall Syncで上書きされます。SoTページで最新の正しい情報を入力し、一括Syncを実行してください。</div>
+        </details>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// アクティブセクションをサイドバーでハイライト
+const sections = document.querySelectorAll('.section[id]');
+const tocItems = document.querySelectorAll('.toc-item');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      tocItems.forEach(t => t.classList.remove('active'));
+      const active = document.querySelector(`.toc-item[href="#${e.target.id}"]`);
+      if (active) active.classList.add('active');
+    }
+  });
+}, { threshold: 0.3, rootMargin: '-56px 0px -60% 0px' });
+sections.forEach(s => observer.observe(s));
+document.querySelector('.toc-item[href="#overview"]')?.classList.add('active');
+</script>
+</body>
+</html>
