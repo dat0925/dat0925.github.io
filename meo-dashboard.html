@@ -167,8 +167,8 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
 /* TOUR */
 .tour-overlay{position:fixed;inset:0;background:rgba(5,10,25,.12);z-index:1000;display:none}
 .tour-overlay.active{display:block}
-.tour-wrap{position:fixed;z-index:1001;display:none;align-items:flex-end;gap:0;transition:opacity .45s ease,transform .45s ease}
-.tour-wrap.tour-animating{opacity:0;transform:translateY(8px)}
+.tour-wrap{position:fixed;z-index:1001;display:none;align-items:flex-end;gap:0;transition:opacity .55s ease,transform .55s ease}
+.tour-wrap.tour-animating{opacity:0;transform:translateY(6px)}
 .tour-chara{width:120px;flex-shrink:0;align-self:flex-end;pointer-events:none;user-select:none;filter:drop-shadow(0 8px 16px rgba(5,10,25,.18));transition:opacity .3s ease}
 .tour-chara img{width:120px;display:block}
 /* 吹き出しbox */
@@ -892,28 +892,49 @@ function goStep(idx) {
   document.getElementById('tour-next').textContent = idx === TOUR_STEPS.length - 1 ? '✓ 完了' : '次へ';
 
   const wrap = document.getElementById('tour-wrap');
+  const hl = document.getElementById('tour-hl');
   const isFirst = wrap.style.display === 'none' || wrap.style.display === '';
 
   if (isFirst) {
-    // 初回表示：位置計算してすぐ表示
+    // 初回：そのまま表示
     wrap.style.top = '';
     wrap.style.left = '';
     wrap.style.transform = '';
     wrap.style.display = 'none';
     positionStep(step);
   } else {
-    // ステップ切り替え：フェードアウト → 内容更新 → フェードイン
+    // ステップ切り替え：
+    // 1. ポップアップをフェードアウト
     wrap.classList.add('tour-animating');
+
     setTimeout(() => {
-      wrap.style.top = '';
-      wrap.style.left = '';
-      wrap.style.transform = '';
-      wrap.style.display = 'none';
-      positionStep(step);
-      requestAnimationFrame(() => {
-        wrap.classList.remove('tour-animating');
-      });
-    }, 350);
+      // 2. ハイライト枠を先に新位置へ移動（transitionで滑らかに動く）
+      if (step.target) {
+        const el = document.querySelector(step.target);
+        if (el) {
+          const r = el.getBoundingClientRect();
+          hl.style.left = r.left - 4 + 'px';
+          hl.style.top = r.top - 4 + 'px';
+          hl.style.width = r.width + 8 + 'px';
+          hl.style.height = r.height + 8 + 'px';
+          hl.classList.add('active');
+        }
+      } else {
+        hl.classList.remove('active');
+      }
+
+      // 3. 少し待ってからポップアップを新位置に表示
+      setTimeout(() => {
+        wrap.style.top = '';
+        wrap.style.left = '';
+        wrap.style.transform = '';
+        wrap.style.display = 'none';
+        positionStep(step);
+        requestAnimationFrame(() => {
+          wrap.classList.remove('tour-animating');
+        });
+      }, 200);
+    }, 400);
   }
 }
 
@@ -931,12 +952,16 @@ function positionStep(step) {
   const bw = Math.min(vw - 160, 320);  // キャラ幅120px+余白を除いた最大320px
   box.style.width = bw + 'px';
 
-  // iPad・スマホ、またはtarget無し → 常に中央
+  // iPad・スマホ、またはtarget無し → 画面中央下寄りに固定
   if (!step.target || step.pos === 'center' || isNarrow) {
     wrap.style.position = 'fixed';
-    wrap.style.bottom = '24px';
+    // ポップアップ高さ約320px想定で、画面下端から余裕を持たせる
+    // bottom固定ではなく、top:50%で中央から少し下にずらすことで下部メニューと被らない
+    const wrapH = 340; // wrap想定高さ（キャラ込み）
+    const topPos = Math.max(vh * 0.35, Math.min(vh * 0.55, vh - wrapH - 20));
+    wrap.style.top = topPos + 'px';
+    wrap.style.bottom = '';
     wrap.style.left = '50%';
-    wrap.style.top = '';
     wrap.style.transform = 'translateX(-50%)';
     wrap.style.display = 'flex';
     hl.classList.remove('active');
@@ -946,9 +971,11 @@ function positionStep(step) {
   const el = document.querySelector(step.target);
   if (!el) {
     wrap.style.position = 'fixed';
-    wrap.style.bottom = '24px';
+    const wrapH = 340;
+    const topPos = Math.max(vh * 0.35, Math.min(vh * 0.55, vh - wrapH - 20));
+    wrap.style.top = topPos + 'px';
+    wrap.style.bottom = '';
     wrap.style.left = '50%';
-    wrap.style.top = '';
     wrap.style.transform = 'translateX(-50%)';
     wrap.style.display = 'flex';
     return;
