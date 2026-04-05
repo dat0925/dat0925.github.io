@@ -10,7 +10,7 @@
 :root{--navy:#0D1B3E;--navy-mid:#152347;--navy-light:#1E3160;--navy-border:#2A4070;--orange:#F05A1A;--orange-light:#FF7A45;--orange-dim:rgba(240,90,26,.15);--white:#FFF;--gray-100:#F4F6FA;--gray-200:#E8ECF4;--gray-400:#9AABC8;--gray-600:#5A6E94;--green:#22C55E;--yellow:#FACC15;--red:#EF4444;--cyan:#06B6D4;--sw:240px;--hh:60px}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'BIZ UDPGothic',sans-serif;background:var(--gray-100);color:var(--navy);display:flex;min-height:100vh;overflow-x:hidden}
-.sidebar{width:var(--sw);min-height:100vh;background:var(--navy);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow:hidden}.sidebar-scroll{flex:1;overflow-y:auto;display:flex;flex-direction:column;min-height:0}.sbot{flex-shrink:0;border-top:1px solid var(--navy-border);padding:12px 16px;display:flex;flex-direction:column;align-items:stretch;gap:10px}
+.sidebar{width:var(--sw);min-height:100vh;background:var(--navy);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow:hidden}
 .sidebar::before{content:'';position:absolute;top:-80px;right:-80px;width:220px;height:220px;background:radial-gradient(circle,rgba(240,90,26,.18) 0%,transparent 70%);pointer-events:none}
 .logo{padding:20px 20px 16px;border-bottom:1px solid var(--navy-border)}
 .logo .brand{font-family:'Outfit',sans-serif;font-weight:800;font-size:15px;color:#fff;letter-spacing:.02em}
@@ -20,7 +20,7 @@ body{font-family:'BIZ UDPGothic',sans-serif;background:var(--gray-100);color:var
 .tdot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;box-shadow:0 0 6px var(--green)}
 .tname{font-size:12px;color:#fff;font-weight:700}
 .tcnt{font-size:10px;color:var(--gray-400)}
-nav{flex:1;padding:8px 0;overflow-y:auto;min-height:0}
+nav{flex:1;padding:8px 0;overflow-y:auto}
 .ns{padding:12px 16px 4px;font-size:9px;color:var(--gray-600);letter-spacing:.12em;font-family:'Outfit',sans-serif;font-weight:600;text-transform:uppercase}
 .ni{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:13px;color:var(--gray-400);cursor:pointer;transition:all .2s;border-left:2px solid transparent;user-select:none}
 .ni:hover{color:#fff;background:rgba(255,255,255,.04)}
@@ -234,35 +234,28 @@ nav{flex:1;padding:8px 0;overflow-y:auto;min-height:0}
 <body>
 <aside class="sidebar">
   <div class="logo"><div class="brand">MEO<span>統合管理</span></div><div class="sub">Powered by iFLAG</div></div>
-  <div class="sidebar-scroll">
-    <div class="tenant"><div class="tdot"></div><div><div class="tname">株式会社サンプルフード</div><div class="tcnt">店舗 12店 管理中</div></div></div>
-    <div style="margin:0 16px 4px;"><div class="ni" data-page="contract" style="border-radius:6px;padding:7px 12px;font-size:11px;color:var(--gray-400);gap:6px"><span class="ic" style="font-size:13px">📋</span>契約情報</div></div>
-    <nav>
-      <div class="ns">メイン</div>
-      <div class="ni active" data-page="dashboard"><span class="ic">📊</span>ダッシュボード</div>
-      <div class="ni" data-page="stores"><span class="ic">🏪</span>店舗情報管理<span class="nb w">3</span></div>
-      <div class="ns">配信・連携</div>
-      <div class="ni" data-page="uberall"><span class="ic">🌐</span>配信（Uberall）<span class="nb">5</span></div>
-      <div class="ni" data-page="gbp"><span class="ic">📍</span>Google 運用</div>
-      <div class="ni" data-page="posts"><span class="ic">📝</span>投稿管理<span class="nb w">3</span></div>
-      <div class="ni" data-page="reviews"><span class="ic">⭐</span>口コミ管理<span class="nb">8</span></div>
-      <div class="ns">分析・競合</div>
-      <div class="ni" data-page="ranking"><span class="ic">📈</span>競合・順位（MEOチェキ）</div>
-      <div class="ni" data-page="gsc"><span class="ic">🔍</span>GSC・オーガニック</div>
-      <div class="ni" data-page="aio"><span class="ic">🤖</span><span class="gl" data-gl="aio-term" tabindex="0">AIO<span class="gl-icon">?</span></span> アシスト</div>
-      <div class="ns">予約・CV</div>
-      <div class="ni" data-page="bookings"><span class="ic">📆</span>予約・コンバージョン</div>
-      <div class="ni" data-page="webhooks"><span class="ic">🔔</span>Webhookログ</div>
-      <div class="ns">設定</div>
-      <div class="ni" data-page="settings"><span class="ic">🔗</span>API連携設定</div>
-      <div class="ni" data-page="audit"><span class="ic">🛡</span>監査ログ</div>
-      <div class="ns">アカウント</div>
-      <div class="ni" data-page="users"><span class="ic">👥</span>ユーザー管理</div>
-      <div class="ni" data-page="user-new" style="padding-left:32px;font-size:12px"><span class="ic" style="font-size:12px">＋</span>新規作成</div>
-      <div class="ni" data-page="user-list" style="padding-left:32px;font-size:12px"><span class="ic" style="font-size:12px">≡</span>ユーザー一覧</div>
-    </nav>
-    <div class="sbot"><div style="display:flex;align-items:center;gap:10px"><div class="av">IF</div><div><div style="font-size:12px;color:#fff;font-weight:700">管理者ユーザー</div><div style="font-size:10px;color:var(--gray-400)">プロダクト担当</div></div></div><button onclick="window.location.href='meo-login.html'" style="width:100%;padding:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:7px;font-size:12px;font-weight:700;color:rgba(255,255,255,.5);cursor:pointer;font-family:'BIZ UDPGothic',sans-serif;transition:all .2s;text-align:center" onmouseover="this.style.background='rgba(239,68,68,.18)';this.style.color='#FCA5A5';this.style.borderColor='rgba(239,68,68,.4)'" onmouseout="this.style.background='rgba(255,255,255,.06)';this.style.color='rgba(255,255,255,.5)';this.style.borderColor='rgba(255,255,255,.15)'">↪ ログアウト</button></div>
-  </div>
+  <div class="tenant"><div class="tdot"></div><div><div class="tname">株式会社サンプルフード</div><div class="tcnt">店舗 12店 管理中</div></div></div>
+  <nav>
+    <div class="ns">メイン</div>
+    <div class="ni active" data-page="dashboard"><span class="ic">📊</span>ダッシュボード</div>
+    <div class="ni" data-page="stores"><span class="ic">🏪</span>店舗情報管理<span class="nb w">3</span></div>
+    <div class="ns">配信・連携</div>
+    <div class="ni" data-page="uberall"><span class="ic">🌐</span>配信（Uberall）<span class="nb">5</span></div>
+    <div class="ni" data-page="gbp"><span class="ic">📍</span>Google 運用</div>
+    <div class="ni" data-page="posts"><span class="ic">📝</span>投稿管理<span class="nb w">3</span></div>
+    <div class="ni" data-page="reviews"><span class="ic">⭐</span>口コミ管理<span class="nb">8</span></div>
+    <div class="ns">分析・競合</div>
+    <div class="ni" data-page="ranking"><span class="ic">📈</span>競合・順位（MEOチェキ）</div>
+    <div class="ni" data-page="gsc"><span class="ic">🔍</span>GSC・オーガニック</div>
+    <div class="ni" data-page="aio"><span class="ic">🤖</span><span class="gl" data-gl="aio-term" tabindex="0">AIO<span class="gl-icon">?</span></span> アシスト</div>
+    <div class="ns">予約・CV</div>
+    <div class="ni" data-page="bookings"><span class="ic">📆</span>予約・コンバージョン</div>
+    <div class="ni" data-page="webhooks"><span class="ic">🔔</span>Webhookログ</div>
+    <div class="ns">設定</div>
+    <div class="ni" data-page="settings"><span class="ic">🔗</span>API連携設定</div>
+    <div class="ni" data-page="audit"><span class="ic">🛡</span>監査ログ</div>
+  </nav>
+  <div class="sbot"><div class="av">IF</div><div><div style="font-size:12px;color:#fff;font-weight:700">管理者ユーザー</div><div style="font-size:10px;color:var(--gray-400)">プロダクト担当</div></div></div>
 </aside>
 
 <div class="main">
@@ -682,273 +675,9 @@ nav{flex:1;padding:8px 0;overflow-y:auto;min-height:0}
   </div>
 
 </div>
-  <!-- CONTRACT PAGE -->
-  <div class="page" id="pg-contract">
-    <div class="g2" style="margin-bottom:20px">
-      <div class="card">
-        <div class="ch"><h3>📋 契約者情報</h3><span class="bdg bb">基本情報</span><button class="tbtn" style="height:30px;font-size:12px;padding:0 12px;margin-left:auto">✏️ 編集</button></div>
-        <div class="cb" style="display:flex;flex-direction:column;gap:14px">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-            <div style="background:var(--gray-100);border-radius:8px;padding:10px 14px">
-              <div style="font-size:10px;color:var(--gray-600);margin-bottom:3px">契約者名</div>
-              <div style="font-size:14px;font-weight:700;color:var(--navy)">橋本 太郎</div>
-            </div>
-            <div style="background:var(--gray-100);border-radius:8px;padding:10px 14px">
-              <div style="font-size:10px;color:var(--gray-600);margin-bottom:3px">法人名</div>
-              <div style="font-size:14px;font-weight:700;color:var(--navy)">株式会社サンプルフード</div>
-            </div>
-            <div style="background:var(--gray-100);border-radius:8px;padding:10px 14px">
-              <div style="font-size:10px;color:var(--gray-600);margin-bottom:3px">屋号</div>
-              <div style="font-size:14px;color:var(--navy)">SAMPLE FOOD</div>
-            </div>
-            <div style="background:var(--gray-100);border-radius:8px;padding:10px 14px">
-              <div style="font-size:10px;color:var(--gray-600);margin-bottom:3px">電話番号</div>
-              <div style="font-size:14px;color:var(--navy)">03-XXXX-1234</div>
-            </div>
-            <div style="background:var(--gray-100);border-radius:8px;padding:10px 14px;grid-column:1/-1">
-              <div style="font-size:10px;color:var(--gray-600);margin-bottom:3px">メールアドレス</div>
-              <div style="font-size:14px;color:var(--navy)">hashimoto@sample-food.co.jp</div>
-            </div>
-          </div>
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
-            <div style="text-align:center;padding:12px;background:var(--gray-100);border-radius:8px">
-              <div style="font-size:10px;color:var(--gray-600)">契約日</div>
-              <div style="font-size:13px;font-weight:700;color:var(--navy);margin-top:4px">2025/10/01</div>
-            </div>
-            <div style="text-align:center;padding:12px;background:var(--gray-100);border-radius:8px">
-              <div style="font-size:10px;color:var(--gray-600)">利用開始日</div>
-              <div style="font-size:13px;font-weight:700;color:var(--navy);margin-top:4px">2025/10/15</div>
-            </div>
-            <div style="text-align:center;padding:12px;background:var(--gray-100);border-radius:8px">
-              <div style="font-size:10px;color:var(--gray-600)">ステータス</div>
-              <div style="margin-top:6px"><span class="bdg bg" style="font-size:11px">● 契約中</span></div>
-            </div>
-          </div>
-          <div style="background:var(--gray-100);border-radius:8px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between">
-            <div>
-              <div style="font-size:10px;color:var(--gray-600);margin-bottom:2px">解約依頼日</div>
-              <div style="font-size:12px;color:var(--gray-400)">未設定（解約ご希望の場合はサポートまで）</div>
-            </div>
-            <span class="bdg by">未設定</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="ch"><h3>💴 契約プラン・オプション</h3><span class="bdg bo">スタンダード</span></div>
-        <div class="cb">
-          <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:10px">契約プラン</div>
-          <div style="display:flex;gap:8px;margin-bottom:18px">
-            <div id="plan-lite" onclick="selectContractPlan('lite')" style="flex:1;padding:14px 10px;border-radius:10px;border:2px solid var(--gray-200);text-align:center;cursor:pointer;transition:all .2s">
-              <div style="font-size:11px;font-weight:700;color:var(--gray-600)">ライト</div>
-              <div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:17px;color:var(--navy);margin:4px 0">¥29,800</div>
-              <div style="font-size:10px;color:var(--gray-400)">/月 〜5店舗</div>
-            </div>
-            <div id="plan-std" onclick="selectContractPlan('std')" style="flex:1;padding:14px 10px;border-radius:10px;border:2px solid var(--orange);text-align:center;cursor:pointer;background:var(--orange-dim);transition:all .2s">
-              <div style="font-size:11px;font-weight:700;color:var(--orange)">スタンダード ✓</div>
-              <div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:17px;color:var(--navy);margin:4px 0">¥49,800</div>
-              <div style="font-size:10px;color:var(--gray-400)">/月 〜15店舗</div>
-            </div>
-            <div id="plan-boost" onclick="selectContractPlan('boost')" style="flex:1;padding:14px 10px;border-radius:10px;border:2px solid var(--gray-200);text-align:center;cursor:pointer;transition:all .2s">
-              <div style="font-size:11px;font-weight:700;color:var(--gray-600)">ブースト</div>
-              <div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:17px;color:var(--navy);margin:4px 0">¥79,800</div>
-              <div style="font-size:10px;color:var(--gray-400)">/月 無制限</div>
-            </div>
-          </div>
-          <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:10px">オプション</div>
-          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
-            <label style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--orange-dim);border:1px solid rgba(240,90,26,.2);border-radius:8px;cursor:pointer">
-              <span style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="opt-post" checked onchange="calcContractTotal()"><span><div style="font-size:13px;font-weight:700;color:var(--navy)">投稿代行</div><div style="font-size:10px;color:var(--gray-600)">GBP投稿を月次代行</div></span></span>
-              <span style="font-family:'Outfit',sans-serif;font-weight:700;font-size:13px;color:var(--orange);white-space:nowrap">＋¥5,000/月</span>
-            </label>
-            <label style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--gray-100);border:1px solid var(--gray-200);border-radius:8px;cursor:pointer">
-              <span style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="opt-review" onchange="calcContractTotal()"><span><div style="font-size:13px;font-weight:700;color:var(--navy)">口コミ返信代行</div><div style="font-size:10px;color:var(--gray-600)">AI補助＋人的確認</div></span></span>
-              <span style="font-family:'Outfit',sans-serif;font-weight:700;font-size:13px;color:var(--gray-600);white-space:nowrap">＋¥5,000/月</span>
-            </label>
-            <label style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--gray-100);border:1px solid var(--gray-200);border-radius:8px;cursor:pointer">
-              <span style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="opt-booking" onchange="calcContractTotal()"><span><div style="font-size:13px;font-weight:700;color:var(--navy)">予約システム連携</div><div style="font-size:10px;color:var(--gray-600)">Webhook＋GA4連携</div></span></span>
-              <span style="font-family:'Outfit',sans-serif;font-weight:700;font-size:13px;color:var(--gray-600);white-space:nowrap">＋¥3,000/月</span>
-            </label>
-            <label style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--gray-100);border:1px solid var(--gray-200);border-radius:8px;cursor:pointer">
-              <span style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="opt-lang" onchange="calcContractTotal()"><span><div style="font-size:13px;font-weight:700;color:var(--navy)">多言語サポート</div><div style="font-size:10px;color:var(--gray-600)">英語・中国語・韓国語対応</div></span></span>
-              <span style="font-family:'Outfit',sans-serif;font-weight:700;font-size:13px;color:var(--gray-600);white-space:nowrap">＋¥3,000/月</span>
-            </label>
-          </div>
-          <div style="padding:14px 16px;background:var(--navy);border-radius:10px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-            <div>
-              <div style="font-size:11px;color:var(--gray-400)">月額合計（税抜）</div>
-              <div style="font-size:10px;color:var(--gray-600);margin-top:2px">税込: <span id="contract-total-tax">¥60,280</span></div>
-            </div>
-            <span id="contract-total" style="font-family:'Outfit',sans-serif;font-weight:800;font-size:24px;color:#fff">¥54,800</span>
-          </div>
-          <button class="tbtn" style="width:100%;height:44px;font-size:14px">変更を申請する</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- USERS PAGE -->
-  <div class="page" id="pg-users">
-    <div class="card" style="margin-bottom:20px">
-      <div class="ch"><h3>👥 ユーザー一覧</h3><span class="bdg bb">3名登録中</span><button class="tbtn" style="height:30px;font-size:12px;padding:0 12px;margin-left:auto" onclick="nav('user-new')">＋ 新規作成</button></div>
-      <div style="overflow-x:auto">
-        <table class="dt">
-          <thead><tr><th style="padding-left:20px">ユーザー</th><th>ロール</th><th>最終ログイン</th><th>ステータス</th><th style="padding-right:20px">操作</th></tr></thead>
-          <tbody>
-            <tr>
-              <td style="padding-left:20px"><div style="display:flex;align-items:center;gap:10px"><div class="av" style="width:32px;height:32px;font-size:11px;flex-shrink:0">橋</div><div><div style="font-size:13px;font-weight:700">橋本 太郎</div><div style="font-size:11px;color:var(--gray-400)">hashimoto@sample-food.co.jp</div></div></div></td>
-              <td><span class="bdg bo">管理者</span></td>
-              <td style="font-size:12px;color:var(--gray-600)">今日 10:05</td>
-              <td><span class="bdg bg">有効</span></td>
-              <td style="padding-right:20px"><span style="font-size:12px;color:var(--orange);cursor:pointer;font-weight:700">編集 →</span></td>
-            </tr>
-            <tr>
-              <td style="padding-left:20px"><div style="display:flex;align-items:center;gap:10px"><div class="av" style="width:32px;height:32px;font-size:11px;flex-shrink:0;background:linear-gradient(135deg,var(--cyan),rgba(6,182,212,.6))">遠</div><div><div style="font-size:13px;font-weight:700">遠藤 政宗</div><div style="font-size:11px;color:var(--gray-400)">endo@sample-food.co.jp</div></div></div></td>
-              <td><span class="bdg bb">編集者</span></td>
-              <td style="font-size:12px;color:var(--gray-600)">昨日 18:22</td>
-              <td><span class="bdg bg">有効</span></td>
-              <td style="padding-right:20px"><span style="font-size:12px;color:var(--orange);cursor:pointer;font-weight:700">編集 →</span></td>
-            </tr>
-            <tr>
-              <td style="padding-left:20px"><div style="display:flex;align-items:center;gap:10px"><div class="av" style="width:32px;height:32px;font-size:11px;flex-shrink:0;background:linear-gradient(135deg,var(--green),rgba(34,197,94,.6))">田</div><div><div style="font-size:13px;font-weight:700">田中 美咲</div><div style="font-size:11px;color:var(--gray-400)">tanaka@sample-food.co.jp</div></div></div></td>
-              <td><span class="bdg bg">閲覧者</span></td>
-              <td style="font-size:12px;color:var(--gray-600)">3日前</td>
-              <td><span class="bdg by">無効</span></td>
-              <td style="padding-right:20px"><span style="font-size:12px;color:var(--orange);cursor:pointer;font-weight:700">編集 →</span></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div style="padding:12px 20px;border-top:1px solid var(--gray-200)">
-        <div style="font-size:11px;color:var(--gray-400)">ロール: <strong style="color:var(--orange)">管理者</strong>…全機能 / <strong style="color:var(--cyan)">編集者</strong>…投稿・返信 / <strong style="color:var(--green)">閲覧者</strong>…閲覧のみ</div>
-      </div>
-    </div>
-    <div class="g3">
-      <div class="card">
-        <div class="ch"><h3>👑 管理者</h3></div>
-        <div class="cb">
-          <div style="font-size:12px;color:var(--gray-600);line-height:1.7">全機能へのアクセス、ユーザー管理、API設定変更、契約情報の閲覧・変更申請が可能</div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="ch"><h3>✏️ 編集者</h3></div>
-        <div class="cb">
-          <div style="font-size:12px;color:var(--gray-600);line-height:1.7">店舗情報編集、投稿・口コミ返信、レポート閲覧が可能。API設定・ユーザー管理は不可</div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="ch"><h3>👁 閲覧者</h3></div>
-        <div class="cb">
-          <div style="font-size:12px;color:var(--gray-600);line-height:1.7">ダッシュボード・レポートの閲覧のみ。データの変更・編集は一切不可</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- USER NEW PAGE -->
-  <div class="page" id="pg-user-new">
-    <div style="display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:20px">
-      <div class="card">
-        <div class="ch"><h3>＋ 新規ユーザー作成</h3></div>
-        <div class="cb" style="display:flex;flex-direction:column;gap:16px">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-            <div>
-              <label style="font-size:12px;font-weight:700;color:var(--navy);display:block;margin-bottom:6px">姓</label>
-              <input type="text" placeholder="橋本" style="width:100%;padding:10px 12px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:13px;font-family:'BIZ UDPGothic',sans-serif;color:var(--navy);outline:none;box-sizing:border-box">
-            </div>
-            <div>
-              <label style="font-size:12px;font-weight:700;color:var(--navy);display:block;margin-bottom:6px">名</label>
-              <input type="text" placeholder="太郎" style="width:100%;padding:10px 12px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:13px;font-family:'BIZ UDPGothic',sans-serif;color:var(--navy);outline:none;box-sizing:border-box">
-            </div>
-          </div>
-          <div>
-            <label style="font-size:12px;font-weight:700;color:var(--navy);display:block;margin-bottom:6px">メールアドレス</label>
-            <input type="email" placeholder="user@sample-food.co.jp" style="width:100%;padding:10px 12px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:13px;font-family:'BIZ UDPGothic',sans-serif;color:var(--navy);outline:none;box-sizing:border-box">
-          </div>
-          <div>
-            <label style="font-size:12px;font-weight:700;color:var(--navy);display:block;margin-bottom:8px">ロール</label>
-            <div style="display:flex;gap:8px">
-              <div onclick="this.parentNode.querySelectorAll('div').forEach(d=>{d.style.border='2px solid var(--gray-200)';d.style.background='';d.querySelector('div').style.color='var(--gray-600)'});this.style.border='2px solid var(--orange)';this.style.background='var(--orange-dim)';this.querySelector('div').style.color='var(--orange)'" style="flex:1;padding:12px;border:2px solid var(--gray-200);border-radius:8px;cursor:pointer;text-align:center;transition:all .2s">
-                <div style="font-size:13px;font-weight:700;color:var(--gray-600)">管理者</div>
-                <div style="font-size:10px;color:var(--gray-400);margin-top:3px">全機能</div>
-              </div>
-              <div onclick="this.parentNode.querySelectorAll('div').forEach(d=>{d.style.border='2px solid var(--gray-200)';d.style.background='';d.querySelector('div').style.color='var(--gray-600)'});this.style.border='2px solid var(--orange)';this.style.background='var(--orange-dim)';this.querySelector('div').style.color='var(--orange)'" style="flex:1;padding:12px;border:2px solid var(--orange);border-radius:8px;cursor:pointer;text-align:center;background:var(--orange-dim);transition:all .2s">
-                <div style="font-size:13px;font-weight:700;color:var(--orange)">編集者</div>
-                <div style="font-size:10px;color:var(--gray-400);margin-top:3px">投稿・返信</div>
-              </div>
-              <div onclick="this.parentNode.querySelectorAll('div').forEach(d=>{d.style.border='2px solid var(--gray-200)';d.style.background='';d.querySelector('div').style.color='var(--gray-600)'});this.style.border='2px solid var(--orange)';this.style.background='var(--orange-dim)';this.querySelector('div').style.color='var(--orange)'" style="flex:1;padding:12px;border:2px solid var(--gray-200);border-radius:8px;cursor:pointer;text-align:center;transition:all .2s">
-                <div style="font-size:13px;font-weight:700;color:var(--gray-600)">閲覧者</div>
-                <div style="font-size:10px;color:var(--gray-400);margin-top:3px">閲覧のみ</div>
-              </div>
-            </div>
-          </div>
-          <div style="padding:12px 14px;background:rgba(6,182,212,.06);border:1px solid rgba(6,182,212,.2);border-radius:8px;font-size:12px;color:var(--gray-600)">
-            💡 招待メールを送信します。ユーザーがリンクをクリックするとアカウントが有効化されます。
-          </div>
-          <div style="display:flex;gap:8px">
-            <button class="tbtn" style="flex:1;height:44px">📧 招待メールを送信</button>
-            <button onclick="nav('user-list')" style="padding:0 20px;height:44px;border:1px solid var(--gray-200);border-radius:8px;background:#fff;font-size:13px;font-weight:700;font-family:'BIZ UDPGothic',sans-serif;color:var(--gray-600);cursor:pointer">キャンセル</button>
-          </div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="ch"><h3>🔐 ロール説明</h3></div>
-        <div class="cb" style="display:flex;flex-direction:column;gap:10px">
-          <div style="padding:14px;border-radius:8px;border:1.5px solid rgba(240,90,26,.25);background:var(--orange-dim)">
-            <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:5px">👑 管理者</div>
-            <div style="font-size:12px;color:var(--gray-600);line-height:1.6">全機能へのアクセス、ユーザー管理、API設定変更、契約情報の閲覧・変更申請が可能</div>
-          </div>
-          <div style="padding:14px;border-radius:8px;border:1.5px solid rgba(6,182,212,.2);background:rgba(6,182,212,.05)">
-            <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:5px">✏️ 編集者</div>
-            <div style="font-size:12px;color:var(--gray-600);line-height:1.6">店舗情報編集、投稿・口コミ返信、レポート閲覧が可能。API設定・ユーザー管理は不可</div>
-          </div>
-          <div style="padding:14px;border-radius:8px;border:1.5px solid rgba(34,197,94,.2);background:rgba(34,197,94,.05)">
-            <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:5px">👁 閲覧者</div>
-            <div style="font-size:12px;color:var(--gray-600);line-height:1.6">ダッシュボード・レポートの閲覧のみ。データの変更・編集は不可</div>
-          </div>
-          <div style="margin-top:4px;padding:10px 12px;background:var(--gray-100);border-radius:8px;font-size:11px;color:var(--gray-600)">
-            ⚠️ 管理者ロールの付与は慎重に行ってください。API設定・契約情報への完全なアクセス権限が付与されます。
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- USER LIST PAGE -->
-  <div class="page" id="pg-user-list">
-    <div class="card">
-      <div class="ch"><h3>≡ ユーザー一覧</h3><span class="bdg bb">3名登録中</span><button class="tbtn" style="height:30px;font-size:12px;padding:0 12px;margin-left:auto" onclick="nav('user-new')">＋ 新規作成</button></div>
-      <div style="overflow-x:auto">
-        <table class="dt">
-          <thead><tr><th style="padding-left:20px">ユーザー</th><th>ロール</th><th>最終ログイン</th><th>ステータス</th><th style="padding-right:20px">操作</th></tr></thead>
-          <tbody>
-            <tr>
-              <td style="padding-left:20px"><div style="display:flex;align-items:center;gap:10px"><div class="av" style="width:32px;height:32px;font-size:11px;flex-shrink:0">橋</div><div><div style="font-size:13px;font-weight:700">橋本 太郎</div><div style="font-size:11px;color:var(--gray-400)">hashimoto@sample-food.co.jp</div></div></div></td>
-              <td><span class="bdg bo">管理者</span></td><td style="font-size:12px;color:var(--gray-600)">今日 10:05</td><td><span class="bdg bg">有効</span></td>
-              <td style="padding-right:20px"><span style="font-size:12px;color:var(--orange);cursor:pointer;font-weight:700">編集 →</span></td>
-            </tr>
-            <tr>
-              <td style="padding-left:20px"><div style="display:flex;align-items:center;gap:10px"><div class="av" style="width:32px;height:32px;font-size:11px;flex-shrink:0;background:linear-gradient(135deg,var(--cyan),rgba(6,182,212,.6))">遠</div><div><div style="font-size:13px;font-weight:700">遠藤 政宗</div><div style="font-size:11px;color:var(--gray-400)">endo@sample-food.co.jp</div></div></div></td>
-              <td><span class="bdg bb">編集者</span></td><td style="font-size:12px;color:var(--gray-600)">昨日 18:22</td><td><span class="bdg bg">有効</span></td>
-              <td style="padding-right:20px"><span style="font-size:12px;color:var(--orange);cursor:pointer;font-weight:700">編集 →</span></td>
-            </tr>
-            <tr>
-              <td style="padding-left:20px"><div style="display:flex;align-items:center;gap:10px"><div class="av" style="width:32px;height:32px;font-size:11px;flex-shrink:0;background:linear-gradient(135deg,var(--green),rgba(34,197,94,.6))">田</div><div><div style="font-size:13px;font-weight:700">田中 美咲</div><div style="font-size:11px;color:var(--gray-400)">tanaka@sample-food.co.jp</div></div></div></td>
-              <td><span class="bdg bg">閲覧者</span></td><td style="font-size:12px;color:var(--gray-600)">3日前</td><td><span class="bdg by">無効</span></td>
-              <td style="padding-right:20px"><span style="font-size:12px;color:var(--orange);cursor:pointer;font-weight:700">編集 →</span></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div style="padding:12px 20px;border-top:1px solid var(--gray-200)">
-        <div style="font-size:11px;color:var(--gray-400)">ロール: <strong style="color:var(--orange)">管理者</strong>…全機能 / <strong style="color:var(--cyan)">編集者</strong>…投稿・返信 / <strong style="color:var(--green)">閲覧者</strong>…閲覧のみ</div>
-      </div>
-    </div>
-  </div>
-
 
 <script>
-const pages={dashboard:{t:'ダッシュボード',s:'概要 / 全店舗',b:'＋ 店舗を追加'},stores:{t:'店舗情報管理',s:'12店舗 | <span class="gl" data-gl="eo" tabindex="0">engine_owner<span class="gl-icon">?</span></span>: Uberall',b:'📥 CSVインポート'},uberall:{t:'配信（Uberall）',s:'Listings / サイテーション',b:'🔄 全店舗Sync'},gbp:{t:'Google 運用',s:'GBP Performance',b:'＋ 投稿を作成'},posts:{t:'投稿管理',s:'GBP投稿 / AI生成',b:'✏️ 新規投稿'},reviews:{t:'口コミ管理',s:'未返信 8件',b:'🤖 AI一括返信案'},ranking:{t:'競合・順位（MEOチェキ）',s:'日次順位更新',b:'＋ KW追加'},gsc:{t:'GSC・オーガニック',s:'Search Console API | AI Overviews含む',b:'📊 CSVエクスポート'},aio:{t:'AIO アシスト',s:'構造化データ / サイテーション / 計測',b:'🔄 チェック実行'},bookings:{t:'予約・コンバージョン',s:'自社予約API + GA4 MP',b:'📊 CSVエクスポート'},webhooks:{t:'Webhookログ',s:'全種別イベント',b:'🔄 再取得'},settings:{t:'API連携設定',s:'8サービス接続管理',b:'＋ 連携追加'},audit:{t:'監査ログ',s:'全操作記録',b:'📥 ログDL'},contract:{t:'契約情報',s:'プラン・オプション管理',b:'変更を申請'},users:{t:'ユーザー管理',s:'アカウント管理',b:'＋ ユーザー追加'},'user-new':{t:'ユーザー管理',s:'新規作成',b:'＋ ユーザー追加'},'user-list':{t:'ユーザー管理',s:'ユーザー一覧',b:'＋ ユーザー追加'}};
+const pages={dashboard:{t:'ダッシュボード',s:'概要 / 全店舗',b:'＋ 店舗を追加'},stores:{t:'店舗情報管理',s:'12店舗 | <span class="gl" data-gl="eo" tabindex="0">engine_owner<span class="gl-icon">?</span></span>: Uberall',b:'📥 CSVインポート'},uberall:{t:'配信（Uberall）',s:'Listings / サイテーション',b:'🔄 全店舗Sync'},gbp:{t:'Google 運用',s:'GBP Performance',b:'＋ 投稿を作成'},posts:{t:'投稿管理',s:'GBP投稿 / AI生成',b:'✏️ 新規投稿'},reviews:{t:'口コミ管理',s:'未返信 8件',b:'🤖 AI一括返信案'},ranking:{t:'競合・順位（MEOチェキ）',s:'日次順位更新',b:'＋ KW追加'},gsc:{t:'GSC・オーガニック',s:'Search Console API | AI Overviews含む',b:'📊 CSVエクスポート'},aio:{t:'AIO アシスト',s:'構造化データ / サイテーション / 計測',b:'🔄 チェック実行'},bookings:{t:'予約・コンバージョン',s:'自社予約API + GA4 MP',b:'📊 CSVエクスポート'},webhooks:{t:'Webhookログ',s:'全種別イベント',b:'🔄 再取得'},settings:{t:'API連携設定',s:'8サービス接続管理',b:'＋ 連携追加'},audit:{t:'監査ログ',s:'全操作記録',b:'📥 ログDL'}};
 function nav(id){
   if(!pages[id])return;
   document.querySelectorAll('.page').forEach(p=>{p.classList.remove('active');p.classList.remove('page-in');});
@@ -1465,39 +1194,6 @@ const GLOSSARY = {
     }
   });
 })();
-
-// ===== CONTRACT =====
-var contractPlanBase = 49800;
-function selectContractPlan(plan) {
-  var prices = {lite:29800, std:49800, boost:79800};
-  var labels = {lite:'ライト', std:'スタンダード', boost:'ブースト'};
-  contractPlanBase = prices[plan];
-  ['lite','std','boost'].forEach(function(p) {
-    var el = document.getElementById('plan-'+p);
-    if (!el) return;
-    if (p === plan) {
-      el.style.border = '2px solid var(--orange)';
-      el.style.background = 'var(--orange-dim)';
-      el.querySelector('div').style.color = 'var(--orange)';
-      el.querySelector('div').textContent = labels[p] + ' ✓';
-    } else {
-      el.style.border = '2px solid var(--gray-200)';
-      el.style.background = '';
-      el.querySelector('div').style.color = 'var(--gray-600)';
-      el.querySelector('div').textContent = labels[p];
-    }
-  });
-  calcContractTotal();
-}
-function calcContractTotal() {
-  var opts = [{id:'opt-post',p:5000},{id:'opt-review',p:5000},{id:'opt-booking',p:3000},{id:'opt-lang',p:3000}];
-  var total = contractPlanBase;
-  opts.forEach(function(o){ var cb=document.getElementById(o.id); if(cb&&cb.checked) total+=o.p; });
-  var tp = document.getElementById('contract-total');
-  var tt = document.getElementById('contract-total-tax');
-  if(tp) tp.textContent = '¥'+total.toLocaleString();
-  if(tt) tt.textContent = '¥'+Math.round(total*1.1).toLocaleString();
-}
 
 </script>
 </body>
