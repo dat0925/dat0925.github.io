@@ -20,7 +20,7 @@ body{font-family:'BIZ UDPGothic',sans-serif;background:var(--gray-100);color:var
 .tdot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;box-shadow:0 0 6px var(--green)}
 .tname{font-size:12px;color:#fff;font-weight:700}
 .tcnt{font-size:10px;color:var(--gray-400)}
-nav{flex:1;padding:8px 0;overflow-y:auto}
+nav{flex:1;padding:8px 0;overflow-y:scroll;-webkit-overflow-scrolling:touch;min-height:0}
 .ns{padding:12px 16px 4px;font-size:9px;color:var(--gray-600);letter-spacing:.12em;font-family:'Outfit',sans-serif;font-weight:600;text-transform:uppercase}
 .ni{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:13px;color:var(--gray-400);cursor:pointer;transition:all .2s;border-left:2px solid transparent;user-select:none}
 .ni:hover{color:#fff;background:rgba(255,255,255,.04)}
@@ -28,7 +28,7 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
 .ni .ic{font-size:16px;width:20px;text-align:center;flex-shrink:0}
 .nb{margin-left:auto;background:var(--orange);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;font-family:'Outfit',sans-serif}
 .nb.w{background:var(--yellow);color:var(--navy)}
-.sbot{border-top:1px solid var(--navy-border);padding:12px 16px;display:flex;align-items:center;gap:10px}
+.sbot{border-top:1px solid var(--navy-border);padding:12px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0}
 .av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--orange),#FF7A45);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;font-family:'Outfit',sans-serif}
 .main{margin-left:var(--sw);flex:1;display:flex;flex-direction:column;min-height:100vh}
 .topbar{height:var(--hh);background:#fff;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;padding:0 28px;gap:16px;position:sticky;top:0;z-index:90}
@@ -233,7 +233,7 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
 </head>
 <body>
 <aside class="sidebar">
-  <div class="logo"><div class="brand">MEO<span>統合管理</span></div><div class="sub">Powered by iFLAG</div></div>
+  <div class="logo" onclick="nav('dashboard')" style="cursor:pointer"><div class="brand">MEO<span>統合管理</span></div><div class="sub">Powered by iFLAG</div></div>
   <div class="tenant"><div class="tdot"></div><div><div class="tname">株式会社サンプルフード</div><div class="tcnt">店舗 12店 管理中</div></div></div>
   <nav>
     <div class="ns">メイン</div>
@@ -247,7 +247,7 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
     <div class="ns">分析・競合</div>
     <div class="ni" data-page="ranking"><span class="ic">📈</span>競合・順位（MEOチェキ）</div>
     <div class="ni" data-page="gsc"><span class="ic">🔍</span>GSC・オーガニック</div>
-    <div class="ni" data-page="aio"><span class="ic">🤖</span><span class="gl" data-gl="aio-term" tabindex="0">AIO<span class="gl-icon">?</span></span> アシスト</div>
+    <div class="ni" data-page="aio"><span class="ic">🤖</span>AIOアシスト<span class="gl" data-gl="aio-term" tabindex="0"><span class="gl-icon">?</span></span></div>
     <div class="ns">予約・CV</div>
     <div class="ni" data-page="bookings"><span class="ic">📆</span>予約・コンバージョン</div>
     <div class="ni" data-page="webhooks"><span class="ic">🔔</span>Webhookログ</div>
