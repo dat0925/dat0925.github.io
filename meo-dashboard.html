@@ -9,7 +9,7 @@
 <style>
 :root{--navy:#0D1B3E;--navy-mid:#152347;--navy-light:#1E3160;--navy-border:#2A4070;--orange:#F05A1A;--orange-light:#FF7A45;--orange-dim:rgba(240,90,26,.15);--white:#FFF;--gray-100:#F4F6FA;--gray-200:#E8ECF4;--gray-400:#9AABC8;--gray-600:#5A6E94;--green:#22C55E;--yellow:#FACC15;--red:#EF4444;--cyan:#06B6D4;--sw:240px;--hh:60px}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'BIZ UDPGothic',sans-serif;background:var(--gray-100);color:var(--navy);display:flex;min-height:100vh;min-height:-webkit-fill-available;overflow-x:hidden}
+body{font-family:'BIZ UDPGothic',sans-serif;background:var(--gray-100);color:var(--navy);display:flex;min-height:100vh;overflow-x:hidden}
 .sidebar{width:var(--sw);min-height:100vh;background:var(--navy);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow:hidden}
 .sidebar::before{content:'';position:absolute;top:-80px;right:-80px;width:220px;height:220px;background:radial-gradient(circle,rgba(240,90,26,.18) 0%,transparent 70%);pointer-events:none}
 .logo{padding:20px 20px 16px;border-bottom:1px solid var(--navy-border)}
@@ -30,8 +30,8 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
 .nb.w{background:var(--yellow);color:var(--navy)}
 .sbot{border-top:1px solid var(--navy-border);padding:12px 16px;display:flex;align-items:center;gap:10px}
 .av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--orange),#FF7A45);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;font-family:'Outfit',sans-serif}
-.main{margin-left:var(--sw);flex:1;display:flex;flex-direction:column;min-height:100vh;min-height:-webkit-fill-available}
-.topbar{height:var(--hh);background:#fff;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;padding:0 28px;gap:16px;position:-webkit-sticky;position:sticky;top:0;z-index:90}
+.main{margin-left:var(--sw);flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{height:var(--hh);background:#fff;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;padding:0 28px;gap:16px;position:sticky;top:0;z-index:90}
 #ttitle{font-family:'Outfit',sans-serif;font-weight:700;font-size:16px;color:var(--navy);flex:1}
 #ttitle span{color:var(--gray-400);font-weight:400;font-size:13px;margin-left:8px}
 .dbadge{background:var(--gray-100);border:1px solid var(--gray-200);border-radius:6px;padding:5px 12px;font-size:12px;color:var(--gray-600);font-family:'Outfit',sans-serif}
@@ -200,158 +200,44 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
 .gl-pop .gp-body{color:rgba(255,255,255,.88)}
 .gl-pop .gp-ex{margin-top:7px;padding-top:7px;border-top:1px solid rgba(255,255,255,.1);font-size:11px;color:var(--cyan)}
 
-/* =============================================
-   MOBILE LAYOUT (max-width: 767px)
-   ============================================= */
-@media (max-width: 767px) {
-  :root { --hh: 52px; }
-  /* サイドバー非表示 */
-  .sidebar { display: none !important; }
-  /* メインをフルワイド */
-  .main { margin-left: 0; margin-top: 0; }
-  /* トップバー */
-  .topbar { padding: 0 13px; gap: 8px; }
+
+
+
+
+/* ===== レスポンシブ（シンプル） ===== */
+@media (max-width: 900px) {
+  :root { --sw: 180px; }
+  .logo .sub, .tcnt, .sbot { display: none; }
+  .ni { padding: 9px 12px; font-size: 12px; gap: 6px; }
+  .ns { padding: 10px 12px 4px; font-size: 9px; }
+}
+@media (max-width: 640px) {
+  :root { --sw: 52px; }
+  .ni span.ic { font-size: 18px; width: 24px; }
+  .ni { justify-content: center; padding: 12px 0; gap: 0; }
+  .ni span:not(.ic):not(.nb) { display: none; }
+  .nb { display: none; }
+  .ns { display: none; }
+  .logo .brand span, .logo .brand { font-size: 12px; text-align: center; }
+  .logo { padding: 12px 4px; }
+  .tenant { display: none; }
+  .topbar { padding: 0 12px; }
   #ttitle span, .dbadge, .etag { display: none; }
   #ttitle { font-size: 13px; }
   .tbtn { padding: 5px 10px; font-size: 11px; }
-  .ham-btn { display: flex !important; }
-  /* ページ */
-  .page { padding: 13px; }
-  /* KPIグリッド横スクロール */
-  .kpi-grid, .kgrid {
-    display: flex !important;
-    overflow-x: auto;
-    gap: 10px;
-    padding-bottom: 4px;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-    margin-bottom: 14px;
-  }
-  .kpi-grid::-webkit-scrollbar, .kgrid::-webkit-scrollbar { height: 3px; }
-  .kpi-card, .kc {
-    min-width: 130px !important;
-    flex-shrink: 0;
-    scroll-snap-align: start;
-    padding: 12px 14px;
-  }
-  .kpi-value, .kv { font-size: 21px !important; }
-  /* 2カラム→1カラム */
-  .grid-2, .g2, .grid-3, .g3 { grid-template-columns: 1fr !important; gap: 12px; }
-  /* テーブル非表示→モバイルカード表示 */
-  .data-table, .dt { display: none !important; }
-  .dt-mobile { display: block !important; }
-  /* チャート */
-  .chart-wrap, .cwrap { height: 80px; }
-  /* アラートバー */
-  .alert-bar, .abar { flex-wrap: wrap; }
-  .alert-bar .alert-text, .abar .at { width: 100%; }
-  /* タブ */
-  .tab-row, .tabs { overflow-x: auto; padding: 0 12px; }
-  .tab { padding: 9px 11px; font-size: 11px; white-space: nowrap; }
-  /* Webhook */
-  .webhook-item, .whi { flex-wrap: wrap; }
-  .wh-event, .we { width: 100%; }
-  /* カードbody */
-  .card-body, .cb { padding: 13px; }
-  .card { margin-bottom: 12px; }
-  /* ドロワー (display は .open クラスで制御) */
-  /* ヘルプボタン */
-  .help-btn, .helpbtn { bottom: 14px; right: 14px; width: 38px; height: 38px; font-size: 16px; }
-  /* 用語ポップアップ */
-  .gl-pop, .glpop { width: calc(100vw - 28px) !important; }
-  /* ツアーボックス */
-  .tour-box, .tbox { width: calc(100vw - 30px) !important; }
+  .page { padding: 12px; }
+  .kgrid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px; }
+  .g2, .g3, .grid-2, .grid-3 { grid-template-columns: 1fr !important; }
+  .kv, .kpi-value { font-size: 22px !important; }
+  .dt th:nth-child(n+4), .dt td:nth-child(n+4) { display: none; }
 }
-@media (min-width: 768px) {
-  .dt-mobile { display: none !important; }
-  .ham-btn, .hambtn { display: none !important; }
-}
-
-/* モバイル専用要素 デフォルト非表示 */
-.ham-btn { display: none; }
-.drawer {
-  display: none;
-  position: fixed;
-  top: 0; left: 0; bottom: 0;
-  width: 260px;
-  background: var(--navy);
-  z-index: 300;
-  padding: 0;
-  overflow-y: auto;
-  transform: translateX(-100%);
-  transition: transform 0.25s ease;
-  flex-direction: column;
-}
-.drawer.open {
-  display: flex !important;
-  transform: translateX(0);
-}
-.drawer-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.45);
-  z-index: 299;
-}
-.drawer-overlay.open { display: block !important; }
-.drawer-logo {
-  padding: 18px 16px 14px;
-  border-bottom: 1px solid var(--navy-border);
-}
-.drawer-tenant {
-  margin: 10px 14px;
-  background: var(--navy-light);
-  border: 1px solid var(--navy-border);
-  border-radius: 8px;
-  padding: 10px 12px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.drawer .tname { font-size: 12px; font-weight: 700; color: #fff; }
-.drawer .tcnt  { font-size: 10px; color: var(--gray-400); }
-.drawer .tdot  { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
-.drawer .ns    { padding: 14px 16px 4px; font-size: 10px; font-weight: 700; color: var(--gray-400); text-transform: uppercase; letter-spacing: .05em; }
-.drawer .ni    { padding: 10px 16px; font-size: 13px; color: var(--gray-400); cursor: pointer; border-left: 3px solid transparent; display: flex; align-items: center; gap: 8px; }
-.drawer .ni:hover, .drawer .ni.active { color: #fff; background: rgba(240,90,26,.12); border-left-color: var(--orange); }
-.drawer .nb    { margin-left: auto; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 10px; background: var(--navy-border); color: var(--gray-400); }
-.drawer .nb.w  { background: var(--yellow); color: var(--navy); }
-.mobile-cards { display: none; }
 </style>
 </head>
 <body>
 
 <!-- DRAWER -->
-<div class="drawer-overlay" id="drawer-overlay"></div>
-<div class="drawer" id="drawer">
-  <div class="drawer-logo">
-    <div class="brand">MEO<span>管理</span></div>
-  </div>
-  <div class="drawer-tenant">
-    <div class="tdot"></div>
-    <div><div class="tname">株式会社サンプルフード</div><div class="tcnt">12店 管理中</div></div>
-  </div>
-  <div class="ns">メイン</div>
-  <div class="ni" data-page="dashboard" data-drawer><span class="ic">📊</span>ダッシュボード</div>
-  <div class="ni" data-page="stores" data-drawer><span class="ic">🏪</span>店舗（SoT）管理<span class="nb w">3</span></div>
-  <div class="ns">配信・連携</div>
-  <div class="ni" data-page="uberall" data-drawer><span class="ic">🌐</span>配信（Uberall）<span class="nb">5</span></div>
-  <div class="ni" data-page="gbp" data-drawer><span class="ic">📍</span>Google 運用</div>
-  <div class="ni" data-page="posts" data-drawer><span class="ic">📝</span>投稿管理<span class="nb w">3</span></div>
-  <div class="ni" data-page="reviews" data-drawer><span class="ic">⭐</span>口コミ管理<span class="nb">8</span></div>
-  <div class="ns">分析・競合</div>
-  <div class="ni" data-page="ranking" data-drawer><span class="ic">📈</span>競合・順位</div>
-  <div class="ni" data-page="gsc" data-drawer><span class="ic">🔍</span>GSC・オーガニック</div>
-  <div class="ni" data-page="aio" data-drawer><span class="ic">🤖</span>AIO アシスト</div>
-  <div class="ns">予約・CV</div>
-  <div class="ni" data-page="bookings" data-drawer><span class="ic">📆</span>予約・コンバージョン</div>
-  <div class="ni" data-page="webhooks" data-drawer><span class="ic">🔔</span>Webhookログ</div>
-  <div class="ns">設定</div>
-  <div class="ni" data-page="settings" data-drawer><span class="ic">🔗</span>API連携設定</div>
-  <div class="ni" data-page="audit" data-drawer><span class="ic">🛡</span>監査ログ</div>
-</div>
 <aside class="sidebar">
-  <div class="logo"><div class="brand">MEO<span>管理</span></div><div class="sub">iFLAG IFG IT Solutions</div></div><button class="ham-btn" id="ham-btn" aria-label="メニュー">☰</button>
+  <div class="logo"><div class="brand">MEO<span>管理</span></div><div class="sub">iFLAG IFG IT Solutions</div></div>
   <div class="tenant"><div class="tdot"></div><div><div class="tname">株式会社サンプルフード</div><div class="tcnt">店舗 12店 管理中</div></div></div>
   <nav>
     <div class="ns">メイン</div>
@@ -439,11 +325,7 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
           </tbody>
         </table>
         
-      <!-- MOBILE CARDS: stores -->
-      <div class="mobile-cards" id="mc-stores">
-        <div class="mc-item">
-          <div class="mc-title">渋谷本店 <span class="bdg bg">同期済</span></div>
-          <div class="mc-row"><span class="mc-label">カテゴリ</span><span class="mc-val"><span class="kch">レストラン</span></span></div>
+      <!-- MOBILE CARDS: stores --><div class="mc-row"><span class="mc-label">カテゴリ</span><span class="mc-val"><span class="kch">レストラン</span></span></div>
           <div class="mc-row"><span class="mc-label">電話</span><span class="mc-val">03-XXXX-0001</span></div>
           <div class="mc-row"><span class="mc-label">欠損</span><span class="mc-val" style="color:var(--green)">なし</span></div>
         </div>
@@ -625,9 +507,7 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
             </tbody>
           </table>
           
-      <!-- MOBILE CARDS: gsc -->
-      <div class="mobile-cards" id="mc-gsc">
-        <div class="mc-item"><div class="mc-title"><span class="kch">渋谷 ランチ</span></div><div class="mc-row"><span class="mc-label">表示回数</span><span class="mc-val">1,240</span></div><div class="mc-row"><span class="mc-label">クリック</span><span class="mc-val">87</span></div><div class="mc-row"><span class="mc-label">CTR</span><span class="mc-val" style="color:var(--green)">7.0%</span></div></div>
+      <!-- MOBILE CARDS: gsc --><div class="mc-row"><span class="mc-label">表示回数</span><span class="mc-val">1,240</span></div><div class="mc-row"><span class="mc-label">クリック</span><span class="mc-val">87</span></div><div class="mc-row"><span class="mc-label">CTR</span><span class="mc-val" style="color:var(--green)">7.0%</span></div></div>
         <div class="mc-item"><div class="mc-title"><span class="kch">新宿 カフェ</span></div><div class="mc-row"><span class="mc-label">表示回数</span><span class="mc-val">980</span></div><div class="mc-row"><span class="mc-label">クリック</span><span class="mc-val">61</span></div><div class="mc-row"><span class="mc-label">CTR</span><span class="mc-val" style="color:var(--green)">6.2%</span></div></div>
         <div class="mc-item"><div class="mc-title"><span class="kch">渋谷 テイクアウト</span></div><div class="mc-row"><span class="mc-label">表示回数</span><span class="mc-val">740</span></div><div class="mc-row"><span class="mc-label">クリック</span><span class="mc-val">40</span></div><div class="mc-row"><span class="mc-label">CTR</span><span class="mc-val" style="color:var(--cyan)">5.4%</span></div></div>
       </div><div style="padding:10px 20px;font-size:10px;color:var(--gray-400);border-top:1px solid var(--gray-200)">QPM制限考慮・差分バッチ取得 | AI Overviews由来のクリックも含む</div>
@@ -694,11 +574,7 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
             </tbody>
           </table>
           
-      <!-- MOBILE CARDS: bookings -->
-      <div class="mobile-cards" id="mc-bookings">
-        <div class="mc-item">
-          <div class="mc-title">渋谷本店 <span class="bkst bsc">CONFIRMED</span></div>
-          <div class="mc-row"><span class="mc-label">来店</span><span class="mc-val">4/10 19:00</span></div>
+      <!-- MOBILE CARDS: bookings --><div class="mc-row"><span class="mc-label">来店</span><span class="mc-val">4/10 19:00</span></div>
           <div class="mc-row"><span class="mc-label">人数 / 金額</span><span class="mc-val">2名 ¥12,000</span></div>
         </div>
         <div class="mc-item">
@@ -837,9 +713,7 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
           </tbody>
         </table>
         
-      <!-- MOBILE CARDS: settings -->
-      <div class="mobile-cards" id="mc-settings">
-        <div class="mc-item"><div class="mc-title">🌐 Uberall <span class="bdg bg">接続済</span></div><div class="mc-row"><span class="mc-label">認証</span><span class="mc-val" style="font-size:11px">X-API-KEY</span></div><div class="mc-row"><span class="mc-label">最終確認</span><span class="mc-val">10:05</span></div></div>
+      <!-- MOBILE CARDS: settings --><div class="mc-row"><span class="mc-label">認証</span><span class="mc-val" style="font-size:11px">X-API-KEY</span></div><div class="mc-row"><span class="mc-label">最終確認</span><span class="mc-val">10:05</span></div></div>
         <div class="mc-item"><div class="mc-title">📍 Google GBP <span class="bdg bg">接続済</span></div><div class="mc-row"><span class="mc-label">認証</span><span class="mc-val" style="font-size:11px">OAuth 2.0</span></div><div class="mc-row"><span class="mc-label">最終確認</span><span class="mc-val">09:47</span></div></div>
         <div class="mc-item"><div class="mc-title">🔍 GSC <span class="bdg bg">接続済</span></div><div class="mc-row"><span class="mc-label">認証</span><span class="mc-val" style="font-size:11px">OAuth 2.0</span></div><div class="mc-row"><span class="mc-label">最終確認</span><span class="mc-val">09:32</span></div></div>
         <div class="mc-item"><div class="mc-title">📊 GA4 <span class="bdg bg">接続済</span></div><div class="mc-row"><span class="mc-label">認証</span><span class="mc-val" style="font-size:11px">measurement_id</span></div></div>
@@ -899,10 +773,6 @@ function nav(id){
   const p=pages[id];
   document.getElementById('ttitle').innerHTML=p.t+'<span>'+p.s+'</span>';
   document.getElementById('tbtn').textContent=p.b;
-  // ドロワー同期
-  document.querySelectorAll('[data-drawer]').forEach(n=>{
-    n.classList.toggle('active', n.dataset.page===id);
-  });
 }
 
 // メインナビ
@@ -915,32 +785,6 @@ document.querySelectorAll('.tabs').forEach(tr=>{
       tr.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
       this.classList.add('active');
     });
-  });
-});
-
-// ===== DRAWER =====
-const hamBtn=document.getElementById('ham-btn');
-const drawer=document.getElementById('drawer');
-const drawerOv=document.getElementById('drawer-overlay');
-
-function openDrawer(){
-  if(!drawer)return;
-  drawer.classList.add('open');
-  drawerOv.classList.add('open');
-  document.body.style.overflow='hidden';
-}
-function closeDrawer(){
-  if(!drawer)return;
-  drawer.classList.remove('open');
-  drawerOv.classList.remove('open');
-  document.body.style.overflow='';
-}
-if(hamBtn) hamBtn.addEventListener('click',e=>{e.stopPropagation();openDrawer();});
-if(drawerOv) drawerOv.addEventListener('click',closeDrawer);
-document.querySelectorAll('[data-drawer]').forEach(item=>{
-  item.addEventListener('click',()=>{
-    nav(item.dataset.page);
-    closeDrawer();
   });
 });
 
