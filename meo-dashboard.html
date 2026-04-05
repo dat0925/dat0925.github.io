@@ -254,6 +254,9 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
     <div class="ns">設定</div>
     <div class="ni" data-page="settings"><span class="ic">🔗</span>API連携設定</div>
     <div class="ni" data-page="audit"><span class="ic">🛡</span>監査ログ</div>
+    <div class="ns">アカウント</div>
+    <div class="ni" data-page="user-list"><span class="ic">👥</span>ユーザー一覧</div>
+    <div class="ni" data-page="user-new" style="padding-left:32px;font-size:12px"><span class="ic" style="font-size:12px">＋</span>新規作成</div>
   </nav>
   <div class="sbot"><div class="av">IF</div><div><div style="font-size:12px;color:#fff;font-weight:700">管理者ユーザー</div><div style="font-size:10px;color:var(--gray-400)">プロダクト担当</div></div></div>
 </aside>
@@ -674,10 +677,102 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
     </div>
   </div>
 
+  <!-- USER LIST PAGE -->
+  <div class="page" id="pg-user-list">
+    <div class="card">
+      <div class="ch"><h3>👥 ユーザー一覧</h3><span class="bdg bb">3名登録中</span><button class="tbtn" style="height:30px;font-size:12px;padding:0 12px;margin-left:auto" onclick="nav('user-new')">＋ 新規作成</button></div>
+      <div style="padding:0">
+        <table class="dt">
+          <thead><tr><th style="padding-left:20px">ユーザー</th><th>メールアドレス</th><th>ロール</th><th>最終ログイン</th><th>ステータス</th><th style="padding-right:20px">操作</th></tr></thead>
+          <tbody>
+            <tr>
+              <td style="padding-left:20px"><div style="display:flex;align-items:center;gap:10px"><div class="av" style="width:28px;height:28px;font-size:11px;flex-shrink:0">橋</div><span style="font-size:13px;font-weight:700">橋本 太郎</span></div></td>
+              <td style="font-size:12px;color:var(--gray-600)">hashimoto@sample-food.co.jp</td>
+              <td><span class="bdg bo">管理者</span></td>
+              <td style="font-size:12px;color:var(--gray-600)">今日 10:05</td>
+              <td><span class="bdg bg">有効</span></td>
+              <td style="padding-right:20px"><span style="font-size:12px;color:var(--orange);cursor:pointer;font-weight:700">編集 →</span></td>
+            </tr>
+            <tr>
+              <td style="padding-left:20px"><div style="display:flex;align-items:center;gap:10px"><div class="av" style="width:28px;height:28px;font-size:11px;flex-shrink:0;background:linear-gradient(135deg,var(--cyan),rgba(6,182,212,.6))">遠</div><span style="font-size:13px;font-weight:700">遠藤 政宗</span></div></td>
+              <td style="font-size:12px;color:var(--gray-600)">endo@sample-food.co.jp</td>
+              <td><span class="bdg bb">編集者</span></td>
+              <td style="font-size:12px;color:var(--gray-600)">昨日 18:22</td>
+              <td><span class="bdg bg">有効</span></td>
+              <td style="padding-right:20px"><span style="font-size:12px;color:var(--orange);cursor:pointer;font-weight:700">編集 →</span></td>
+            </tr>
+            <tr>
+              <td style="padding-left:20px"><div style="display:flex;align-items:center;gap:10px"><div class="av" style="width:28px;height:28px;font-size:11px;flex-shrink:0;background:linear-gradient(135deg,var(--green),rgba(34,197,94,.6))">田</div><span style="font-size:13px;font-weight:700">田中 美咲</span></div></td>
+              <td style="font-size:12px;color:var(--gray-600)">tanaka@sample-food.co.jp</td>
+              <td><span class="bdg bg">閲覧者</span></td>
+              <td style="font-size:12px;color:var(--gray-600)">3日前</td>
+              <td><span class="bdg by">無効</span></td>
+              <td style="padding-right:20px"><span style="font-size:12px;color:var(--orange);cursor:pointer;font-weight:700">編集 →</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="padding:12px 20px;border-top:1px solid var(--gray-200);font-size:11px;color:var(--gray-400)">ロール: <strong style="color:var(--orange)">管理者</strong>…全機能 / <strong style="color:var(--cyan)">編集者</strong>…投稿・返信 / <strong style="color:var(--green)">閲覧者</strong>…閲覧のみ</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- USER NEW PAGE -->
+  <div class="page" id="pg-user-new">
+    <div class="card" style="max-width:560px">
+      <div class="ch"><h3>＋ 新規ユーザー作成</h3><button onclick="nav('user-list')" style="margin-left:auto;padding:0 14px;height:30px;border:1px solid var(--gray-200);border-radius:7px;background:#fff;font-size:12px;font-weight:700;font-family:'BIZ UDPGothic',sans-serif;color:var(--gray-600);cursor:pointer">← 一覧へ戻る</button></div>
+      <div style="padding:24px;display:flex;flex-direction:column;gap:16px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:6px">姓</div>
+            <input type="text" placeholder="橋本" style="width:100%;padding:10px 12px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:13px;font-family:'BIZ UDPGothic',sans-serif;color:var(--navy);outline:none;box-sizing:border-box">
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:6px">名</div>
+            <input type="text" placeholder="太郎" style="width:100%;padding:10px 12px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:13px;font-family:'BIZ UDPGothic',sans-serif;color:var(--navy);outline:none;box-sizing:border-box">
+          </div>
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:6px">メールアドレス</div>
+          <input type="email" placeholder="user@sample-food.co.jp" style="width:100%;padding:10px 12px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:13px;font-family:'BIZ UDPGothic',sans-serif;color:var(--navy);outline:none;box-sizing:border-box">
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px">ロール</div>
+          <table class="dt" style="border:1px solid var(--gray-200);border-radius:8px;overflow:hidden">
+            <thead><tr><th style="padding-left:16px">ロール</th><th>できること</th><th style="padding-right:16px">選択</th></tr></thead>
+            <tbody>
+              <tr>
+                <td style="padding-left:16px;font-weight:700">👑 管理者</td>
+                <td style="font-size:12px;color:var(--gray-600)">全機能・ユーザー管理・API設定</td>
+                <td style="padding-right:16px"><input type="radio" name="role" value="admin"></td>
+              </tr>
+              <tr>
+                <td style="padding-left:16px;font-weight:700">✏️ 編集者</td>
+                <td style="font-size:12px;color:var(--gray-600)">投稿・口コミ返信・レポート閲覧</td>
+                <td style="padding-right:16px"><input type="radio" name="role" value="editor" checked></td>
+              </tr>
+              <tr>
+                <td style="padding-left:16px;font-weight:700">👁 閲覧者</td>
+                <td style="font-size:12px;color:var(--gray-600)">ダッシュボード・レポート閲覧のみ</td>
+                <td style="padding-right:16px"><input type="radio" name="role" value="viewer"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="padding:10px 14px;background:rgba(6,182,212,.06);border:1px solid rgba(6,182,212,.2);border-radius:8px;font-size:12px;color:var(--gray-600)">
+          💡 招待メールを送信します。ユーザーがリンクをクリックするとアカウントが有効化されます。
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="tbtn" style="flex:1;height:42px">📧 招待メールを送信</button>
+          <button onclick="nav('user-list')" style="padding:0 20px;height:42px;border:1px solid var(--gray-200);border-radius:8px;background:#fff;font-size:13px;font-weight:700;font-family:'BIZ UDPGothic',sans-serif;color:var(--gray-600);cursor:pointer">キャンセル</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <script>
-const pages={dashboard:{t:'ダッシュボード',s:'概要 / 全店舗',b:'＋ 店舗を追加'},stores:{t:'店舗情報管理',s:'12店舗 | <span class="gl" data-gl="eo" tabindex="0">engine_owner<span class="gl-icon">?</span></span>: Uberall',b:'📥 CSVインポート'},uberall:{t:'配信（Uberall）',s:'Listings / サイテーション',b:'🔄 全店舗Sync'},gbp:{t:'Google 運用',s:'GBP Performance',b:'＋ 投稿を作成'},posts:{t:'投稿管理',s:'GBP投稿 / AI生成',b:'✏️ 新規投稿'},reviews:{t:'口コミ管理',s:'未返信 8件',b:'🤖 AI一括返信案'},ranking:{t:'競合・順位（MEOチェキ）',s:'日次順位更新',b:'＋ KW追加'},gsc:{t:'GSC・オーガニック',s:'Search Console API | AI Overviews含む',b:'📊 CSVエクスポート'},aio:{t:'AIO アシスト',s:'構造化データ / サイテーション / 計測',b:'🔄 チェック実行'},bookings:{t:'予約・コンバージョン',s:'自社予約API + GA4 MP',b:'📊 CSVエクスポート'},webhooks:{t:'Webhookログ',s:'全種別イベント',b:'🔄 再取得'},settings:{t:'API連携設定',s:'8サービス接続管理',b:'＋ 連携追加'},audit:{t:'監査ログ',s:'全操作記録',b:'📥 ログDL'}};
+const pages={dashboard:{t:'ダッシュボード',s:'概要 / 全店舗',b:'＋ 店舗を追加'},stores:{t:'店舗情報管理',s:'12店舗 | <span class="gl" data-gl="eo" tabindex="0">engine_owner<span class="gl-icon">?</span></span>: Uberall',b:'📥 CSVインポート'},uberall:{t:'配信（Uberall）',s:'Listings / サイテーション',b:'🔄 全店舗Sync'},gbp:{t:'Google 運用',s:'GBP Performance',b:'＋ 投稿を作成'},posts:{t:'投稿管理',s:'GBP投稿 / AI生成',b:'✏️ 新規投稿'},reviews:{t:'口コミ管理',s:'未返信 8件',b:'🤖 AI一括返信案'},ranking:{t:'競合・順位（MEOチェキ）',s:'日次順位更新',b:'＋ KW追加'},gsc:{t:'GSC・オーガニック',s:'Search Console API | AI Overviews含む',b:'📊 CSVエクスポート'},aio:{t:'AIO アシスト',s:'構造化データ / サイテーション / 計測',b:'🔄 チェック実行'},bookings:{t:'予約・コンバージョン',s:'自社予約API + GA4 MP',b:'📊 CSVエクスポート'},webhooks:{t:'Webhookログ',s:'全種別イベント',b:'🔄 再取得'},settings:{t:'API連携設定',s:'8サービス接続管理',b:'＋ 連携追加'},audit:{t:'監査ログ',s:'全操作記録',b:'📥 ログDL'},'user-list':{t:'ユーザー管理',s:'ユーザー一覧',b:'＋ 新規作成'},'user-new':{t:'ユーザー管理',s:'新規ユーザー作成',b:'＋ 新規作成'}};
 function nav(id){
   if(!pages[id])return;
   document.querySelectorAll('.page').forEach(p=>{p.classList.remove('active');p.classList.remove('page-in');});
