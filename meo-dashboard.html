@@ -260,8 +260,9 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
   }
   .sidebar.open { transform: translateX(0); }
 
-  /* メインをフルワイドに */
-  .main { margin-left: 0; }
+  /* メインをフルワイドに・はみ出し防止 */
+  .main { margin-left: 0; width: 100%; overflow-x: hidden; }
+  body { overflow-x: hidden; }
 
   /* ハンバーガーボタン表示 */
   .ham-btn { display: flex; }
@@ -272,12 +273,61 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
   #ttitle { font-size: 14px; }
   .tbtn { padding: 5px 10px; font-size: 11px; }
 
-  /* コンテンツ */
-  .page { padding: 12px; }
-  .kgrid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px; }
-  .g2, .g3, .grid-2, .grid-3 { grid-template-columns: 1fr !important; }
-  .kv, .kpi-value { font-size: 22px !important; }
+  /* ページ・カード全体 */
+  .page { padding: 10px; }
+  .card { margin-bottom: 10px; }
+  .card-body, .cb { padding: 12px; }
+  .ch { padding: 12px 14px; }
+
+  /* KPIグリッド：横スクロール */
+  .kgrid {
+    display: flex !important;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 8px;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+  }
+  .kc {
+    min-width: 120px;
+    flex-shrink: 0;
+    scroll-snap-align: start;
+    padding: 12px 14px;
+  }
+  .kv, .kpi-value { font-size: 20px !important; }
+
+  /* 2・3カラム → 1カラム */
+  .g2, .g3, .grid-2, .grid-3 { grid-template-columns: 1fr !important; gap: 10px; }
+
+  /* テーブル：列を減らす */
   .dt th:nth-child(n+4), .dt td:nth-child(n+4) { display: none; }
+  .dt { font-size: 12px; }
+  .dt th, .dt td { padding: 8px 8px; }
+
+  /* タブ */
+  .tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .tab { white-space: nowrap; padding: 9px 12px; font-size: 11px; }
+
+  /* 口コミカード等の横並び要素を縦に */
+  .ract { flex-wrap: wrap; gap: 6px; }
+  .rh { flex-wrap: wrap; }
+
+  /* Webhook行 */
+  .whi { flex-wrap: wrap; gap: 4px; }
+  .we { width: 100%; }
+
+  /* アラートバー */
+  .alert-bar, .abar { flex-wrap: wrap; }
+
+  /* チャート高さ */
+  .cwrap { height: 80px; }
+
+  /* ヘルプボタン */
+  .help-btn { bottom: 14px; right: 14px; width: 38px; height: 38px; font-size: 16px; }
+
+  /* 用語ポップアップ */
+  .gl-pop { width: calc(100vw - 24px) !important; }
 }
 </style>
 </head>
