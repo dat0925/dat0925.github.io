@@ -828,14 +828,14 @@ function goStep(idx) {
   document.getElementById('tour-prev').style.display = idx === 0 ? 'none' : '';
   document.getElementById('tour-next').textContent = idx === TOUR_STEPS.length - 1 ? '✓ 完了' : '次へ';
 
-  // ボックスをいったんリセットしてから位置計算
+  // ボックスをいったん非表示にしてから位置計算後に表示（チラつき防止）
   const box = document.getElementById('tour-box');
   box.style.top = '';
   box.style.left = '';
   box.style.transform = '';
-  box.style.display = 'block';
+  box.style.display = 'none';
 
-  // position box & highlight
+  // position box & highlight（内部でdisplay:blockも設定）
   positionStep(step);
 }
 
@@ -848,7 +848,7 @@ function positionStep(step) {
 
   const vw = window.innerWidth;
   const vh = window.innerHeight;
-  const isNarrow = vw < 1024;
+  const isNarrow = vw < 1100;  // iPadも確実に中央表示
   const bw = Math.min(vw - 32, 320);
   box.style.width = bw + 'px';
 
@@ -857,6 +857,7 @@ function positionStep(step) {
     box.style.top = '50%';
     box.style.left = '50%';
     box.style.transform = 'translate(-50%, -50%)';
+    box.style.display = 'block';
     hl.classList.remove('active');
     return;
   }
@@ -866,6 +867,7 @@ function positionStep(step) {
     box.style.top = '50%';
     box.style.left = '50%';
     box.style.transform = 'translate(-50%, -50%)';
+    box.style.display = 'block';
     return;
   }
 
@@ -889,6 +891,7 @@ function positionStep(step) {
   box.style.top = by + 'px';
   box.style.left = bx + 'px';
   box.style.transform = 'none';
+  box.style.display = 'block';
 }
 
 function startTour() {
