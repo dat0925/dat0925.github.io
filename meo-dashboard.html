@@ -245,6 +245,38 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
 .gl-pop .gp-en{font-size:10px;color:var(--gray-400);margin-bottom:6px;font-family:'Outfit',sans-serif}
 .gl-pop .gp-body{color:rgba(255,255,255,.88)}
 .gl-pop .gp-ex{margin-top:7px;padding-top:7px;border-top:1px solid rgba(255,255,255,.1);font-size:11px;color:var(--cyan)}
+
+/* AIO ASSIST */
+.aio-tab-bar{display:flex;gap:0;border-bottom:2px solid var(--gray-200);margin-bottom:20px;overflow-x:auto}
+.aio-tab{padding:10px 18px;font-size:13px;font-weight:700;color:var(--gray-600);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;transition:all .2s}
+.aio-tab.active{color:var(--orange);border-bottom-color:var(--orange)}
+.aio-tab:hover:not(.active){color:var(--navy)}
+.aio-sub{display:none}.aio-sub.active{display:block}
+.kpi4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}
+.kpi5{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px}
+.sov-bar{height:12px;border-radius:6px;background:var(--gray-200);overflow:hidden;margin:6px 0}
+.sov-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--orange),#FF7A45);transition:width .6s ease}
+.sov-fill.c{background:linear-gradient(90deg,var(--cyan),rgba(6,182,212,.6))}
+.sov-fill.g{background:linear-gradient(90deg,var(--green),rgba(34,197,94,.6))}
+.ai-card{background:#fff;border:1px solid var(--gray-200);border-radius:10px;padding:14px 16px;margin-bottom:12px;transition:box-shadow .2s;cursor:pointer}
+.ai-card:hover{box-shadow:0 4px 16px rgba(13,27,62,.08)}
+.ai-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;font-family:'Outfit',sans-serif}
+.ai-chatgpt{background:rgba(16,163,127,.12);color:#0a9d76}
+.ai-perplexity{background:rgba(100,116,255,.12);color:#5464e8}
+.ai-gemini{background:rgba(234,179,8,.12);color:#b45309}
+.ai-aio{background:rgba(6,182,212,.12);color:var(--cyan)}
+.side-panel{position:fixed;right:0;top:var(--hh);bottom:0;width:380px;background:#fff;border-left:1px solid var(--gray-200);z-index:80;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);overflow-y:auto}
+.side-panel.open{transform:translateX(0)}
+.side-panel-header{padding:20px 20px 16px;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;gap:12px}
+.side-panel-close{margin-left:auto;background:none;border:none;font-size:20px;cursor:pointer;color:var(--gray-400);padding:4px}
+.sparkline{display:flex;align-items:flex-end;gap:3px;height:36px}
+.spk-b{flex:1;border-radius:2px 2px 0 0;min-width:6px}
+.improve-item{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--gray-200)}
+.improve-item:last-child{border-bottom:none}
+.improve-pri{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;font-family:'Outfit',sans-serif;flex-shrink:0}
+.pri-h{background:rgba(239,68,68,.12);color:var(--red)}
+.pri-m{background:rgba(250,204,21,.15);color:#CA8A04}
+.pri-l{background:rgba(34,197,94,.1);color:var(--green)}
 </style>
 </head>
 <body>
@@ -305,7 +337,7 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
     <div class="etag">🔵 SoT → Uberall 配信中</div>
     <a class="doc-link manual" href="manual.html" target="_blank">📖 マニュアル</a>
     <a class="doc-link spec" href="spec.html" target="_blank">⚙️ 仕様</a>
-    <button class="tbtn" id="tbtn">＋ 店舗を追加</button>
+    <button onclick="showLogin()" style="background:var(--gray-100);color:var(--navy);border:1px solid var(--gray-200);border-radius:7px;padding:0 14px;height:34px;font-size:12px;font-weight:700;cursor:pointer;font-family:'BIZ UDPGothic',sans-serif">🔐 ログイン画面</button><button class="tbtn" id="tbtn">＋ 店舗を追加</button>
   </div>
 
   <!-- DASHBOARD -->
@@ -1102,9 +1134,486 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
     </div>
   </div>
 
+  <!-- LOGIN MODAL -->
+  <div id="login-modal" style="display:none;position:fixed;inset:0;background:linear-gradient(135deg,#0D1B3E 0%,#1E3160 60%,#0D1B3E 100%);z-index:9999;align-items:center;justify-content:center;flex-direction:column">
+    <div style="position:absolute;inset:0;overflow:hidden;pointer-events:none">
+      <div style="position:absolute;top:-100px;left:-100px;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(240,90,26,.18) 0%,transparent 70%)"></div>
+      <div style="position:absolute;bottom:-80px;right:-80px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(6,182,212,.1) 0%,transparent 70%)"></div>
+    </div>
+    <div style="background:#fff;border-radius:20px;padding:40px 44px;width:420px;box-shadow:0 24px 80px rgba(5,10,25,.4);position:relative;z-index:1">
+      <div style="text-align:center;margin-bottom:32px">
+        <div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:24px;color:#0D1B3E">MEO<span style="color:#F05A1A">統合管理</span></div>
+        <div style="font-size:11px;color:#9AABC8;margin-top:4px;letter-spacing:.05em">Powered by iFLAG IFG IT Solutions</div>
+      </div>
+      <div style="margin-bottom:16px">
+        <label style="font-size:12px;font-weight:700;color:#0D1B3E;display:block;margin-bottom:6px">メールアドレス</label>
+        <input type="email" value="admin@sample-food.co.jp" style="width:100%;padding:12px 14px;border:1.5px solid #E8ECF4;border-radius:10px;font-size:14px;font-family:'BIZ UDPGothic',sans-serif;color:#0D1B3E;outline:none;box-sizing:border-box">
+      </div>
+      <div style="margin-bottom:24px">
+        <label style="font-size:12px;font-weight:700;color:#0D1B3E;display:block;margin-bottom:6px">パスワード</label>
+        <input type="password" value="password" style="width:100%;padding:12px 14px;border:1.5px solid #E8ECF4;border-radius:10px;font-size:14px;font-family:'BIZ UDPGothic',sans-serif;color:#0D1B3E;outline:none;box-sizing:border-box">
+        <div style="display:flex;justify-content:space-between;margin-top:8px">
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#5A6E94;cursor:pointer"><input type="checkbox" checked> ログイン状態を保持</label>
+          <span style="font-size:12px;color:#F05A1A;cursor:pointer;text-decoration:underline">パスワードを忘れた方</span>
+        </div>
+      </div>
+      <button onclick="document.getElementById('login-modal').style.display='none'" style="width:100%;height:48px;background:linear-gradient(135deg,#F05A1A,#FF7A45);border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;font-family:'BIZ UDPGothic',sans-serif;cursor:pointer;box-shadow:0 4px 16px rgba(240,90,26,.35)">ログイン</button>
+      <div style="margin-top:20px;padding-top:16px;border-top:1px solid #E8ECF4">
+        <div style="font-size:11px;color:#9AABC8;text-align:center;margin-bottom:10px">または SSO でログイン</div>
+        <div style="display:flex;gap:8px">
+          <button style="flex:1;padding:10px;border:1px solid #E8ECF4;border-radius:8px;background:#fff;font-size:12px;font-weight:700;font-family:'BIZ UDPGothic',sans-serif;color:#0D1B3E;cursor:pointer">🔵 Google Workspace</button>
+          <button style="flex:1;padding:10px;border:1px solid #E8ECF4;border-radius:8px;background:#fff;font-size:12px;font-weight:700;font-family:'BIZ UDPGothic',sans-serif;color:#0D1B3E;cursor:pointer">🟦 Microsoft 365</button>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:20px;font-size:10px;color:#9AABC8">© 2026 iFLAG IFG IT Solutions. All rights reserved.</div>
+    </div>
+  </div>
+
+  <!-- CONTRACT -->
+  <div class="page" id="pg-contract">
+    <div class="g2" style="margin-bottom:20px">
+      <div class="card">
+        <div class="ch"><h3>📋 契約者情報</h3><span class="bdg bb">基本情報</span><button class="tbtn" style="height:30px;font-size:12px;padding:0 12px">✏️ 編集</button></div>
+        <div class="cb" style="display:flex;flex-direction:column;gap:14px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div style="background:var(--gray-100);border-radius:8px;padding:10px 12px"><div style="font-size:10px;color:var(--gray-600);margin-bottom:3px">契約者名</div><div style="font-size:14px;font-weight:700;color:var(--navy)">橋本 太郎</div></div>
+            <div style="background:var(--gray-100);border-radius:8px;padding:10px 12px"><div style="font-size:10px;color:var(--gray-600);margin-bottom:3px">法人名</div><div style="font-size:14px;font-weight:700;color:var(--navy)">株式会社サンプルフード</div></div>
+            <div style="background:var(--gray-100);border-radius:8px;padding:10px 12px"><div style="font-size:10px;color:var(--gray-600);margin-bottom:3px">屋号</div><div style="font-size:14px;color:var(--navy)">SAMPLE FOOD</div></div>
+            <div style="background:var(--gray-100);border-radius:8px;padding:10px 12px"><div style="font-size:10px;color:var(--gray-600);margin-bottom:3px">電話番号</div><div style="font-size:14px;color:var(--navy)">03-XXXX-1234</div></div>
+            <div style="background:var(--gray-100);border-radius:8px;padding:10px 12px;grid-column:1/-1"><div style="font-size:10px;color:var(--gray-600);margin-bottom:3px">メールアドレス</div><div style="font-size:14px;color:var(--navy)">hashimoto@sample-food.co.jp</div></div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+            <div style="text-align:center;padding:12px;background:var(--gray-100);border-radius:8px"><div style="font-size:10px;color:var(--gray-600)">契約日</div><div style="font-size:13px;font-weight:700;color:var(--navy);margin-top:4px">2025/10/01</div></div>
+            <div style="text-align:center;padding:12px;background:var(--gray-100);border-radius:8px"><div style="font-size:10px;color:var(--gray-600)">利用開始日</div><div style="font-size:13px;font-weight:700;color:var(--navy);margin-top:4px">2025/10/15</div></div>
+            <div style="text-align:center;padding:12px;background:var(--gray-100);border-radius:8px"><div style="font-size:10px;color:var(--gray-600)">ステータス</div><div style="margin-top:4px"><span class="bdg bg">● 契約中</span></div></div>
+          </div>
+          <div style="background:rgba(239,68,68,.04);border:1px solid rgba(239,68,68,.15);border-radius:8px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between">
+            <div><div style="font-size:12px;font-weight:700;color:var(--navy)">解約依頼日</div><div style="font-size:11px;color:var(--gray-400);margin-top:2px">解約をご希望の場合はサポートまでご連絡ください</div></div>
+            <span style="font-size:13px;color:var(--gray-400);font-weight:700">未設定</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><h3>💴 契約プラン</h3><span class="bdg bo">スタンダード</span></div>
+        <div class="cb">
+          <div style="display:flex;gap:8px;margin-bottom:18px">
+            <div class="plan-card" onclick="selectPlan(this,'ライト',29800)" style="flex:1;padding:14px;border-radius:10px;border:2px solid var(--gray-200);text-align:center;cursor:pointer;transition:all .2s">
+              <div style="font-size:11px;font-weight:700;color:var(--gray-600)">ライト</div>
+              <div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:17px;color:var(--navy);margin:4px 0">¥29,800</div>
+              <div style="font-size:10px;color:var(--gray-400)">〜5店舗</div>
+            </div>
+            <div class="plan-card plan-selected" onclick="selectPlan(this,'スタンダード',49800)" style="flex:1;padding:14px;border-radius:10px;border:2px solid var(--orange);text-align:center;cursor:pointer;transition:all .2s;background:var(--orange-dim)">
+              <div style="font-size:11px;font-weight:700;color:var(--orange)">スタンダード ✓</div>
+              <div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:17px;color:var(--navy);margin:4px 0">¥49,800</div>
+              <div style="font-size:10px;color:var(--gray-400)">〜15店舗</div>
+            </div>
+            <div class="plan-card" onclick="selectPlan(this,'ブースト',79800)" style="flex:1;padding:14px;border-radius:10px;border:2px solid var(--gray-200);text-align:center;cursor:pointer;transition:all .2s">
+              <div style="font-size:11px;font-weight:700;color:var(--gray-600)">ブースト</div>
+              <div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:17px;color:var(--navy);margin:4px 0">¥79,800</div>
+              <div style="font-size:10px;color:var(--gray-400)">無制限</div>
+            </div>
+          </div>
+          <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:10px">オプション</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <label style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--orange-dim);border:1px solid rgba(240,90,26,.25);border-radius:8px;cursor:pointer;gap:8px"><span style="display:flex;align-items:center;gap:8px"><input type="checkbox" checked id="opt1" onchange="calcTotal()"><span><div style="font-size:13px;font-weight:700;color:var(--navy)">投稿代行</div><div style="font-size:10px;color:var(--gray-600)">GBP投稿を月次代行</div></span></span><span style="font-family:'Outfit',sans-serif;font-weight:700;font-size:13px;color:var(--orange);white-space:nowrap">+¥5,000/月</span></label>
+            <label style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--gray-100);border:1px solid var(--gray-200);border-radius:8px;cursor:pointer;gap:8px"><span style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="opt2" onchange="calcTotal()"><span><div style="font-size:13px;font-weight:700;color:var(--navy)">口コミ返信代行</div><div style="font-size:10px;color:var(--gray-600)">AI補助＋人的確認</div></span></span><span style="font-family:'Outfit',sans-serif;font-weight:700;font-size:13px;color:var(--gray-600);white-space:nowrap">+¥5,000/月</span></label>
+            <label style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--gray-100);border:1px solid var(--gray-200);border-radius:8px;cursor:pointer;gap:8px"><span style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="opt3" onchange="calcTotal()"><span><div style="font-size:13px;font-weight:700;color:var(--navy)">予約システム連携</div><div style="font-size:10px;color:var(--gray-600)">Webhook＋GA4連携</div></span></span><span style="font-family:'Outfit',sans-serif;font-weight:700;font-size:13px;color:var(--gray-600);white-space:nowrap">+¥3,000/月</span></label>
+            <label style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--gray-100);border:1px solid var(--gray-200);border-radius:8px;cursor:pointer;gap:8px"><span style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="opt4" onchange="calcTotal()"><span><div style="font-size:13px;font-weight:700;color:var(--navy)">多言語サポート</div><div style="font-size:10px;color:var(--gray-600)">英・中・韓対応</div></span></span><span style="font-family:'Outfit',sans-serif;font-weight:700;font-size:13px;color:var(--gray-600);white-space:nowrap">+¥3,000/月</span></label>
+          </div>
+          <div style="margin-top:14px;padding:14px 16px;background:var(--navy);border-radius:10px;display:flex;align-items:center;justify-content:space-between">
+            <div><div style="font-size:11px;color:var(--gray-400)">月額合計（税抜）</div><div style="font-size:10px;color:var(--gray-600);margin-top:2px">税込: <span id="total-tax">¥60,280</span></div></div>
+            <span id="total-price" style="font-family:'Outfit',sans-serif;font-weight:800;font-size:24px;color:#fff">¥54,800</span>
+          </div>
+          <button class="tbtn" style="width:100%;margin-top:12px;height:44px;font-size:14px">変更を申請する</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- USERS -->
+  <div class="page" id="pg-users">
+    <div class="g2">
+      <div class="card">
+        <div class="ch"><h3>👥 ユーザー一覧</h3><span class="bdg bb">3名</span><button class="tbtn" style="height:30px;font-size:12px;padding:0 12px" onclick="nav('user-new')">＋ 新規作成</button></div>
+        <div style="padding:0">
+          <table class="dt">
+            <thead><tr><th style="padding-left:20px">ユーザー</th><th>ロール</th><th>最終ログイン</th><th>ステータス</th><th style="padding-right:20px">操作</th></tr></thead>
+            <tbody>
+              <tr><td style="padding-left:20px"><div style="display:flex;align-items:center;gap:8px"><div class="av" style="width:32px;height:32px;font-size:11px">橋</div><div><div style="font-size:13px;font-weight:700">橋本 太郎</div><div style="font-size:11px;color:var(--gray-400)">hashimoto@sample-food.co.jp</div></div></div></td><td><span class="bdg bo">管理者</span></td><td style="font-size:12px;color:var(--gray-600)">今日 10:05</td><td><span class="bdg bg">有効</span></td><td style="padding-right:20px"><span style="font-size:12px;color:var(--orange);cursor:pointer">編集 →</span></td></tr>
+              <tr><td style="padding-left:20px"><div style="display:flex;align-items:center;gap:8px"><div class="av" style="width:32px;height:32px;font-size:11px;background:linear-gradient(135deg,var(--cyan),rgba(6,182,212,.6))">遠</div><div><div style="font-size:13px;font-weight:700">遠藤 政宗</div><div style="font-size:11px;color:var(--gray-400)">endo@sample-food.co.jp</div></div></div></td><td><span class="bdg bb">編集者</span></td><td style="font-size:12px;color:var(--gray-600)">昨日 18:22</td><td><span class="bdg bg">有効</span></td><td style="padding-right:20px"><span style="font-size:12px;color:var(--orange);cursor:pointer">編集 →</span></td></tr>
+              <tr><td style="padding-left:20px"><div style="display:flex;align-items:center;gap:8px"><div class="av" style="width:32px;height:32px;font-size:11px;background:linear-gradient(135deg,var(--green),rgba(34,197,94,.6))">田</div><div><div style="font-size:13px;font-weight:700">田中 美咲</div><div style="font-size:11px;color:var(--gray-400)">tanaka@sample-food.co.jp</div></div></div></td><td><span class="bdg bg">閲覧者</span></td><td style="font-size:12px;color:var(--gray-600)">3日前</td><td><span class="bdg by">無効</span></td><td style="padding-right:20px"><span style="font-size:12px;color:var(--orange);cursor:pointer">編集 →</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><h3>🔐 ロール・権限</h3></div>
+        <div class="cb" style="display:flex;flex-direction:column;gap:10px">
+          <div style="padding:12px;border-radius:8px;border:1px solid rgba(240,90,26,.2);background:var(--orange-dim)"><div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:4px">👑 管理者</div><div style="font-size:12px;color:var(--gray-600)">全機能へのアクセス、ユーザー管理、API設定変更、契約情報の閲覧・変更</div></div>
+          <div style="padding:12px;border-radius:8px;border:1px solid rgba(6,182,212,.2);background:rgba(6,182,212,.05)"><div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:4px">✏️ 編集者</div><div style="font-size:12px;color:var(--gray-600)">店舗情報編集、投稿・口コミ返信、レポート閲覧。API設定・ユーザー管理は不可</div></div>
+          <div style="padding:12px;border-radius:8px;border:1px solid rgba(34,197,94,.2);background:rgba(34,197,94,.05)"><div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:4px">👁 閲覧者</div><div style="font-size:12px;color:var(--gray-600)">ダッシュボード・レポートの閲覧のみ。データの変更・編集は不可</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- USER NEW -->
+  <div class="page" id="pg-user-new">
+    <div style="max-width:560px">
+      <div class="card">
+        <div class="ch"><h3>＋ 新規ユーザー作成</h3></div>
+        <div class="cb" style="display:flex;flex-direction:column;gap:16px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div><label style="font-size:12px;font-weight:700;color:var(--navy);display:block;margin-bottom:6px">姓</label><input type="text" placeholder="橋本" style="width:100%;padding:10px 12px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:13px;font-family:'BIZ UDPGothic',sans-serif;color:var(--navy);outline:none;box-sizing:border-box"></div>
+            <div><label style="font-size:12px;font-weight:700;color:var(--navy);display:block;margin-bottom:6px">名</label><input type="text" placeholder="太郎" style="width:100%;padding:10px 12px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:13px;font-family:'BIZ UDPGothic',sans-serif;color:var(--navy);outline:none;box-sizing:border-box"></div>
+          </div>
+          <div><label style="font-size:12px;font-weight:700;color:var(--navy);display:block;margin-bottom:6px">メールアドレス</label><input type="email" placeholder="user@sample-food.co.jp" style="width:100%;padding:10px 12px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:13px;font-family:'BIZ UDPGothic',sans-serif;color:var(--navy);outline:none;box-sizing:border-box"></div>
+          <div>
+            <label style="font-size:12px;font-weight:700;color:var(--navy);display:block;margin-bottom:6px">ロール</label>
+            <div style="display:flex;gap:8px">
+              <label style="flex:1;padding:12px;border:2px solid var(--gray-200);border-radius:8px;cursor:pointer;text-align:center;transition:all .2s" id="role-admin"><input type="radio" name="role" value="admin" style="display:none" onchange="selectRole('admin')"><div style="font-size:13px;font-weight:700;color:var(--gray-600)">管理者</div></label>
+              <label style="flex:1;padding:12px;border:2px solid var(--orange);border-radius:8px;cursor:pointer;text-align:center;background:var(--orange-dim);transition:all .2s" id="role-editor"><input type="radio" name="role" value="editor" checked style="display:none"><div style="font-size:13px;font-weight:700;color:var(--orange)">編集者 ✓</div></label>
+              <label style="flex:1;padding:12px;border:2px solid var(--gray-200);border-radius:8px;cursor:pointer;text-align:center;transition:all .2s" id="role-viewer"><input type="radio" name="role" value="viewer" style="display:none" onchange="selectRole('viewer')"><div style="font-size:13px;font-weight:700;color:var(--gray-600)">閲覧者</div></label>
+            </div>
+          </div>
+          <div style="padding:12px 14px;background:rgba(6,182,212,.06);border:1px solid rgba(6,182,212,.2);border-radius:8px;font-size:12px;color:var(--gray-600)">💡 招待メールを送信します。ユーザーがリンクをクリックするとアカウントが有効化されます。</div>
+          <div style="display:flex;gap:8px">
+            <button class="tbtn" style="flex:1;height:44px">📧 招待メールを送信</button>
+            <button onclick="nav('users')" style="padding:0 20px;height:44px;border:1px solid var(--gray-200);border-radius:8px;background:#fff;font-size:13px;font-weight:700;font-family:'BIZ UDPGothic',sans-serif;color:var(--gray-600);cursor:pointer">キャンセル</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- USER LIST（usersと同じだが別ページとして登録）-->
+  <div class="page" id="pg-user-list">
+    <div class="g2">
+      <div class="card">
+        <div class="ch"><h3>≡ ユーザー一覧</h3><span class="bdg bb">3名</span><button class="tbtn" style="height:30px;font-size:12px;padding:0 12px" onclick="nav('user-new')">＋ 新規作成</button></div>
+        <div style="padding:0">
+          <table class="dt">
+            <thead><tr><th style="padding-left:20px">ユーザー</th><th>ロール</th><th>最終ログイン</th><th>ステータス</th><th style="padding-right:20px">操作</th></tr></thead>
+            <tbody>
+              <tr><td style="padding-left:20px"><div style="display:flex;align-items:center;gap:8px"><div class="av" style="width:32px;height:32px;font-size:11px">橋</div><div><div style="font-size:13px;font-weight:700">橋本 太郎</div><div style="font-size:11px;color:var(--gray-400)">hashimoto@sample-food.co.jp</div></div></div></td><td><span class="bdg bo">管理者</span></td><td style="font-size:12px;color:var(--gray-600)">今日 10:05</td><td><span class="bdg bg">有効</span></td><td style="padding-right:20px"><span style="font-size:12px;color:var(--orange);cursor:pointer">編集 →</span></td></tr>
+              <tr><td style="padding-left:20px"><div style="display:flex;align-items:center;gap:8px"><div class="av" style="width:32px;height:32px;font-size:11px;background:linear-gradient(135deg,var(--cyan),rgba(6,182,212,.6))">遠</div><div><div style="font-size:13px;font-weight:700">遠藤 政宗</div><div style="font-size:11px;color:var(--gray-400)">endo@sample-food.co.jp</div></div></div></td><td><span class="bdg bb">編集者</span></td><td style="font-size:12px;color:var(--gray-600)">昨日 18:22</td><td><span class="bdg bg">有効</span></td><td style="padding-right:20px"><span style="font-size:12px;color:var(--orange);cursor:pointer">編集 →</span></td></tr>
+              <tr><td style="padding-left:20px"><div style="display:flex;align-items:center;gap:8px"><div class="av" style="width:32px;height:32px;font-size:11px;background:linear-gradient(135deg,var(--green),rgba(34,197,94,.6))">田</div><div><div style="font-size:13px;font-weight:700">田中 美咲</div><div style="font-size:11px;color:var(--gray-400)">tanaka@sample-food.co.jp</div></div></div></td><td><span class="bdg bg">閲覧者</span></td><td style="font-size:12px;color:var(--gray-600)">3日前</td><td><span class="bdg by">無効</span></td><td style="padding-right:20px"><span style="font-size:12px;color:var(--orange);cursor:pointer">編集 →</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AIO ASSIST (full rebuild) -->
+  <div class="page" id="pg-aio">
+    <!-- AIOタブバー -->
+    <div class="aio-tab-bar">
+      <div class="aio-tab active" onclick="switchAio('dash')">📊 ダッシュボード</div>
+      <div class="aio-tab" onclick="switchAio('prompt')">💬 プロンプト管理</div>
+      <div class="aio-tab" onclick="switchAio('compare')">🤖 AI回答比較</div>
+      <div class="aio-tab" onclick="switchAio('rival')">🏆 競合比較</div>
+      <div class="aio-tab" onclick="switchAio('improve')">💡 改善提案</div>
+      <div class="aio-tab" onclick="switchAio('report')">📋 レポート設定</div>
+    </div>
+
+    <!-- AIOダッシュボード -->
+    <div class="aio-sub active" id="aio-dash">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+        <select style="padding:6px 12px;border:1px solid var(--gray-200);border-radius:6px;font-size:12px;font-family:'BIZ UDPGothic',sans-serif;color:var(--navy)"><option>全AIエンジン</option><option>ChatGPT</option><option>Perplexity</option><option>Gemini</option><option>Google AI Overview</option></select>
+        <select style="padding:6px 12px;border:1px solid var(--gray-200);border-radius:6px;font-size:12px;font-family:'BIZ UDPGothic',sans-serif;color:var(--navy)"><option>過去30日</option><option>過去90日</option><option>過去180日</option></select>
+        <div style="margin-left:auto;font-size:11px;color:var(--gray-400)">最終更新: 2026-04-06 09:00</div>
+      </div>
+      <div class="kpi5">
+        <div class="kc p"><span class="ki">📢</span><div class="kl">言及回数（月）</div><div class="kv">1,284<span class="ku">件</span></div><div class="kd up">▲ +23%</div></div>
+        <div class="kc"><span class="ki">🔗</span><div class="kl">引用回数（月）</div><div class="kv">342</div><div class="kd up">▲ +18%</div></div>
+        <div class="kc"><span class="ki">📊</span><div class="kl">Share of Voice</div><div class="kv">38<span class="ku">%</span></div><div class="kd up">▲ +7pt</div></div>
+        <div class="kc"><span class="ki">🏆</span><div class="kl">競合比較スコア</div><div class="kv">72<span class="ku">点</span></div><div class="kd wn">目標80点</div></div>
+        <div class="kc"><span class="ki">📈</span><div class="kl">露出推移（前月比）</div><div class="kv">+31<span class="ku">%</span></div><div class="kd up">▲ 急上昇</div></div>
+      </div>
+      <div class="g2">
+        <div class="card">
+          <div class="ch"><h3>📈 露出推移（月次）</h3><span class="bdg bb">過去6ヶ月</span></div>
+          <div class="cb">
+            <div style="margin-bottom:8px">
+              <div class="cleg"><div class="cli"><div class="cld" style="background:var(--orange)"></div>言及回数</div><div class="cli"><div class="cld" style="background:var(--cyan)"></div>引用回数</div><div class="cli"><div class="cld" style="background:var(--green)"></div>SoV(%)</div></div>
+            </div>
+            <div class="cwrap">
+              <div class="ccol"><div class="cbar or" style="height:35%"></div></div>
+              <div class="ccol"><div class="cbar or" style="height:45%"></div></div>
+              <div class="ccol"><div class="cbar or" style="height:52%"></div></div>
+              <div class="ccol"><div class="cbar or" style="height:63%"></div></div>
+              <div class="ccol"><div class="cbar or" style="height:78%"></div></div>
+              <div class="ccol"><div class="cbar or" style="height:95%"></div></div>
+            </div>
+            <div class="cx"><span>11月</span><span>12月</span><span>1月</span><span>2月</span><span>3月</span><span>4月</span></div>
+            <div style="margin-top:14px;padding:10px 12px;background:var(--orange-dim);border-radius:8px;font-size:12px">💡 <strong>4月は過去最高の露出</strong>。「AI検索対策」「BtoB SEO」クエリでの言及が急増しています。</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ch"><h3>🤖 AIエンジン別 SoV</h3><span class="bdg bo">Share of Voice</span></div>
+          <div class="cb">
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="display:flex;align-items:center;gap:6px"><span class="ai-badge ai-aio">AI Overview</span></span><span style="font-weight:700">45%</span></div>
+                <div class="sov-bar"><div class="sov-fill" style="width:45%"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="display:flex;align-items:center;gap:6px"><span class="ai-badge ai-chatgpt">ChatGPT</span></span><span style="font-weight:700">28%</span></div>
+                <div class="sov-bar"><div class="sov-fill c" style="width:28%"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="display:flex;align-items:center;gap:6px"><span class="ai-badge ai-perplexity">Perplexity</span></span><span style="font-weight:700">17%</span></div>
+                <div class="sov-bar"><div class="sov-fill g" style="width:17%"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="display:flex;align-items:center;gap:6px"><span class="ai-badge ai-gemini">Gemini</span></span><span style="font-weight:700">10%</span></div>
+                <div class="sov-bar"><div class="sov-fill" style="width:10%;background:linear-gradient(90deg,var(--yellow),rgba(250,204,21,.5))"></div></div>
+              </div>
+            </div>
+            <div style="margin-top:14px;padding:10px 12px;background:rgba(6,182,212,.06);border:1px solid rgba(6,182,212,.2);border-radius:8px;font-size:12px">💡 AI Overview での言及率が最も高く、<strong>SEO施策との相乗効果</strong>が出ています。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- プロンプト管理 -->
+    <div class="aio-sub" id="aio-prompt">
+      <div class="g2">
+        <div class="card">
+          <div class="ch"><h3>💬 プロンプト一覧</h3><span class="bdg bb">12件登録</span><button class="tbtn" style="height:30px;font-size:12px;padding:0 12px">＋ 追加</button></div>
+          <div style="padding:0 20px">
+            <div style="padding:10px 0;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;justify-content:space-between">
+              <div style="flex:1">
+                <div style="font-size:13px;font-weight:700;color:var(--navy)">「AI検索対策ツール おすすめ」</div>
+                <div style="font-size:11px;color:var(--gray-400);margin-top:2px">カテゴリ：競合比較 | 頻度：週次</div>
+              </div>
+              <span class="bdg bg">監視中</span>
+            </div>
+            <div style="padding:10px 0;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;justify-content:space-between">
+              <div style="flex:1">
+                <div style="font-size:13px;font-weight:700;color:var(--navy)">「BtoB向け AEO対策 方法」</div>
+                <div style="font-size:11px;color:var(--gray-400);margin-top:2px">カテゴリ：ブランド認知 | 頻度：週次</div>
+              </div>
+              <span class="bdg bg">監視中</span>
+            </div>
+            <div style="padding:10px 0;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;justify-content:space-between">
+              <div style="flex:1">
+                <div style="font-size:13px;font-weight:700;color:var(--navy)">「生成AI時代のSEO 企業向け」</div>
+                <div style="font-size:11px;color:var(--gray-400);margin-top:2px">カテゴリ：業界ナレッジ | 頻度：月次</div>
+              </div>
+              <span class="bdg by">一時停止</span>
+            </div>
+            <div style="padding:10px 0;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;justify-content:space-between">
+              <div style="flex:1">
+                <div style="font-size:13px;font-weight:700;color:var(--navy)">「ChatGPT 企業サイト 最適化」</div>
+                <div style="font-size:11px;color:var(--gray-400);margin-top:2px">カテゴリ：競合比較 | 頻度：週次</div>
+              </div>
+              <span class="bdg bg">監視中</span>
+            </div>
+            <div style="padding:10px 0;display:flex;align-items:center;justify-content:space-between">
+              <div style="flex:1">
+                <div style="font-size:13px;font-weight:700;color:var(--navy)">「Perplexity に掲載される方法」</div>
+                <div style="font-size:11px;color:var(--gray-400);margin-top:2px">カテゴリ：ブランド認知 | 頻度：週次</div>
+              </div>
+              <span class="bdg bg">監視中</span>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ch"><h3>⚙️ 新規プロンプト登録</h3></div>
+          <div class="cb" style="display:flex;flex-direction:column;gap:12px">
+            <div><label style="font-size:12px;font-weight:700;color:var(--navy);display:block;margin-bottom:5px">プロンプトテキスト</label><textarea placeholder="例：AI検索対策ツールのおすすめを教えてください" style="width:100%;padding:10px 12px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:13px;font-family:'BIZ UDPGothic',sans-serif;color:var(--navy);outline:none;resize:vertical;min-height:80px;box-sizing:border-box"></textarea></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div><label style="font-size:12px;font-weight:700;color:var(--navy);display:block;margin-bottom:5px">カテゴリ</label><select style="width:100%;padding:8px 10px;border:1px solid var(--gray-200);border-radius:6px;font-size:13px;font-family:'BIZ UDPGothic',sans-serif;color:var(--navy)"><option>競合比較</option><option>ブランド認知</option><option>業界ナレッジ</option><option>製品説明</option></select></div>
+              <div><label style="font-size:12px;font-weight:700;color:var(--navy);display:block;margin-bottom:5px">監視頻度</label><select style="width:100%;padding:8px 10px;border:1px solid var(--gray-200);border-radius:6px;font-size:13px;font-family:'BIZ UDPGothic',sans-serif;color:var(--navy)"><option>日次</option><option>週次</option><option>月次</option></select></div>
+            </div>
+            <div><label style="font-size:12px;font-weight:700;color:var(--navy);display:block;margin-bottom:5px">対象AIエンジン</label><div style="display:flex;gap:8px;flex-wrap:wrap"><label style="display:flex;align-items:center;gap:4px;font-size:12px"><input type="checkbox" checked>ChatGPT</label><label style="display:flex;align-items:center;gap:4px;font-size:12px"><input type="checkbox" checked>Perplexity</label><label style="display:flex;align-items:center;gap:4px;font-size:12px"><input type="checkbox" checked>Gemini</label><label style="display:flex;align-items:center;gap:4px;font-size:12px"><input type="checkbox" checked>AI Overview</label></div></div>
+            <button class="tbtn" style="width:100%;height:40px">登録して監視開始</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI回答比較 -->
+    <div class="aio-sub" id="aio-compare">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+        <select style="padding:6px 12px;border:1px solid var(--gray-200);border-radius:6px;font-size:12px;font-family:'BIZ UDPGothic',sans-serif;color:var(--navy)"><option>「AI検索対策ツール おすすめ」</option><option>「BtoB向け AEO対策」</option></select>
+        <span style="font-size:11px;color:var(--gray-400)">2026年4月6日 取得</span>
+      </div>
+      <div class="g2">
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div class="card" onclick="openSidePanel('chatgpt')" style="cursor:pointer">
+            <div class="ch"><h3><span class="ai-badge ai-chatgpt" style="font-size:12px">ChatGPT</span></h3><span class="bdg bg">言及あり ✓</span></div>
+            <div class="cb">
+              <div style="font-size:13px;color:var(--navy);line-height:1.7;margin-bottom:12px">「AI検索対策分野では、<strong style="color:var(--orange)">iFLAG MEO管理</strong>が包括的なソリューションを提供しています。特にGBP最適化とサイテーション管理の自動化において高い評価を受けており…」</div>
+              <div style="display:flex;gap:10px">
+                <div style="background:var(--gray-100);border-radius:6px;padding:8px 12px;text-align:center;flex:1"><div style="font-size:10px;color:var(--gray-600)">言及回数</div><div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:18px;color:var(--navy)">8</div></div>
+                <div style="background:var(--gray-100);border-radius:6px;padding:8px 12px;text-align:center;flex:1"><div style="font-size:10px;color:var(--gray-600)">引用回数</div><div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:18px;color:var(--green)">3</div></div>
+                <div style="background:var(--gray-100);border-radius:6px;padding:8px 12px;text-align:center;flex:1"><div style="font-size:10px;color:var(--gray-600)">ポジション</div><div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:18px;color:var(--orange)">2位</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="card" onclick="openSidePanel('perplexity')" style="cursor:pointer">
+            <div class="ch"><h3><span class="ai-badge ai-perplexity" style="font-size:12px">Perplexity</span></h3><span class="bdg bg">言及あり ✓</span></div>
+            <div class="cb">
+              <div style="font-size:13px;color:var(--navy);line-height:1.7;margin-bottom:12px">「BtoB向けのAI最適化サービスとして<strong style="color:var(--orange)">iFLAG</strong>のMEO統合管理が挙げられます。Uberallとの連携による配信範囲の広さと…」</div>
+              <div style="display:flex;gap:10px">
+                <div style="background:var(--gray-100);border-radius:6px;padding:8px 12px;text-align:center;flex:1"><div style="font-size:10px;color:var(--gray-600)">言及回数</div><div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:18px;color:var(--navy)">5</div></div>
+                <div style="background:var(--gray-100);border-radius:6px;padding:8px 12px;text-align:center;flex:1"><div style="font-size:10px;color:var(--gray-600)">引用回数</div><div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:18px;color:var(--green)">2</div></div>
+                <div style="background:var(--gray-100);border-radius:6px;padding:8px 12px;text-align:center;flex:1"><div style="font-size:10px;color:var(--gray-600)">ポジション</div><div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:18px;color:var(--cyan)">3位</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div class="card" onclick="openSidePanel('gemini')" style="cursor:pointer">
+            <div class="ch"><h3><span class="ai-badge ai-gemini" style="font-size:12px">Gemini</span></h3><span class="bdg by">部分言及</span></div>
+            <div class="cb">
+              <div style="font-size:13px;color:var(--navy);line-height:1.7;margin-bottom:12px">「MEO管理ツール市場では複数のプレイヤーが存在し、機能の差別化が進んでいます。iFLAGはAI Overview対策機能を…」</div>
+              <div style="display:flex;gap:10px">
+                <div style="background:var(--gray-100);border-radius:6px;padding:8px 12px;text-align:center;flex:1"><div style="font-size:10px;color:var(--gray-600)">言及回数</div><div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:18px;color:var(--navy)">3</div></div>
+                <div style="background:var(--gray-100);border-radius:6px;padding:8px 12px;text-align:center;flex:1"><div style="font-size:10px;color:var(--gray-600)">引用回数</div><div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:18px;color:var(--yellow)">1</div></div>
+                <div style="background:var(--gray-100);border-radius:6px;padding:8px 12px;text-align:center;flex:1"><div style="font-size:10px;color:var(--gray-600)">ポジション</div><div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:18px;color:var(--gray-600)">5位</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="card" onclick="openSidePanel('aio')" style="cursor:pointer">
+            <div class="ch"><h3><span class="ai-badge ai-aio" style="font-size:12px">AI Overview</span></h3><span class="bdg bg">引用あり ✓</span></div>
+            <div class="cb">
+              <div style="font-size:13px;color:var(--navy);line-height:1.7;margin-bottom:12px">「AI検索最適化（AEO）においては、構造化データの整備とNAP整合性の確保が重要です。<strong style="color:var(--orange)">iFLAG MEO統合管理</strong>はこれらを自動化…」</div>
+              <div style="display:flex;gap:10px">
+                <div style="background:var(--gray-100);border-radius:6px;padding:8px 12px;text-align:center;flex:1"><div style="font-size:10px;color:var(--gray-600)">言及回数</div><div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:18px;color:var(--navy)">12</div></div>
+                <div style="background:var(--gray-100);border-radius:6px;padding:8px 12px;text-align:center;flex:1"><div style="font-size:10px;color:var(--gray-600)">引用回数</div><div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:18px;color:var(--green)">5</div></div>
+                <div style="background:var(--gray-100);border-radius:6px;padding:8px 12px;text-align:center;flex:1"><div style="font-size:10px;color:var(--gray-600)">ポジション</div><div style="font-family:'Outfit',sans-serif;font-weight:800;font-size:18px;color:var(--orange)">1位</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 競合比較 -->
+    <div class="aio-sub" id="aio-rival">
+      <div class="kpi4" style="margin-bottom:20px">
+        <div class="kc p"><span class="ki">🏆</span><div class="kl">自社スコア</div><div class="kv">72<span class="ku">点</span></div><div class="kd wn">業界平均+12pt</div></div>
+        <div class="kc"><span class="ki">📊</span><div class="kl">競合A スコア</div><div class="kv">68<span class="ku">点</span></div><div class="kd dn">▼ -4pt差</div></div>
+        <div class="kc"><span class="ki">📊</span><div class="kl">競合B スコア</div><div class="kv">61<span class="ku">点</span></div><div class="kd up">▲ +11pt差</div></div>
+        <div class="kc"><span class="ki">📊</span><div class="kl">競合C スコア</div><div class="kv">54<span class="ku">点</span></div><div class="kd up">▲ +18pt差</div></div>
+      </div>
+      <div class="card">
+        <div class="ch"><h3>🏆 競合比較テーブル</h3><span class="bdg bo">4社比較</span></div>
+        <div style="padding:0">
+          <table class="dt">
+            <thead><tr><th style="padding-left:20px">指標</th><th>自社（iFLAG）</th><th>競合A</th><th>競合B</th><th style="padding-right:20px">競合C</th></tr></thead>
+            <tbody>
+              <tr><td style="padding-left:20px;font-weight:700">ChatGPT言及回数</td><td style="color:var(--green);font-weight:700">8回</td><td>6回</td><td>4回</td><td style="padding-right:20px">2回</td></tr>
+              <tr><td style="padding-left:20px;font-weight:700">Perplexity引用回数</td><td style="color:var(--green);font-weight:700">5回</td><td>4回</td><td>2回</td><td style="padding-right:20px">1回</td></tr>
+              <tr><td style="padding-left:20px;font-weight:700">AI Overview掲載</td><td style="color:var(--green);font-weight:700">12回</td><td style="color:var(--red);font-weight:700">15回</td><td>7回</td><td style="padding-right:20px">3回</td></tr>
+              <tr><td style="padding-left:20px;font-weight:700">Share of Voice</td><td style="color:var(--green);font-weight:700">38%</td><td style="color:var(--red);font-weight:700">32%</td><td>18%</td><td style="padding-right:20px">12%</td></tr>
+              <tr><td style="padding-left:20px;font-weight:700">JSON-LD整備率</td><td style="color:var(--green);font-weight:700">92%</td><td>85%</td><td>70%</td><td style="padding-right:20px">45%</td></tr>
+              <tr><td style="padding-left:20px;font-weight:700">NAP整合率</td><td style="color:var(--green);font-weight:700">95%</td><td>88%</td><td>76%</td><td style="padding-right:20px">62%</td></tr>
+            </tbody>
+          </table>
+          <div style="padding:10px 20px;font-size:11px;color:var(--gray-400);border-top:1px solid var(--gray-200)">競合A: ●●社 | 競合B: ▲▲社 | 競合C: ■■社 | 週次自動クロール</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 改善提案 -->
+    <div class="aio-sub" id="aio-improve">
+      <div class="card" style="margin-bottom:20px">
+        <div class="ch"><h3>💡 AI改善提案</h3><span class="bdg br">高優先度 3件</span><span class="bdg by" style="margin-left:4px">中 4件</span><span class="bdg bg" style="margin-left:4px">低 2件</span></div>
+        <div class="cb" style="padding:0 20px">
+          <div class="improve-item">
+            <div class="improve-pri pri-h">H</div>
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:4px">品川店のJSON-LDを更新する</div>
+              <div style="font-size:12px;color:var(--gray-600);line-height:1.6">営業時間の変更がJSON-LDに未反映です。Google AI OverviewはJSON-LDを参照するため、情報の不整合はAIO掲載率を下げます。SoTから自動生成して即日更新を推奨します。</div>
+              <div style="margin-top:8px;display:flex;gap:8px"><span style="font-size:11px;font-weight:700;color:var(--orange);background:var(--orange-dim);padding:2px 8px;border-radius:4px">想定効果: AIO掲載率 +8%</span><button class="tbtn" style="height:26px;font-size:11px;padding:0 10px">対応する</button></div>
+            </div>
+          </div>
+          <div class="improve-item">
+            <div class="improve-pri pri-h">H</div>
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:4px">未接続ディレクトリ5件を解消する</div>
+              <div style="font-size:12px;color:var(--gray-600);line-height:1.6">サイテーション数がAI検索エンジンの信頼スコアに影響します。未接続のGoogle・Yahoo!ロコ・ぐるなびを接続することで言及数が増加する見込みです。</div>
+              <div style="margin-top:8px;display:flex;gap:8px"><span style="font-size:11px;font-weight:700;color:var(--orange);background:var(--orange-dim);padding:2px 8px;border-radius:4px">想定効果: 言及回数 +15%</span><button class="tbtn" style="height:26px;font-size:11px;padding:0 10px">Uberallへ</button></div>
+            </div>
+          </div>
+          <div class="improve-item">
+            <div class="improve-pri pri-h">H</div>
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:4px">口コミ返信率を改善する（現状 89%）</div>
+              <div style="font-size:12px;color:var(--gray-600);line-height:1.6">ChatGPT・Perplexityはレビュー返信率を企業信頼性の指標として参照します。8件の未返信口コミに48時間以内に返信することでスコアが改善されます。</div>
+              <div style="margin-top:8px;display:flex;gap:8px"><span style="font-size:11px;font-weight:700;color:var(--orange);background:var(--orange-dim);padding:2px 8px;border-radius:4px">想定効果: 信頼スコア +5pt</span><button class="tbtn" style="height:26px;font-size:11px;padding:0 10px">口コミへ</button></div>
+            </div>
+          </div>
+          <div class="improve-item">
+            <div class="improve-pri pri-m">M</div>
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:4px">ブランドページに著者情報（E-E-A-T）を追加する</div>
+              <div style="font-size:12px;color:var(--gray-600);line-height:1.6">AIエンジンは専門性・権威性の高いコンテンツを優先引用します。代表者プロフィール・専門家監修情報をWebサイトに追加することを推奨します。</div>
+              <div style="margin-top:8px"><span style="font-size:11px;font-weight:700;color:#CA8A04;background:rgba(250,204,21,.15);padding:2px 8px;border-radius:4px">想定効果: ChatGPT引用率 +12%</span></div>
+            </div>
+          </div>
+          <div class="improve-item">
+            <div class="improve-pri pri-m">M</div>
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:4px">FAQ構造化データをWebサイトに追加する</div>
+              <div style="font-size:12px;color:var(--gray-600);line-height:1.6">FAQページにJSON-LD（FAQPage型）を追加することで、AI Overviewへの掲載確率が向上します。特に「AI検索対策とは」「MEO管理の費用」などのクエリで効果的です。</div>
+              <div style="margin-top:8px"><span style="font-size:11px;font-weight:700;color:#CA8A04;background:rgba(250,204,21,.15);padding:2px 8px;border-radius:4px">想定効果: AIO掲載率 +6%</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- レポート設定 -->
+    <div class="aio-sub" id="aio-report">
+      <div class="g2">
+        <div class="card">
+          <div class="ch"><h3>📋 レポート設定</h3><span class="bdg bb">自動送信</span></div>
+          <div class="cb" style="display:flex;flex-direction:column;gap:14px">
+            <div><label style="font-size:12px;font-weight:700;color:var(--navy);display:block;margin-bottom:6px">レポート名</label><input type="text" value="AIO月次モニタリングレポート" style="width:100%;padding:10px 12px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:13px;font-family:'BIZ UDPGothic',sans-serif;color:var(--navy);outline:none;box-sizing:border-box"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div><label style="font-size:12px;font-weight:700;color:var(--navy);display:block;margin-bottom:6px">配信頻度</label><select style="width:100%;padding:8px 10px;border:1px solid var(--gray-200);border-radius:6px;font-size:13px;font-family:'BIZ UDPGothic',sans-serif;color:var(--navy)"><option>月次</option><option>週次</option><option>四半期</option></select></div>
+              <div><label style="font-size:12px;font-weight:700;color:var(--navy);display:block;margin-bottom:6px">フォーマット</label><select style="width:100%;padding:8px 10px;border:1px solid var(--gray-200);border-radius:6px;font-size:13px;font-family:'BIZ UDPGothic',sans-serif;color:var(--navy)"><option>PDF</option><option>Excel</option><option>両方</option></select></div>
+            </div>
+            <div><label style="font-size:12px;font-weight:700;color:var(--navy);display:block;margin-bottom:6px">送信先メールアドレス</label><input type="email" value="hashimoto@sample-food.co.jp" style="width:100%;padding:10px 12px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:13px;font-family:'BIZ UDPGothic',sans-serif;color:var(--navy);outline:none;box-sizing:border-box"></div>
+            <div><label style="font-size:12px;font-weight:700;color:var(--navy);display:block;margin-bottom:6px">含める指標</label><div style="display:flex;flex-direction:column;gap:6px"><label style="display:flex;align-items:center;gap:6px;font-size:12px"><input type="checkbox" checked>言及回数・引用回数の推移</label><label style="display:flex;align-items:center;gap:6px;font-size:12px"><input type="checkbox" checked>Share of Voice（AIエンジン別）</label><label style="display:flex;align-items:center;gap:6px;font-size:12px"><input type="checkbox" checked>競合比較スコア</label><label style="display:flex;align-items:center;gap:6px;font-size:12px"><input type="checkbox" checked>改善提案トップ5</label><label style="display:flex;align-items:center;gap:6px;font-size:12px"><input type="checkbox">プロンプト別詳細データ</label></div></div>
+            <div style="display:flex;gap:8px"><button class="tbtn" style="flex:1;height:42px">💾 設定を保存</button><button class="tbtn" style="flex:1;height:42px;background:var(--navy)">📧 今すぐ送信</button></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ch"><h3>📅 送信履歴</h3></div>
+          <div style="padding:0 20px">
+            <div class="whi"><div class="wd wok"></div><div class="we">月次レポート 2026年3月</div><div class="ws">PDF送信済</div><div class="wt">4/1</div></div>
+            <div class="whi"><div class="wd wok"></div><div class="we">月次レポート 2026年2月</div><div class="ws">PDF送信済</div><div class="wt">3/1</div></div>
+            <div class="whi"><div class="wd wok"></div><div class="we">月次レポート 2026年1月</div><div class="ws">PDF送信済</div><div class="wt">2/1</div></div>
+            <div class="whi"><div class="wd wwn"></div><div class="we">週次レポート 3/30週</div><div class="ws">送信エラー</div><div class="wt">3/30</div></div>
+            <div class="whi"><div class="wd wok"></div><div class="we">週次レポート 3/23週</div><div class="ws">PDF送信済</div><div class="wt">3/23</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIDE PANEL -->
+  <div class="side-panel" id="side-panel">
+    <div class="side-panel-header">
+      <div id="sp-badge" class="ai-badge" style="font-size:13px"></div>
+      <div style="flex:1;margin-left:8px"><div id="sp-title" style="font-size:14px;font-weight:700;color:var(--navy)"></div><div id="sp-date" style="font-size:11px;color:var(--gray-400);margin-top:2px"></div></div>
+      <button class="side-panel-close" onclick="closeSidePanel()">✕</button>
+    </div>
+    <div style="padding:20px">
+      <div id="sp-body"></div>
+    </div>
+  </div>
+
 
 <script>
-const pages={dashboard:{t:'ダッシュボード',s:'概要 / 全店舗',b:'＋ 店舗を追加'},stores:{t:'店舗情報管理',s:'12店舗 | <span class="gl" data-gl="eo" tabindex="0">engine_owner<span class="gl-icon">?</span></span>: Uberall',b:'📥 CSVインポート'},uberall:{t:'配信（Uberall）',s:'Listings / サイテーション',b:'🔄 全店舗Sync'},gbp:{t:'Google 運用',s:'GBP Performance',b:'＋ 投稿を作成'},posts:{t:'投稿管理',s:'GBP投稿 / AI生成',b:'✏️ 新規投稿'},reviews:{t:'口コミ管理',s:'未返信 8件',b:'🤖 AI一括返信案'},ranking:{t:'競合・順位（MEOチェキ）',s:'日次順位更新',b:'＋ KW追加'},gsc:{t:'GSC・オーガニック',s:'Search Console API | AI Overviews含む',b:'📊 CSVエクスポート'},aio:{t:'AIO アシスト',s:'構造化データ / サイテーション / 計測',b:'🔄 チェック実行'},bookings:{t:'予約・コンバージョン',s:'自社予約API + GA4 MP',b:'📊 CSVエクスポート'},webhooks:{t:'Webhookログ',s:'全種別イベント',b:'🔄 再取得'},settings:{t:'API連携設定',s:'8サービス接続管理',b:'＋ 連携追加'},audit:{t:'監査ログ',s:'全操作記録',b:'📥 ログDL'}};
+const pages={dashboard:{t:'ダッシュボード',s:'概要 / 全店舗',b:'＋ 店舗を追加'},stores:{t:'店舗情報管理',s:'12店舗 | <span class="gl" data-gl="eo" tabindex="0">engine_owner<span class="gl-icon">?</span></span>: Uberall',b:'📥 CSVインポート'},uberall:{t:'配信（Uberall）',s:'Listings / サイテーション',b:'🔄 全店舗Sync'},gbp:{t:'Google 運用',s:'GBP Performance',b:'＋ 投稿を作成'},posts:{t:'投稿管理',s:'GBP投稿 / AI生成',b:'✏️ 新規投稿'},reviews:{t:'口コミ管理',s:'未返信 8件',b:'🤖 AI一括返信案'},ranking:{t:'競合・順位（MEOチェキ）',s:'日次順位更新',b:'＋ KW追加'},gsc:{t:'GSC・オーガニック',s:'Search Console API | AI Overviews含む',b:'📊 CSVエクスポート'},aio:{t:'AIO アシスト',s:'構造化データ / サイテーション / 計測',b:'🔄 チェック実行'},bookings:{t:'予約・コンバージョン',s:'自社予約API + GA4 MP',b:'📊 CSVエクスポート'},webhooks:{t:'Webhookログ',s:'全種別イベント',b:'🔄 再取得'},settings:{t:'API連携設定',s:'8サービス接続管理',b:'＋ 連携追加'},audit:{t:'監査ログ',s:'全操作記録',b:'📥 ログDL'},contract:{t:'契約情報',s:'プラン・オプション管理',b:'変更申請'},users:{t:'ユーザー管理',s:'アカウント管理',b:'＋ ユーザー追加'},'user-new':{t:'ユーザー管理',s:'新規作成',b:'＋ ユーザー追加'},'user-list':{t:'ユーザー管理',s:'ユーザー一覧',b:'＋ ユーザー追加'}};
 function nav(id){
   if(id==='login'){
     const m=document.getElementById('pg-login');
@@ -1722,6 +2231,160 @@ pages.login = {t:'ログイン',s:'',b:''};
 // ===== LOGIN MODAL OPEN =====
 // ログイン画面はflex表示
 const origNav = nav;
+
+// ===== MONTH SWITCHER =====
+const monthData = {
+  db: {
+    0: {book:'847件', call:'2,341', label:'2026年4月'},
+    '-1': {book:'734件', call:'2,162', label:'2026年3月'},
+    '-2': {book:'698件', call:'2,044', label:'2026年2月'}
+  },
+  gbp: {
+    0: {call:'2,341', route:'1,887', web:'934', book:'142', imp:'48.2K', callD:'▲ +8.1%', routeD:'▲ +5.3%', webD:'▲ +3.2%', bookD:'▲ +14%', impD:'▲ +11%', label:'2026年4月'},
+    '-1': {call:'2,162', route:'1,743', web:'901', book:'125', imp:'43.4K', callD:'▲ +4.2%', routeD:'▲ +2.8%', webD:'▲ +1.1%', bookD:'▲ +8%', impD:'▲ +7%', label:'2026年3月'},
+    '-2': {call:'2,075', route:'1,699', web:'891', book:'112', imp:'40.2K', callD:'→ ±0%', routeD:'▼ -1.2%', webD:'▲ +0.5%', bookD:'▼ -3%', impD:'▲ +3%', label:'2026年2月'}
+  }
+};
+let currentMonth = {db: 0, gbp: 0};
+
+function switchMonth(page, offset) {
+  currentMonth[page] = offset;
+  const d = monthData[page][offset];
+  if (!d) return;
+  // ボタンactive
+  const sw = document.getElementById(page + '-month-sw');
+  if (sw) sw.querySelectorAll('.msw-btn').forEach((b, i) => {
+    b.classList.toggle('active', [-2,-1,0][i] === offset);
+  });
+  // ラベル更新
+  const lbl = document.getElementById(page + '-month-label');
+  if (lbl) lbl.textContent = d.label;
+  const clbl = document.getElementById(page + '-chart-label');
+  if (clbl) clbl.textContent = d.label;
+  // 値更新
+  if (page === 'db') {
+    const bk = document.getElementById('db-book');
+    if (bk) bk.innerHTML = d.book;
+    const cl = document.getElementById('db-call');
+    if (cl) cl.textContent = d.call;
+  }
+  if (page === 'gbp') {
+    const fields = {call:'gbp-call',route:'gbp-route',web:'gbp-web',book:'gbp-book',imp:'gbp-imp',
+                    callD:'gbp-call-d',routeD:'gbp-route-d',webD:'gbp-web-d',bookD:'gbp-book-d',impD:'gbp-imp-d'};
+    Object.entries(fields).forEach(([k,id]) => {
+      const el = document.getElementById(id);
+      if (el && d[k]) el.textContent = d[k];
+    });
+  }
+}
+
+// ===== CONTRACT =====
+let planBase = 49800;
+function selectPlan(el, name, price) {
+  document.querySelectorAll('.plan-card').forEach(c => {
+    c.style.border = '2px solid var(--gray-200)';
+    c.style.background = '';
+    c.querySelector('div').style.color = 'var(--gray-600)';
+    c.querySelector('div').textContent = c.querySelector('div').textContent.replace(' ✓','');
+  });
+  el.style.border = '2px solid var(--orange)';
+  el.style.background = 'var(--orange-dim)';
+  el.querySelector('div').style.color = 'var(--orange)';
+  el.querySelector('div').textContent = name + ' ✓';
+  planBase = price;
+  calcTotal();
+}
+function calcTotal() {
+  const opts = [
+    {id:'opt1', price:5000}, {id:'opt2', price:5000},
+    {id:'opt3', price:3000}, {id:'opt4', price:3000}
+  ];
+  let total = planBase;
+  opts.forEach(o => {
+    const cb = document.getElementById(o.id);
+    if (cb && cb.checked) total += o.price;
+  });
+  const tp = document.getElementById('total-price');
+  if (tp) tp.textContent = '¥' + total.toLocaleString();
+  const tt = document.getElementById('total-tax');
+  if (tt) tt.textContent = '¥' + Math.round(total * 1.1).toLocaleString();
+}
+
+// ===== AIO TABS =====
+function switchAio(tab) {
+  document.querySelectorAll('.aio-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.aio-sub').forEach(s => s.classList.remove('active'));
+  const tabs = ['dash','prompt','compare','rival','improve','report'];
+  const idx = tabs.indexOf(tab);
+  if (idx >= 0) document.querySelectorAll('.aio-tab')[idx].classList.add('active');
+  const sub = document.getElementById('aio-' + tab);
+  if (sub) sub.classList.add('active');
+}
+
+// ===== SIDE PANEL =====
+const spData = {
+  chatgpt: {badge:'ChatGPT', cls:'ai-chatgpt', title:'ChatGPT 詳細回答', date:'2026-04-06 09:00取得', body:`
+    <div style="font-size:13px;color:var(--navy);line-height:1.8;margin-bottom:16px">「AI検索対策ツール おすすめ」に対するChatGPTの回答抜粋：<br><br><strong>iFLAG MEO管理</strong>は、GBP最適化・サイテーション管理・Webhook連携を一元化したBtoB向けプラットフォームです。特にUberall連携による125以上のディレクトリへの一括配信と、JSON-LD自動生成機能が評価されています。</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="background:var(--gray-100);border-radius:8px;padding:12px;display:flex;justify-content:space-between"><span style="font-size:12px;color:var(--gray-600)">言及回数（月）</span><span style="font-family:'Outfit',sans-serif;font-weight:800;color:var(--navy)">8回</span></div>
+      <div style="background:var(--gray-100);border-radius:8px;padding:12px;display:flex;justify-content:space-between"><span style="font-size:12px;color:var(--gray-600)">ブランド名の正確性</span><span style="font-size:12px;font-weight:700;color:var(--green)">✓ 正確</span></div>
+      <div style="background:var(--gray-100);border-radius:8px;padding:12px;display:flex;justify-content:space-between"><span style="font-size:12px;color:var(--gray-600)">ポジティブ/ネガティブ</span><span style="font-size:12px;font-weight:700;color:var(--green)">ポジティブ 100%</span></div>
+    </div>
+    <div style="margin-top:16px;padding:10px 12px;background:var(--orange-dim);border-radius:8px;font-size:12px">💡 引用ソースとして弊社ブログ記事が参照されています。コンテンツ更新を継続してください。</div>
+  `},
+  perplexity: {badge:'Perplexity', cls:'ai-perplexity', title:'Perplexity 詳細回答', date:'2026-04-06 09:00取得', body:`<div style="font-size:13px;color:var(--navy);line-height:1.8;margin-bottom:16px">Perplexityの回答では、iFLAGのMEO統合管理がBtoB企業向けのAI検索対策ツールとして上位に紹介されています。特にWebhook連携によるリアルタイムデータ同期機能が独自の強みとして言及されています。</div><div style="display:flex;flex-direction:column;gap:8px"><div style="background:var(--gray-100);border-radius:8px;padding:12px;display:flex;justify-content:space-between"><span style="font-size:12px;color:var(--gray-600)">言及回数（月）</span><span style="font-family:'Outfit',sans-serif;font-weight:800;color:var(--navy)">5回</span></div><div style="background:var(--gray-100);border-radius:8px;padding:12px;display:flex;justify-content:space-between"><span style="font-size:12px;color:var(--gray-600)">引用ソース数</span><span style="font-size:12px;font-weight:700;color:var(--cyan)">3ソース</span></div></div>`},
+  gemini: {badge:'Gemini', cls:'ai-gemini', title:'Gemini 詳細回答', date:'2026-04-06 09:00取得', body:`<div style="font-size:13px;color:var(--navy);line-height:1.8;margin-bottom:16px">Geminiでは部分的な言及に留まっています。競合他社と比較した場合、iFLAGの具体的な機能説明が不足している可能性があります。Webサイトの技術コンテンツ拡充を推奨します。</div><div style="padding:10px 12px;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-radius:8px;font-size:12px;color:var(--red)">⚠️ AI Overview比で言及率が低い。構造化データの追加を優先してください。</div>`},
+  aio: {badge:'AI Overview', cls:'ai-aio', title:'Google AI Overview 詳細', date:'2026-04-06 09:00取得', body:`<div style="font-size:13px;color:var(--navy);line-height:1.8;margin-bottom:16px">Google AI Overviewにて最も高頻度での掲載を確認しています。「AI検索最適化」「AEO対策」「MEO管理ツール」の各クエリで上位表示されており、JSON-LDとNAP整合性の整備が効果を発揮しています。</div><div style="display:flex;flex-direction:column;gap:8px"><div style="background:var(--gray-100);border-radius:8px;padding:12px;display:flex;justify-content:space-between"><span style="font-size:12px;color:var(--gray-600)">掲載クエリ数</span><span style="font-family:'Outfit',sans-serif;font-weight:800;color:var(--navy)">12クエリ</span></div><div style="background:var(--gray-100);border-radius:8px;padding:12px;display:flex;justify-content:space-between"><span style="font-size:12px;color:var(--gray-600)">引用ソース</span><span style="font-size:12px;font-weight:700;color:var(--green)">自社サイト + GBP</span></div></div><div style="margin-top:16px;padding:10px 12px;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:8px;font-size:12px">✅ 現状維持でOK。NAP整合率95%を継続してください。</div>`}
+};
+function openSidePanel(key) {
+  const d = spData[key];
+  if (!d) return;
+  const badge = document.getElementById('sp-badge');
+  badge.textContent = d.badge;
+  badge.className = 'ai-badge ' + d.cls;
+  document.getElementById('sp-title').textContent = d.title;
+  document.getElementById('sp-date').textContent = d.date;
+  document.getElementById('sp-body').innerHTML = d.body;
+  document.getElementById('side-panel').classList.add('open');
+}
+function closeSidePanel() {
+  document.getElementById('side-panel').classList.remove('open');
+}
+
+// ===== NAV SECTION COLLAPSE =====
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.ns').forEach(ns => {
+    ns.addEventListener('click', () => {
+      const section = ns.closest('.ns-section');
+      if (section) section.classList.toggle('collapsed');
+    });
+  });
+});
+
+// ===== LOGIN MODAL SHOW (demo) =====
+function showLogin() {
+  const m = document.getElementById('login-modal');
+  if (m) m.style.display = 'flex';
+}
+
+// ===== USER ROLE SELECT =====
+function selectRole(role) {
+  ['admin','editor','viewer'].forEach(r => {
+    const el = document.getElementById('role-' + r);
+    if (!el) return;
+    if (r === role) {
+      el.style.border = '2px solid var(--orange)';
+      el.style.background = 'var(--orange-dim)';
+      el.querySelector('div').style.color = 'var(--orange)';
+      el.querySelector('div').textContent = {admin:'管理者',editor:'編集者',viewer:'閲覧者'}[r] + ' ✓';
+    } else {
+      el.style.border = '2px solid var(--gray-200)';
+      el.style.background = '';
+      el.querySelector('div').style.color = 'var(--gray-600)';
+      el.querySelector('div').textContent = {admin:'管理者',editor:'編集者',viewer:'閲覧者'}[r];
+    }
+  });
+}
 
 </script>
 </body>
