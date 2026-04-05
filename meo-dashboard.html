@@ -201,9 +201,11 @@ nav{flex:1;padding:8px 0;overflow-y:scroll;-webkit-overflow-scrolling:touch;min-
 .tour-box p{font-size:13px;color:var(--gray-600);line-height:1.65;margin-bottom:14px}
 .tour-box .tip{background:var(--gray-100);border-left:3px solid var(--orange);padding:8px 12px;border-radius:0 6px 6px 0;font-size:12px;color:var(--navy);margin-bottom:14px}
 .tour-foot{display:flex;align-items:center;gap:6px}
-.tour-dots{display:flex;gap:5px;flex:1;min-width:0}
-.tour-dot{width:7px;height:7px;border-radius:50%;background:var(--gray-200);transition:background .2s;flex-shrink:0}
-.tour-dot.active{background:var(--orange)}
+.tour-dots{flex:1;min-width:0;display:flex;align-items:center;gap:6px}
+.tour-meter{flex:1;height:4px;background:var(--gray-200);border-radius:4px;overflow:hidden}
+.tour-meter-bar{height:100%;background:var(--orange);border-radius:4px;transition:width .3s ease}
+.tour-meter-label{font-size:11px;color:var(--gray-400);font-family:'Outfit',sans-serif;white-space:nowrap}
+.tour-dot{display:none}
 .tour-prev,.tour-next{border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:'BIZ UDPGothic',sans-serif;transition:all .2s;flex-shrink:0;white-space:nowrap}
 .tour-prev{background:var(--gray-100);color:var(--gray-600)}
 .tour-prev:hover{background:var(--gray-200)}
@@ -832,6 +834,22 @@ const TOUR_STEPS = [
     pos: 'right'
   },
   {
+    title: '📍 Google 運用（GBP）',
+    body: 'Google ビジネスプロフィールの通話・経路・Webクリック数を週次で確認できます。GBPは来店予約の起点となる最重要チャネルです。',
+    tip: '💡 GBPの情報変更はSoT経由で行い、GBP直接編集は避けてください。',
+    target: '[data-page="gbp"]',
+    page: 'gbp',
+    pos: 'right'
+  },
+  {
+    title: '📝 投稿管理',
+    body: 'GBP投稿の一覧・承認・AI自動生成ができます。2週間以上投稿がない店舗はAIOスコアに影響します。AI生成した下書きを確認・承認するだけで投稿できます。',
+    tip: '💡 週1回以上の投稿頻度が推奨です。AIで効率化しましょう。',
+    target: '[data-page="posts"]',
+    page: 'posts',
+    pos: 'right'
+  },
+  {
     title: '⭐ 口コミ管理',
     body: '未返信の口コミ一覧です。低評価（★3以下）は特に早急な対応が必要です。AI返信案を活用して12時間以内の返信を目標にしましょう。',
     tip: '💡 口コミ返信率はAIO（AI Overview）掲載にも影響します。',
@@ -845,6 +863,14 @@ const TOUR_STEPS = [
     tip: '💡 順位が下がった場合のチェックリストはNotionガイドを参照してください。',
     target: '[data-page="ranking"]',
     page: 'ranking',
+    pos: 'right'
+  },
+  {
+    title: '🔍 GSC・オーガニック',
+    body: 'Google Search Consoleのクリック数・表示回数・CTR・掲載順位を確認します。AI Overview由来のクリックも含めて分析でき、MEO施策の検索流入への貢献が見えます。',
+    tip: '💡 表示回数が増えてCTRが低い場合はタイトル・説明文の改善が有効です。',
+    target: '[data-page="gsc"]',
+    page: 'gsc',
     pos: 'right'
   },
   {
@@ -930,7 +956,7 @@ function buildTourUI() {
         </a>
       </div>
       <div class="tour-foot">
-        <div class="tour-dots" id="tour-dots"></div>
+        <div class="tour-dots"><div class="tour-meter"><div class="tour-meter-bar" id="tour-meter-bar"></div></div><div class="tour-meter-label" id="tour-meter-label"></div></div>
         <button class="tour-prev" id="tour-prev">戻る</button>
         <button class="tour-next" id="tour-next">次へ</button>
       </div>
@@ -981,10 +1007,11 @@ function goStep(idx) {
   document.getElementById('tour-notion-wrap').style.display = step.notion ? 'block' : 'none';
 
   // dots
-  const dots = document.getElementById('tour-dots');
-  dots.innerHTML = TOUR_STEPS.map((_, i) =>
-    `<div class="tour-dot ${i === idx ? 'active' : ''}"></div>`
-  ).join('');
+  const pct = Math.round((idx + 1) / TOUR_STEPS.length * 100);
+  const bar = document.getElementById('tour-meter-bar');
+  const lbl = document.getElementById('tour-meter-label');
+  if(bar) bar.style.width = pct + '%';
+  if(lbl) lbl.textContent = (idx + 1) + ' / ' + TOUR_STEPS.length;
 
   // buttons
   document.getElementById('tour-prev').style.display = idx === 0 ? 'none' : '';
