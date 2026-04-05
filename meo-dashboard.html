@@ -163,12 +163,18 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
 /* TOUR */
 .tour-overlay{position:fixed;inset:0;background:rgba(5,10,25,.12);z-index:1000;display:none}
 .tour-overlay.active{display:block}
-.tour-box{position:fixed;z-index:1001;background:#fff;border-radius:14px;padding:24px;width:320px;box-shadow:0 24px 60px rgba(5,10,25,.25);animation:tb .3s cubic-bezier(.34,1.56,.64,1);max-height:85vh;overflow-y:auto;display:none}
+.tour-wrap{position:fixed;z-index:1001;display:none;align-items:flex-end;gap:0}
+.tour-chara{width:120px;flex-shrink:0;align-self:flex-end;pointer-events:none;user-select:none;filter:drop-shadow(0 8px 16px rgba(5,10,25,.18))}
+.tour-chara img{width:120px;display:block}
+.tour-box{background:#fff;border-radius:14px;padding:20px 20px 16px;width:300px;box-shadow:0 24px 60px rgba(5,10,25,.25);animation:tb .3s cubic-bezier(.34,1.56,.64,1);max-height:80vh;overflow-y:auto;position:relative}
+.tour-box::before{content:'';position:absolute;bottom:28px;left:-8px;width:0;height:0;border-top:8px solid transparent;border-bottom:8px solid transparent;border-right:8px solid #fff}
 @keyframes tb{from{opacity:0;transform:scale(.88) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.tour-chara-switch{position:absolute;top:10px;right:10px;background:var(--gray-100);border:none;border-radius:20px;padding:3px 10px;font-size:10px;color:var(--gray-600);cursor:pointer;font-family:'BIZ UDPGothic',sans-serif;transition:background .2s}
+.tour-chara-switch:hover{background:var(--gray-200)}
 .tour-step-badge{font-family:'Outfit',sans-serif;font-size:11px;font-weight:700;color:var(--orange);background:var(--orange-dim);padding:3px 8px;border-radius:20px;display:inline-block;margin-bottom:10px}
-.tour-box h4{font-size:16px;font-weight:800;color:var(--navy);margin-bottom:8px;line-height:1.3}
-.tour-box p{font-size:13px;color:var(--gray-600);line-height:1.65;margin-bottom:16px}
-.tour-box .tip{background:var(--gray-100);border-left:3px solid var(--orange);padding:8px 12px;border-radius:0 6px 6px 0;font-size:12px;color:var(--navy);margin-bottom:16px}
+.tour-box h4{font-size:15px;font-weight:800;color:var(--navy);margin-bottom:8px;line-height:1.3}
+.tour-box p{font-size:13px;color:var(--gray-600);line-height:1.65;margin-bottom:14px}
+.tour-box .tip{background:var(--gray-100);border-left:3px solid var(--orange);padding:8px 12px;border-radius:0 6px 6px 0;font-size:12px;color:var(--navy);margin-bottom:14px}
 .tour-foot{display:flex;align-items:center;gap:8px}
 .tour-dots{display:flex;gap:5px;flex:1}
 .tour-dot{width:7px;height:7px;border-radius:50%;background:var(--gray-200);transition:background .2s}
@@ -751,6 +757,8 @@ const TOUR_STEPS = [
 
 let currentStep = 0;
 
+let tourChara = localStorage.getItem('meo_tour_chara') || 'men';
+
 function buildTourUI() {
   // overlay
   const ov = document.createElement('div');
@@ -764,11 +772,23 @@ function buildTourUI() {
   hl.id = 'tour-hl';
   document.body.appendChild(hl);
 
+  // wrap（キャラ＋ボックス）
+  const wrap = document.createElement('div');
+  wrap.className = 'tour-wrap';
+  wrap.id = 'tour-wrap';
+
+  // キャラクター
+  const chara = document.createElement('div');
+  chara.className = 'tour-chara';
+  chara.id = 'tour-chara';
+  chara.innerHTML = `<img id="tour-chara-img" src="${tourChara}-right.png" alt="キャラクター">`;
+
   // box
   const box = document.createElement('div');
   box.className = 'tour-box';
   box.id = 'tour-box';
   box.innerHTML = `
+    <button class="tour-chara-switch" id="tour-chara-switch">${tourChara === 'men' ? '👩 女性に変更' : '👨 男性に変更'}</button>
     <div class="tour-step-badge" id="tour-badge">Step 1 / ${TOUR_STEPS.length}</div>
     <h4 id="tour-title"></h4>
     <p id="tour-body"></p>
@@ -784,7 +804,10 @@ function buildTourUI() {
       <button class="tour-prev" id="tour-prev">戻る</button>
       <button class="tour-next" id="tour-next">次へ</button>
     </div>`;
-  document.body.appendChild(box);
+
+  wrap.appendChild(chara);
+  wrap.appendChild(box);
+  document.body.appendChild(wrap);
 
   // help button
   const hb = document.createElement('button');
@@ -793,6 +816,14 @@ function buildTourUI() {
   hb.innerHTML = '❓';
   hb.onclick = () => startTour();
   document.body.appendChild(hb);
+
+  // キャラ切り替え
+  document.getElementById('tour-chara-switch').onclick = () => {
+    tourChara = tourChara === 'men' ? 'women' : 'men';
+    localStorage.setItem('meo_tour_chara', tourChara);
+    document.getElementById('tour-chara-img').src = tourChara + '-right.png';
+    document.getElementById('tour-chara-switch').textContent = tourChara === 'men' ? '👩 女性に変更' : '👨 男性に変更';
+  };
 
   document.getElementById('tour-prev').onclick = () => goStep(currentStep - 1);
   document.getElementById('tour-next').onclick = () => {
@@ -829,17 +860,18 @@ function goStep(idx) {
   document.getElementById('tour-next').textContent = idx === TOUR_STEPS.length - 1 ? '✓ 完了' : '次へ';
 
   // ボックスをいったん非表示にしてから位置計算後に表示（チラつき防止）
-  const box = document.getElementById('tour-box');
-  box.style.top = '';
-  box.style.left = '';
-  box.style.transform = '';
-  box.style.display = 'none';
+  const wrap = document.getElementById('tour-wrap');
+  wrap.style.top = '';
+  wrap.style.left = '';
+  wrap.style.transform = '';
+  wrap.style.display = 'none';
 
-  // position box & highlight（内部でdisplay:blockも設定）
+  // position box & highlight（内部でdisplay:flexも設定）
   positionStep(step);
 }
 
 function positionStep(step) {
+  const wrap = document.getElementById('tour-wrap');
   const box = document.getElementById('tour-box');
   const hl = document.getElementById('tour-hl');
   const ov = document.getElementById('tour-overlay');
@@ -848,31 +880,36 @@ function positionStep(step) {
 
   const vw = window.innerWidth;
   const vh = window.innerHeight;
-  const isNarrow = vw < 1100;  // iPadも確実に中央表示
-  const bw = Math.min(vw - 32, 320);
+  const isNarrow = vw < 1100;
+  const bw = Math.min(vw - 32, 300);
   box.style.width = bw + 'px';
 
   // iPad・スマホ、またはtarget無し → 常に中央
   if (!step.target || step.pos === 'center' || isNarrow) {
-    box.style.top = '50%';
-    box.style.left = '50%';
-    box.style.transform = 'translate(-50%, -50%)';
-    box.style.display = 'block';
+    wrap.style.position = 'fixed';
+    wrap.style.bottom = '24px';
+    wrap.style.left = '50%';
+    wrap.style.top = '';
+    wrap.style.transform = 'translateX(-50%)';
+    wrap.style.display = 'flex';
     hl.classList.remove('active');
     return;
   }
 
   const el = document.querySelector(step.target);
   if (!el) {
-    box.style.top = '50%';
-    box.style.left = '50%';
-    box.style.transform = 'translate(-50%, -50%)';
-    box.style.display = 'block';
+    wrap.style.position = 'fixed';
+    wrap.style.bottom = '24px';
+    wrap.style.left = '50%';
+    wrap.style.top = '';
+    wrap.style.transform = 'translateX(-50%)';
+    wrap.style.display = 'flex';
     return;
   }
 
   const r = el.getBoundingClientRect();
   const pad = 12;
+  const wrapW = bw + 120 + 0; // box + chara
 
   // highlight ring
   hl.style.left = r.left - 4 + 'px';
@@ -884,14 +921,16 @@ function positionStep(step) {
   // Desktop: ターゲットの右側 or 左側
   let bx = r.right + pad;
   let by = r.top - 10;
-  if (bx + bw > vw - pad) bx = r.left - bw - pad;
-  if (by + (box.offsetHeight || 220) > vh - pad) by = vh - (box.offsetHeight || 220) - pad;
+  if (bx + wrapW > vw - pad) bx = r.left - wrapW - pad;
+  if (by + 280 > vh - pad) by = vh - 280 - pad;
   if (by < pad) by = pad;
 
-  box.style.top = by + 'px';
-  box.style.left = bx + 'px';
-  box.style.transform = 'none';
-  box.style.display = 'block';
+  wrap.style.position = 'fixed';
+  wrap.style.top = by + 'px';
+  wrap.style.left = bx + 'px';
+  wrap.style.bottom = '';
+  wrap.style.transform = 'none';
+  wrap.style.display = 'flex';
 }
 
 function startTour() {
@@ -903,11 +942,11 @@ function endTour() {
   localStorage.setItem('meo_tour_done','1');
   document.getElementById('tour-overlay').classList.remove('active');
   document.getElementById('tour-hl').classList.remove('active');
-  const box = document.getElementById('tour-box');
-  box.style.display = 'none';
-  box.style.top = '';
-  box.style.left = '';
-  box.style.transform = '';
+  const wrap = document.getElementById('tour-wrap');
+  wrap.style.display = 'none';
+  wrap.style.top = '';
+  wrap.style.left = '';
+  wrap.style.transform = '';
 }
 
 document.addEventListener('DOMContentLoaded', () => {
