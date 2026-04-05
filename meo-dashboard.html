@@ -41,9 +41,10 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
 .doc-link.spec{background:var(--orange-dim);color:var(--orange);border:1px solid rgba(240,90,26,.25)}.doc-link.spec:hover{background:rgba(240,90,26,.25)}
 .tbtn{background:var(--orange);color:#fff;border:none;border-radius:7px;padding:0 16px;height:34px;font-size:13px;font-weight:700;cursor:pointer;font-family:'BIZ UDPGothic',sans-serif;transition:background .2s;display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;flex-shrink:0}#tbtn{min-width:180px}
 .tbtn:hover{background:var(--orange-light)}
-.page{display:none;padding:24px 28px;flex:1;animation:fu .35s ease both}
+.page{display:none;padding:24px 28px;flex:1;opacity:0;transform:translateY(10px)}
 .page.active{display:block}
-@keyframes fu{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.page.page-in{animation:fu .3s cubic-bezier(.25,.46,.45,.94) forwards}
+@keyframes fu{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 .alert-bar{background:linear-gradient(90deg,rgba(240,90,26,.08) 0%,transparent 100%);border:1px solid rgba(240,90,26,.3);border-radius:8px;padding:10px 16px;display:flex;align-items:center;gap:12px;margin-bottom:20px}
 .alert-bar .at{font-size:13px;color:var(--navy);flex:1}
 .alert-bar .at strong{color:var(--orange)}
@@ -166,23 +167,38 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
 /* TOUR */
 .tour-overlay{position:fixed;inset:0;background:rgba(5,10,25,.12);z-index:1000;display:none}
 .tour-overlay.active{display:block}
-.tour-wrap{position:fixed;z-index:1001;display:none;align-items:flex-end;gap:0}
-.tour-chara{width:120px;flex-shrink:0;align-self:flex-end;pointer-events:none;user-select:none;filter:drop-shadow(0 8px 16px rgba(5,10,25,.18))}
+.tour-wrap{position:fixed;z-index:1001;display:none;align-items:flex-end;gap:0;transition:opacity .25s ease,transform .25s ease}
+.tour-wrap.tour-animating{opacity:0;transform:translateY(8px)}
+.tour-chara{width:120px;flex-shrink:0;align-self:flex-end;pointer-events:none;user-select:none;filter:drop-shadow(0 8px 16px rgba(5,10,25,.18));transition:opacity .2s ease}
 .tour-chara img{width:120px;display:block}
-.tour-box{background:#fff;border-radius:14px;padding:20px 20px 16px;width:300px;box-shadow:0 24px 60px rgba(5,10,25,.25);animation:tb .3s cubic-bezier(.34,1.56,.64,1);max-height:80vh;overflow-y:auto;position:relative}
-.tour-box::before{content:'';position:absolute;bottom:28px;left:-8px;width:0;height:0;border-top:8px solid transparent;border-bottom:8px solid transparent;border-right:8px solid #fff}
-@keyframes tb{from{opacity:0;transform:scale(.88) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+/* 吹き出しbox */
+.tour-box{
+  background:#fff;border-radius:14px;padding:20px 20px 16px;width:300px;
+  box-shadow:0 8px 32px rgba(5,10,25,.18),0 2px 8px rgba(5,10,25,.08);
+  max-height:80vh;overflow-y:auto;position:relative;
+  transition:opacity .2s ease,transform .2s ease;
+}
+/* 吹き出し三角（左向き・シャドウ付き） */
+.tour-box::after{
+  content:'';position:absolute;bottom:32px;left:-16px;
+  width:0;height:0;
+  border-top:10px solid transparent;
+  border-bottom:10px solid transparent;
+  border-right:16px solid #fff;
+  filter:drop-shadow(-3px 1px 3px rgba(5,10,25,.12));
+}
+@keyframes tb{from{opacity:0;transform:scale(.92) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
 .tour-chara-switch{position:absolute;top:10px;right:10px;background:var(--gray-100);border:none;border-radius:20px;padding:3px 10px;font-size:10px;color:var(--gray-600);cursor:pointer;font-family:'BIZ UDPGothic',sans-serif;transition:background .2s}
 .tour-chara-switch:hover{background:var(--gray-200)}
 .tour-step-badge{font-family:'Outfit',sans-serif;font-size:11px;font-weight:700;color:var(--orange);background:var(--orange-dim);padding:3px 8px;border-radius:20px;display:inline-block;margin-bottom:10px}
 .tour-box h4{font-size:15px;font-weight:800;color:var(--navy);margin-bottom:8px;line-height:1.3}
 .tour-box p{font-size:13px;color:var(--gray-600);line-height:1.65;margin-bottom:14px}
 .tour-box .tip{background:var(--gray-100);border-left:3px solid var(--orange);padding:8px 12px;border-radius:0 6px 6px 0;font-size:12px;color:var(--navy);margin-bottom:14px}
-.tour-foot{display:flex;align-items:center;gap:8px}
+.tour-foot{display:flex;align-items:center;gap:8px;padding-right:4px}
 .tour-dots{display:flex;gap:5px;flex:1}
 .tour-dot{width:7px;height:7px;border-radius:50%;background:var(--gray-200);transition:background .2s}
 .tour-dot.active{background:var(--orange)}
-.tour-prev,.tour-next{border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:'BIZ UDPGothic',sans-serif;transition:all .2s}
+.tour-prev,.tour-next{border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:'BIZ UDPGothic',sans-serif;transition:all .2s;flex-shrink:0}
 .tour-prev{background:var(--gray-100);color:var(--gray-600)}
 .tour-prev:hover{background:var(--gray-200)}
 .tour-next{background:var(--orange);color:#fff}
@@ -247,7 +263,7 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
   </div>
 
   <!-- DASHBOARD -->
-  <div class="page active" id="pg-dashboard">
+  <div class="page active page-in" id="pg-dashboard">
     <div class="alert-bar"><span>⚠️</span><div class="at"><strong>要対応 5件：</strong>未接続ディレクトリ 3店舗 / 必須フィールド欠損 2店舗 / 口コミ未返信 8件</div><span class="al">確認 →</span></div>
     <div class="kgrid">
       <div class="kc p"><span class="ki">📆</span><div class="kl">今月の予約数（確定）</div><div class="kv">847<span class="ku">件</span></div><div class="kd up">▲ +12.4%</div></div>
@@ -658,10 +674,14 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
 const pages={dashboard:{t:'ダッシュボード',s:'概要 / 全店舗',b:'＋ 店舗を追加'},stores:{t:'店舗情報管理',s:'12店舗 | <span class="gl" data-gl="eo" tabindex="0">engine_owner<span class="gl-icon">?</span></span>: Uberall',b:'📥 CSVインポート'},uberall:{t:'配信（Uberall）',s:'Listings / サイテーション',b:'🔄 全店舗Sync'},gbp:{t:'Google 運用',s:'GBP Performance',b:'＋ 投稿を作成'},posts:{t:'投稿管理',s:'GBP投稿 / AI生成',b:'✏️ 新規投稿'},reviews:{t:'口コミ管理',s:'未返信 8件',b:'🤖 AI一括返信案'},ranking:{t:'競合・順位（MEOチェキ）',s:'日次順位更新',b:'＋ KW追加'},gsc:{t:'GSC・オーガニック',s:'Search Console API | AI Overviews含む',b:'📊 CSVエクスポート'},aio:{t:'AIO アシスト',s:'構造化データ / サイテーション / 計測',b:'🔄 チェック実行'},bookings:{t:'予約・コンバージョン',s:'自社予約API + GA4 MP',b:'📊 CSVエクスポート'},webhooks:{t:'Webhookログ',s:'全種別イベント',b:'🔄 再取得'},settings:{t:'API連携設定',s:'8サービス接続管理',b:'＋ 連携追加'},audit:{t:'監査ログ',s:'全操作記録',b:'📥 ログDL'}};
 function nav(id){
   if(!pages[id])return;
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>{p.classList.remove('active');p.classList.remove('page-in');});
   document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));
   const pg=document.getElementById('pg-'+id);
-  if(pg)pg.classList.add('active');
+  if(pg){
+    pg.classList.add('active');
+    // display:block後にrAFでアニメーションクラス付与（即時だと効かないため）
+    requestAnimationFrame(()=>requestAnimationFrame(()=>pg.classList.add('page-in')));
+  }
   const ni=document.querySelector('[data-page="'+id+'"]');
   if(ni)ni.classList.add('active');
   const p=pages[id];
@@ -864,15 +884,30 @@ function goStep(idx) {
   document.getElementById('tour-prev').style.display = idx === 0 ? 'none' : '';
   document.getElementById('tour-next').textContent = idx === TOUR_STEPS.length - 1 ? '✓ 完了' : '次へ';
 
-  // ボックスをいったん非表示にしてから位置計算後に表示（チラつき防止）
   const wrap = document.getElementById('tour-wrap');
-  wrap.style.top = '';
-  wrap.style.left = '';
-  wrap.style.transform = '';
-  wrap.style.display = 'none';
+  const isFirst = wrap.style.display === 'none' || wrap.style.display === '';
 
-  // position box & highlight（内部でdisplay:flexも設定）
-  positionStep(step);
+  if (isFirst) {
+    // 初回表示：位置計算してすぐ表示
+    wrap.style.top = '';
+    wrap.style.left = '';
+    wrap.style.transform = '';
+    wrap.style.display = 'none';
+    positionStep(step);
+  } else {
+    // ステップ切り替え：フェードアウト → 内容更新 → フェードイン
+    wrap.classList.add('tour-animating');
+    setTimeout(() => {
+      wrap.style.top = '';
+      wrap.style.left = '';
+      wrap.style.transform = '';
+      wrap.style.display = 'none';
+      positionStep(step);
+      requestAnimationFrame(() => {
+        wrap.classList.remove('tour-animating');
+      });
+    }, 200);
+  }
 }
 
 function positionStep(step) {
