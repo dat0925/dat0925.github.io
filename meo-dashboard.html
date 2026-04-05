@@ -236,19 +236,10 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
 }
 .sp-overlay.open { display: block; }
 
-/* ===== タブレット：サイドバー縮小 ===== */
-@media (max-width: 900px) {
-  :root { --sw: 180px; }
-  .logo .sub, .tcnt, .sbot { display: none; }
-  .ni { padding: 9px 12px; font-size: 12px; gap: 6px; }
-  .ns { padding: 10px 12px 4px; font-size: 9px; }
-}
-
-/* ===== スマホ：ドロワー式 ===== */
-@media (max-width: 640px) {
+/* ===== タブレット・スマホ共通：ドロワー式（1024px以下） ===== */
+@media (max-width: 1024px) {
   :root { --sw: 0px; }
 
-  /* サイドバーをドロワー化 */
   .sidebar {
     position: fixed;
     top: 0; left: 0; bottom: 0;
@@ -260,24 +251,23 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
   }
   .sidebar.open { transform: translateX(0); }
 
-  /* メインをフルワイドに・はみ出し防止 */
-  .main { margin-left: 0; width: 100%; overflow-x: hidden; }
+  .main { margin-left: 0; width: 100%; overflow-x: hidden; padding-top: var(--hh); }
   body { overflow-x: hidden; }
-
-  /* ハンバーガーボタン表示 */
   .ham-btn { display: flex; }
 
-  /* トップバー：fixedで確実に固定 */
   .topbar {
-    padding: 0 12px;
-    gap: 8px;
+    padding: 0 16px;
+    gap: 12px;
     position: fixed;
     top: 0; left: 0; right: 0;
     z-index: 200;
     height: var(--hh);
   }
-  /* topbar分のスペースを確保 */
-  .main { padding-top: var(--hh); }
+}
+
+/* ===== スマホのみ追加調整（640px以下） ===== */
+@media (max-width: 640px) {
+  .topbar { padding: 0 12px; gap: 8px; }
   #ttitle span, .dbadge, .etag { display: none; }
   #ttitle { font-size: 14px; }
   .tbtn { padding: 5px 10px; font-size: 11px; }
