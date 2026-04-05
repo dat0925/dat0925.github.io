@@ -35,7 +35,7 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
 #ttitle{font-family:'Outfit',sans-serif;font-weight:700;font-size:16px;color:var(--navy);flex:1}
 #ttitle span{color:var(--gray-400);font-weight:400;font-size:13px;margin-left:8px}
 .dbadge{background:var(--gray-100);border:1px solid var(--gray-200);border-radius:6px;padding:5px 12px;font-size:12px;color:var(--gray-600);font-family:'Outfit',sans-serif}
-.etag{display:inline-flex;align-items:center;gap:4px;background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.25);border-radius:4px;padding:4px 10px;font-size:10px;font-family:'Outfit',sans-serif;font-weight:700;color:var(--cyan)}
+.etag{display:inline-flex;align-items:center;gap:4px;background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.25);border-radius:6px;padding:0 12px;height:34px;font-size:10px;font-family:'Outfit',sans-serif;font-weight:700;color:var(--cyan)}
 .doc-link{display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:6px;font-size:12px;font-weight:700;font-family:'BIZ UDPGothic',sans-serif;text-decoration:none;transition:background .2s;white-space:nowrap;flex-shrink:0}
 .doc-link.manual{background:rgba(13,27,62,.07);color:var(--navy);border:1px solid var(--gray-200)}.doc-link.manual:hover{background:rgba(13,27,62,.13)}
 .doc-link.spec{background:var(--orange-dim);color:var(--orange);border:1px solid rgba(240,90,26,.25)}.doc-link.spec:hover{background:rgba(240,90,26,.25)}
@@ -275,8 +275,8 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
       <div class="kc p"><span class="ki">📆</span><div class="kl">今月の予約数（確定）</div><div class="kv">847<span class="ku">件</span></div><div class="kd up">▲ +12.4%</div></div>
       <div class="kc"><span class="ki">📞</span><div class="kl">GBP 通話クリック（月）</div><div class="kv">2,341</div><div class="kd up">▲ +8.1%</div></div>
       <div class="kc"><span class="ki">🗺</span><div class="kl">GBP 経路クリック</div><div class="kv">1,887</div><div class="kd up">▲ +5.3%</div></div>
-      <div class="kc"><span class="ki">🔍</span><div class="kl"><span class="gl" data-gl="gsc-term" tabindex="0">GSC<span class="gl-icon">?</span></span> 平均掲載順位</div><div class="kv">4.2<span class="ku">位</span></div><div class="kd up">▲ 改善</div></div>
-      <div class="kc"><span class="ki">🌐</span><div class="kl"><span class="gl" data-gl="listing" tabindex="0">Listing<span class="gl-icon">?</span></span> 同期率</div><div class="kv">91<span class="ku">%</span></div><div class="kd wn">⚠ 未接続5</div></div>
+      <div class="kc"><span class="ki">🔍</span><div class="kl">GSC 平均掲載順位<span class="gl" data-gl="gsc-term" tabindex="0"><span class="gl-icon">?</span></span></div><div class="kv">4.2<span class="ku">位</span></div><div class="kd up">▲ 改善</div></div>
+      <div class="kc"><span class="ki">🌐</span><div class="kl">Listing 同期率<span class="gl" data-gl="listing" tabindex="0"><span class="gl-icon">?</span></span></div><div class="kv">91<span class="ku">%</span></div><div class="kd wn">⚠ 未接続5</div></div>
     </div>
     <div class="g2">
       <div class="card">
@@ -304,7 +304,7 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
   <div class="page" id="pg-stores">
     <div class="kgrid">
       <div class="kc p"><span class="ki">🏪</span><div class="kl">管理店舗数</div><div class="kv">12<span class="ku">店</span></div><div class="kd up">▲ +1</div></div>
-      <div class="kc"><span class="ki">✅</span><div class="kl"><span class="gl" data-gl="nap" tabindex="0">NAP<span class="gl-icon">?</span></span> 整合率</div><div class="kv">95<span class="ku">%</span></div><div class="kd up">▲ +2%</div></div>
+      <div class="kc"><span class="ki">✅</span><div class="kl">NAP整合率<span class="gl" data-gl="nap" tabindex="0"><span class="gl-icon">?</span></span></div><div class="kv">95<span class="ku">%</span></div><div class="kd up">▲ +2%</div></div>
       <div class="kc"><span class="ki">⚠️</span><div class="kl">欠損フィールド</div><div class="kv">2<span class="ku">店</span></div><div class="kd dn">要対応</div></div>
       <div class="kc"><span class="ki">🔄</span><div class="kl">Uberall同期済</div><div class="kv">10<span class="ku">店</span></div><div class="kd wn">2店処理中</div></div>
       <div class="kc"><span class="ki">🔑</span><div class="kl"><span class="gl" data-gl="eo" tabindex="0">engine_owner<span class="gl-icon">?</span></span></div><div class="kv" style="font-size:16px">Uberall</div><div class="kd up">CORE_NAP</div></div>
@@ -484,9 +484,9 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
   <!-- AIO -->
   <div class="page" id="pg-aio">
     <div class="kgrid">
-      <div class="kc p"><span class="ki">🤖</span><div class="kl"><span class="gl" data-gl="aio-term" tabindex="0">AIO<span class="gl-icon">?</span></span>対策スコア</div><div class="kv">78<span class="ku">点</span></div><div class="kd wn">目標90点</div></div>
+      <div class="kc p"><span class="ki">🤖</span><div class="kl">AIO対策スコア<span class="gl" data-gl="aio-term" tabindex="0"><span class="gl-icon">?</span></span></div><div class="kv">78<span class="ku">点</span></div><div class="kd wn">目標90点</div></div>
       <div class="kc"><span class="ki">✅</span><div class="kl">NAP 整合性</div><div class="kv" style="font-size:16px">OK</div><div class="kd up">全店舗一致</div></div>
-      <div class="kc"><span class="ki">🏷</span><div class="kl"><span class="gl" data-gl="jsonld" tabindex="0">JSON-LD<span class="gl-icon">?</span></span> 適用率</div><div class="kv">11<span class="ku">/12</span></div><div class="kd wn">1店差分あり</div></div>
+      <div class="kc"><span class="ki">🏷</span><div class="kl">JSON-LD 適用率<span class="gl" data-gl="jsonld" tabindex="0"><span class="gl-icon">?</span></span></div><div class="kv">11<span class="ku">/12</span></div><div class="kd wn">1店差分あり</div></div>
       <div class="kc"><span class="ki">🌐</span><div class="kl">サイテーション同期率</div><div class="kv">91<span class="ku">%</span></div><div class="kd wn">5件未接続</div></div>
       <div class="kc"><span class="ki">📅</span><div class="kl">予約導線 設定済</div><div class="kv">12<span class="ku">/12</span></div><div class="kd up">全店舗OK</div></div>
     </div>
@@ -500,7 +500,7 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
           <div class="ai"><span style="font-size:18px">📅</span><div class="ain"><div class="ait">予約導線 actionLinks + <span class="gl" data-gl="utm" tabindex="0">UTM<span class="gl-icon">?</span></span></div><div class="aid">全店舗設定済 / utm_medium=organic</div></div><div class="ais sok">✓ OK</div></div>
           <div class="ai"><span style="font-size:18px">📝</span><div class="ain"><div class="ait">投稿頻度（GBP投稿）</div><div class="aid">4店舗で2週間以上投稿なし</div></div><div class="ais swn">⚠ 要投稿</div></div>
           <div class="ai"><span style="font-size:18px">⭐</span><div class="ain"><div class="ait">レビュー返信率</div><div class="aid">未返信8件 / 平均返信時間14h</div></div><div class="ais swn">⚠ 要返信</div></div>
-          <div class="ai"><span style="font-size:18px">🔍</span><div class="ain"><div class="ait"><span class="gl" data-gl="gsc-term" tabindex="0">GSC<span class="gl-icon">?</span></span> CTR トレンド</div><div class="aid">長尾クエリ増加中 / AIO由来推定23%</div></div><div class="ais sok">✓ 上昇中</div></div>
+          <div class="ai"><span style="font-size:18px">🔍</span><div class="ain"><div class="ait"><span class="gl" data-gl="gsc-term" tabindex="0">GSC<span class="gl-icon">?</span></span> CTR トレンド</div><div class="aid">ロングテールクエリ（長い複合キーワード）増加中 / AIO由来推定23%</div></div><div class="ais sok">✓ 上昇中</div></div>
         </div>
       </div>
       <div class="card">
@@ -579,7 +579,7 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
         <div class="whi"><div class="wd wok"></div><div class="we">booking.canceled</div><div class="ws">池袋店 / bkg_979</div><div class="wam">¥6,900</div><div class="wt">08:02:31</div></div>
         <div class="whi"><div class="wd wwn"></div><div class="we">LISTING_PENDING — タイムアウト</div><div class="ws">品川店 / ぐるなび</div><div class="wam">—</div><div class="wt">07:21:09</div></div>
       </div>
-      <div style="padding:10px 20px;border-top:1px solid var(--gray-200);font-size:10px;color:var(--gray-400)">署名: HMAC-SHA256(secret, timestamp+"."+body) | リプレイ防止: ±5分超拒否 + event_id重複拒否 | 失敗時: 指数バックオフ</div>
+      <div style="padding:10px 20px;border-top:1px solid var(--gray-200);font-size:10px;color:var(--gray-400)">署名検証: HMAC-SHA256（共有秘密鍵でハッシュ値を生成・比較し改ざんを検出）| リプレイ防止: 受信±5分超のリクエストを拒否 + event_id重複チェック | 失敗時: 指数バックオフでリトライ</div>
     </div>
   </div>
 
