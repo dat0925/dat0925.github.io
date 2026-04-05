@@ -233,8 +233,10 @@ nav{flex:1;padding:8px 0;overflow-y:scroll;-webkit-overflow-scrolling:touch;min-
 .gl-pop .gp-ex{margin-top:7px;padding-top:7px;border-top:1px solid rgba(255,255,255,.1);font-size:11px;color:var(--cyan)}
 
 /* ===== MOBILE ONLY（768px以下） ===== */
+/* PC時はハンバーガーを隠す（先に書く） */
+.ham-btn{display:none;align-items:center;justify-content:center;width:36px;height:36px;border:none;background:none;cursor:pointer;color:var(--navy);font-size:22px;flex-shrink:0;padding:0}
 @media(max-width:768px){
-  /* ハンバーガーボタン */
+  /* ハンバーガーボタンを表示（後から上書き） */
   .ham-btn{display:flex}
   /* サイドバーを画面外に隠す */
   .sidebar{transform:translateX(-100%);transition:transform .25s ease;z-index:300}
@@ -247,8 +249,6 @@ nav{flex:1;padding:8px 0;overflow-y:scroll;-webkit-overflow-scrolling:touch;min-
   /* topbarのdbadge・etag・doc-linkを隠す */
   .dbadge,.etag,.doc-link{display:none}
 }
-/* PC時はハンバーガーを隠す */
-.ham-btn{display:none;align-items:center;justify-content:center;width:36px;height:36px;border:none;background:none;cursor:pointer;color:var(--navy);font-size:22px;flex-shrink:0;padding:0}
 </style>
 </head>
 <body>
