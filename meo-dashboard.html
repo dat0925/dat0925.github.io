@@ -161,7 +161,7 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
 ::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--gray-200);border-radius:10px}
 
 /* TOUR */
-.tour-overlay{position:fixed;inset:0;background:rgba(5,10,25,.28);z-index:1000;display:none;backdrop-filter:blur(1px)}
+.tour-overlay{position:fixed;inset:0;background:rgba(5,10,25,.15);z-index:1000;display:none}
 .tour-overlay.active{display:block}
 .tour-box{position:fixed;z-index:1001;background:#fff;border-radius:14px;padding:24px;width:320px;box-shadow:0 24px 60px rgba(5,10,25,.25);animation:tb .3s cubic-bezier(.34,1.56,.64,1);max-height:85vh;overflow-y:auto}
 @keyframes tb{from{opacity:0;transform:scale(.88) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
@@ -179,7 +179,7 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
 .tour-next{background:var(--orange);color:#fff}
 .tour-next:hover{background:var(--orange-light)}
 .tour-skip{font-size:11px;color:var(--gray-400);cursor:pointer;padding:4px;text-decoration:underline;white-space:nowrap}
-.tour-highlight{position:fixed;border-radius:10px;box-shadow:0 0 0 4000px rgba(5,10,25,.25),0 0 0 3px var(--orange),0 0 16px rgba(240,90,26,.5);z-index:999;pointer-events:none;transition:all .4s cubic-bezier(.4,0,.2,1);display:none}
+.tour-highlight{position:fixed;border-radius:10px;box-shadow:0 0 0 4000px rgba(5,10,25,.12),0 0 0 3px var(--orange),0 0 12px rgba(240,90,26,.4);z-index:999;pointer-events:none;transition:all .4s cubic-bezier(.4,0,.2,1);display:none}
 .tour-highlight.active{display:block}
 /* HELP BTN */
 .help-btn{position:fixed;bottom:24px;right:24px;width:44px;height:44px;border-radius:50%;background:var(--navy);color:#fff;border:none;font-size:20px;cursor:pointer;box-shadow:0 4px 16px rgba(13,27,62,.35);z-index:200;transition:transform .2s,box-shadow .2s;display:flex;align-items:center;justify-content:center}
@@ -198,16 +198,245 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
 .gl-pop .gp-en{font-size:10px;color:var(--gray-400);margin-bottom:6px;font-family:'Outfit',sans-serif}
 .gl-pop .gp-body{color:rgba(255,255,255,.88)}
 .gl-pop .gp-ex{margin-top:7px;padding-top:7px;border-top:1px solid rgba(255,255,255,.1);font-size:11px;color:var(--cyan)}
+
+/* =============================================
+   MOBILE LAYOUT (max-width: 767px)
+   ============================================= */
+@media (max-width: 767px) {
+  :root { --hh: 56px; }
+
+  /* サイドバー非表示→ドロワーに */
+  .sidebar {
+    width: 100%;
+    height: var(--hh);
+    min-height: unset;
+    flex-direction: row;
+    align-items: center;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: auto;
+    z-index: 200;
+    padding: 0 16px;
+    overflow: visible;
+  }
+  .sidebar::before { display: none; }
+  .logo { padding: 0; border: none; flex: 1; }
+  .logo .brand { font-size: 16px; }
+  .logo .sub { display: none; }
+  .tenant, nav, .sbot { display: none; }
+
+  /* ハンバーガー */
+  .ham-btn {
+    display: flex !important;
+    align-items: center; justify-content: center;
+    width: 38px; height: 38px;
+    background: rgba(255,255,255,.12);
+    border: none; border-radius: 8px;
+    color: #fff; font-size: 20px; cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  /* ドロワー */
+  .drawer {
+    display: block !important;
+    position: fixed;
+    top: 0; left: -100%; bottom: 0;
+    width: 80%; max-width: 280px;
+    background: var(--navy);
+    z-index: 300;
+    transition: left .28s cubic-bezier(.4,0,.2,1);
+    overflow-y: auto;
+    padding-bottom: 24px;
+  }
+  .drawer.open { left: 0; }
+  .drawer-overlay {
+    display: block !important;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.45);
+    z-index: 299;
+    opacity: 0; pointer-events: none;
+    transition: opacity .28s;
+  }
+  .drawer-overlay.open { opacity: 1; pointer-events: auto; }
+  .drawer-logo {
+    display: flex;
+    align-items: center; gap: 10px;
+    padding: 20px 18px 14px;
+    border-bottom: 1px solid var(--navy-border);
+  }
+  .drawer-logo .brand { font-family:'Outfit',sans-serif; font-weight:800; font-size:15px; color:#fff; }
+  .drawer-logo .brand span { color: var(--orange); }
+  .drawer-tenant {
+    margin: 10px 14px;
+    background: var(--navy-light);
+    border: 1px solid var(--navy-border);
+    border-radius: 8px;
+    padding: 9px 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .drawer .ns { padding: 12px 16px 4px; font-size: 9px; color: var(--gray-600); letter-spacing:.12em; font-family:'Outfit',sans-serif; font-weight:600; text-transform:uppercase; }
+  .drawer .ni {
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 20px; font-size: 14px; color: var(--gray-400);
+    cursor: pointer; border-left: 3px solid transparent;
+    transition: all .18s;
+  }
+  .drawer .ni.active { color: #fff; background: rgba(240,90,26,.12); border-left-color: var(--orange); }
+  .drawer .ni:hover { color: #fff; background: rgba(255,255,255,.04); }
+  .drawer .ni .ic { font-size: 18px; width: 22px; text-align: center; flex-shrink: 0; }
+  .drawer .nb { margin-left: auto; background: var(--orange); color:#fff; font-size:10px; font-weight:700; padding:2px 7px; border-radius:20px; font-family:'Outfit',sans-serif; }
+  .drawer .nb.w { background: var(--yellow); color: var(--navy); }
+
+  /* メインコンテンツ */
+  .main {
+    margin-left: 0;
+    margin-top: var(--hh);
+  }
+
+  /* トップバー */
+  .topbar {
+    padding: 0 16px;
+    gap: 8px;
+    flex-wrap: nowrap;
+  }
+  #ttitle { font-size: 14px; }
+  #ttitle span { display: none; }
+  .dbadge, .etag { display: none; }
+  .tbtn { padding: 6px 12px; font-size: 12px; white-space: nowrap; }
+
+  /* ページ */
+  .page { padding: 16px; }
+
+  /* KPIグリッド → 横スクロール */
+  .kgrid {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    margin-bottom: 16px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+  .kgrid::-webkit-scrollbar { height: 3px; }
+  .kgrid::-webkit-scrollbar-thumb { background: var(--gray-200); border-radius: 10px; }
+  .kc {
+    min-width: 140px;
+    flex-shrink: 0;
+    scroll-snap-align: start;
+    padding: 14px 16px;
+  }
+  .kv { font-size: 22px; }
+
+  /* 2カラム → 1カラム */
+  .g2, .g3 { grid-template-columns: 1fr; gap: 14px; }
+
+  /* カードヘッダ */
+  .ch { padding: 12px 16px; flex-wrap: wrap; gap: 6px; }
+  .ch h3 { font-size: 13px; width: 100%; }
+
+  /* テーブル → カード型 */
+  .dt { display: none; }
+  .mobile-cards { display: block !important; }
+  .mc-item {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+  }
+  .mc-title { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+  .mc-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid var(--gray-100); font-size: 12px; }
+  .mc-row:last-child { border-bottom: none; }
+  .mc-label { color: var(--gray-600); }
+  .mc-val { font-weight: 700; color: var(--navy); }
+
+  /* アラートバー */
+  .alert-bar { flex-wrap: wrap; gap: 6px; padding: 10px 14px; }
+  .alert-bar .at { font-size: 12px; width: 100%; }
+  .al { font-size: 11px; }
+
+  /* チャート */
+  .cwrap { height: 90px; }
+
+  /* タブ */
+  .tabs { overflow-x: auto; padding: 0 14px; gap: 0; }
+  .tab { padding: 10px 12px; font-size: 12px; white-space: nowrap; }
+
+  /* レビュー */
+  .ri { padding: 12px 0; }
+  .ract { flex-wrap: wrap; gap: 6px; }
+
+  /* Webhookリスト */
+  .whi { font-size: 11px; gap: 6px; flex-wrap: wrap; }
+  .we { font-size: 12px; width: 100%; }
+  .ws { font-size: 11px; }
+
+  /* AIOリスト */
+  .ai { flex-wrap: wrap; gap: 8px; }
+  .ain { width: 100%; }
+
+  /* Listing grid */
+  .lgrid { grid-template-columns: 1fr 1fr; }
+
+  /* 用語ポップアップ */
+  .gl-pop { width: calc(100vw - 32px) !important; font-size: 12px; }
+
+  /* ToDoリスト */
+  .ti { padding: 10px 0; }
+  .tct { font-size: 16px; }
+
+  /* ヘルプボタン */
+  .help-btn { bottom: 16px; right: 16px; width: 40px; height: 40px; font-size: 18px; }
+
+  /* カードbody */
+  .cb { padding: 14px; }
+  .card { margin-bottom: 14px; }
+}
+
+/* モバイル専用要素 デフォルト非表示 */
+.ham-btn { display: none; }
+.drawer { display: none; }
+.drawer-overlay { display: none; }
+.mobile-cards { display: none; }
 </style>
 </head>
 <body>
+
+<!-- DRAWER -->
+<div class="drawer-overlay" id="drawer-overlay"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-logo">
+    <div class="brand">MEO<span>管理</span></div>
+  </div>
+  <div class="drawer-tenant">
+    <div class="tdot"></div>
+    <div><div class="tname">株式会社サンプルフード</div><div class="tcnt">12店 管理中</div></div>
+  </div>
+  <div class="ns">メイン</div>
+  <div class="ni" data-page="dashboard" data-drawer><span class="ic">📊</span>ダッシュボード</div>
+  <div class="ni" data-page="stores" data-drawer><span class="ic">🏪</span>店舗（SoT）管理<span class="nb w">3</span></div>
+  <div class="ns">配信・連携</div>
+  <div class="ni" data-page="uberall" data-drawer><span class="ic">🌐</span>配信（Uberall）<span class="nb">5</span></div>
+  <div class="ni" data-page="gbp" data-drawer><span class="ic">📍</span>Google 運用</div>
+  <div class="ni" data-page="posts" data-drawer><span class="ic">📝</span>投稿管理<span class="nb w">3</span></div>
+  <div class="ni" data-page="reviews" data-drawer><span class="ic">⭐</span>口コミ管理<span class="nb">8</span></div>
+  <div class="ns">分析・競合</div>
+  <div class="ni" data-page="ranking" data-drawer><span class="ic">📈</span>競合・順位</div>
+  <div class="ni" data-page="gsc" data-drawer><span class="ic">🔍</span>GSC・オーガニック</div>
+  <div class="ni" data-page="aio" data-drawer><span class="ic">🤖</span>AIO アシスト</div>
+  <div class="ns">予約・CV</div>
+  <div class="ni" data-page="bookings" data-drawer><span class="ic">📆</span>予約・コンバージョン</div>
+  <div class="ni" data-page="webhooks" data-drawer><span class="ic">🔔</span>Webhookログ</div>
+  <div class="ns">設定</div>
+  <div class="ni" data-page="settings" data-drawer><span class="ic">🔗</span>API連携設定</div>
+  <div class="ni" data-page="audit" data-drawer><span class="ic">🛡</span>監査ログ</div>
+</div>
 <aside class="sidebar">
-  <div class="logo"><div class="brand">MEO<span>管理</span></div><div class="sub">iFLAG IFG IT Solutions</div></div>
+  <div class="logo"><div class="brand">MEO<span>管理</span></div><div class="sub">iFLAG IFG IT Solutions</div></div><button class="ham-btn" id="ham-btn" aria-label="メニュー">☰</button>
   <div class="tenant"><div class="tdot"></div><div><div class="tname">株式会社サンプルフード</div><div class="tcnt">店舗 12店 管理中</div></div></div>
   <nav>
     <div class="ns">メイン</div>
     <div class="ni active" data-page="dashboard"><span class="ic">📊</span>ダッシュボード</div>
-    <div class="ni" data-page="stores"><span class="ic">🏪</span>店舗（<span class="gl" data-gl="sot" tabindex="0">SoT<span class="gl-icon">?</span></span>）管理<span class="nb w">3</span></div>
+    <div class="ni" data-page="stores"><span class="ic">🏪</span>店舗（SoT）管理<span class="nb w">3</span></div>
     <div class="ns">配信・連携</div>
     <div class="ni" data-page="uberall"><span class="ic">🌐</span>配信（Uberall）<span class="nb">5</span></div>
     <div class="ni" data-page="gbp"><span class="ic">📍</span>Google 運用</div>
@@ -289,7 +518,40 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
             <tr><td style="padding-left:20px;font-weight:700">上野店</td><td style="font-size:12px;color:var(--gray-600)">東京都台東区…</td><td style="font-size:12px">03-XXXX-0005</td><td><span class="kch">カフェ</span></td><td><span class="bdg bb">Uberall</span></td><td><span class="bdg bg">同期済</span></td><td style="padding-right:20px;color:var(--green);font-size:12px">なし</td></tr>
           </tbody>
         </table>
-        <div style="padding:10px 20px;border-top:1px solid var(--gray-200);font-size:11px;color:var(--gray-400)">12店舗中5件表示 | CORE_NAP writer = Uberall（<span class="gl" data-gl="eo" tabindex="0">engine_owner<span class="gl-icon">?</span></span>）</div>
+        
+      <!-- MOBILE CARDS: stores -->
+      <div class="mobile-cards" id="mc-stores">
+        <div class="mc-item">
+          <div class="mc-title">渋谷本店 <span class="bdg bg">同期済</span></div>
+          <div class="mc-row"><span class="mc-label">カテゴリ</span><span class="mc-val"><span class="kch">レストラン</span></span></div>
+          <div class="mc-row"><span class="mc-label">電話</span><span class="mc-val">03-XXXX-0001</span></div>
+          <div class="mc-row"><span class="mc-label">欠損</span><span class="mc-val" style="color:var(--green)">なし</span></div>
+        </div>
+        <div class="mc-item">
+          <div class="mc-title">新宿店 <span class="bdg bg">同期済</span></div>
+          <div class="mc-row"><span class="mc-label">カテゴリ</span><span class="mc-val"><span class="kch">カフェ</span></span></div>
+          <div class="mc-row"><span class="mc-label">電話</span><span class="mc-val">03-XXXX-0002</span></div>
+          <div class="mc-row"><span class="mc-label">欠損</span><span class="mc-val" style="color:var(--green)">なし</span></div>
+        </div>
+        <div class="mc-item" style="border-color:rgba(239,68,68,.3);background:rgba(239,68,68,.02)">
+          <div class="mc-title">池袋店 <span class="bdg by">処理中</span></div>
+          <div class="mc-row"><span class="mc-label">カテゴリ</span><span class="mc-val"><span class="kch">居酒屋</span></span></div>
+          <div class="mc-row"><span class="mc-label">電話</span><span class="mc-val">03-XXXX-0003</span></div>
+          <div class="mc-row"><span class="mc-label">欠損</span><span class="mc-val" style="color:var(--red);font-weight:700">⚠ 営業時間</span></div>
+        </div>
+        <div class="mc-item" style="border-color:rgba(239,68,68,.3);background:rgba(239,68,68,.02)">
+          <div class="mc-title">品川店 <span class="bdg br">未接続</span></div>
+          <div class="mc-row"><span class="mc-label">カテゴリ</span><span class="mc-val"><span class="kch">レストラン</span></span></div>
+          <div class="mc-row"><span class="mc-label">電話</span><span class="mc-val">03-XXXX-0004</span></div>
+          <div class="mc-row"><span class="mc-label">欠損</span><span class="mc-val" style="color:var(--red);font-weight:700">⚠ カテゴリ</span></div>
+        </div>
+        <div class="mc-item">
+          <div class="mc-title">上野店 <span class="bdg bg">同期済</span></div>
+          <div class="mc-row"><span class="mc-label">カテゴリ</span><span class="mc-val"><span class="kch">カフェ</span></span></div>
+          <div class="mc-row"><span class="mc-label">電話</span><span class="mc-val">03-XXXX-0005</span></div>
+          <div class="mc-row"><span class="mc-label">欠損</span><span class="mc-val" style="color:var(--green)">なし</span></div>
+        </div>
+      </div><div style="padding:10px 20px;border-top:1px solid var(--gray-200);font-size:11px;color:var(--gray-400)">12店舗中5件表示 | CORE_NAP writer = Uberall（<span class="gl" data-gl="eo" tabindex="0">engine_owner<span class="gl-icon">?</span></span>）</div>
       </div>
     </div>
   </div>
@@ -442,7 +704,13 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
               <tr><td style="padding-left:20px"><span class="kch">新宿 ランチ 安い</span></td><td>510</td><td>18</td><td style="padding-right:20px;color:var(--yellow);font-weight:700">3.5%</td></tr>
             </tbody>
           </table>
-          <div style="padding:10px 20px;font-size:10px;color:var(--gray-400);border-top:1px solid var(--gray-200)">QPM制限考慮・差分バッチ取得 | AI Overviews由来のクリックも含む</div>
+          
+      <!-- MOBILE CARDS: gsc -->
+      <div class="mobile-cards" id="mc-gsc">
+        <div class="mc-item"><div class="mc-title"><span class="kch">渋谷 ランチ</span></div><div class="mc-row"><span class="mc-label">表示回数</span><span class="mc-val">1,240</span></div><div class="mc-row"><span class="mc-label">クリック</span><span class="mc-val">87</span></div><div class="mc-row"><span class="mc-label">CTR</span><span class="mc-val" style="color:var(--green)">7.0%</span></div></div>
+        <div class="mc-item"><div class="mc-title"><span class="kch">新宿 カフェ</span></div><div class="mc-row"><span class="mc-label">表示回数</span><span class="mc-val">980</span></div><div class="mc-row"><span class="mc-label">クリック</span><span class="mc-val">61</span></div><div class="mc-row"><span class="mc-label">CTR</span><span class="mc-val" style="color:var(--green)">6.2%</span></div></div>
+        <div class="mc-item"><div class="mc-title"><span class="kch">渋谷 テイクアウト</span></div><div class="mc-row"><span class="mc-label">表示回数</span><span class="mc-val">740</span></div><div class="mc-row"><span class="mc-label">クリック</span><span class="mc-val">40</span></div><div class="mc-row"><span class="mc-label">CTR</span><span class="mc-val" style="color:var(--cyan)">5.4%</span></div></div>
+      </div><div style="padding:10px 20px;font-size:10px;color:var(--gray-400);border-top:1px solid var(--gray-200)">QPM制限考慮・差分バッチ取得 | AI Overviews由来のクリックも含む</div>
         </div>
       </div>
     </div>
@@ -505,7 +773,35 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
               <tr><td style="padding-left:20px;font-size:11px;color:var(--gray-600)">bkg_983</td><td style="font-size:12px">上野店</td><td style="font-size:12px">4/9 12:30</td><td style="font-size:12px">5名</td><td style="font-size:12px;font-weight:700">¥22,500</td><td style="padding-right:20px"><span class="bkst bsn">NO_SHOW</span></td></tr>
             </tbody>
           </table>
-          <div style="padding:10px 20px;font-size:10px;color:var(--gray-400);border-top:1px solid var(--gray-200)">自社予約API + <span class="gl" data-gl="hmac" tabindex="0">HMAC<span class="gl-icon">?</span></span>-SHA256署名検証 | GA4 MP: event_name=purchase</div>
+          
+      <!-- MOBILE CARDS: bookings -->
+      <div class="mobile-cards" id="mc-bookings">
+        <div class="mc-item">
+          <div class="mc-title">渋谷本店 <span class="bkst bsc">CONFIRMED</span></div>
+          <div class="mc-row"><span class="mc-label">来店</span><span class="mc-val">4/10 19:00</span></div>
+          <div class="mc-row"><span class="mc-label">人数 / 金額</span><span class="mc-val">2名 ¥12,000</span></div>
+        </div>
+        <div class="mc-item">
+          <div class="mc-title">新宿店 <span class="bkst bsc">CONFIRMED</span></div>
+          <div class="mc-row"><span class="mc-label">来店</span><span class="mc-val">4/10 12:00</span></div>
+          <div class="mc-row"><span class="mc-label">人数 / 金額</span><span class="mc-val">4名 ¥8,400</span></div>
+        </div>
+        <div class="mc-item">
+          <div class="mc-title">池袋店 <span class="bkst bsx">CANCELED</span></div>
+          <div class="mc-row"><span class="mc-label">来店</span><span class="mc-val">4/9 18:00</span></div>
+          <div class="mc-row"><span class="mc-label">人数 / 金額</span><span class="mc-val">3名 ¥6,900</span></div>
+        </div>
+        <div class="mc-item">
+          <div class="mc-title">渋谷本店 <span class="bkst bsok">COMPLETED</span></div>
+          <div class="mc-row"><span class="mc-label">来店</span><span class="mc-val">4/9 19:30</span></div>
+          <div class="mc-row"><span class="mc-label">人数 / 金額</span><span class="mc-val">2名 ¥15,000</span></div>
+        </div>
+        <div class="mc-item">
+          <div class="mc-title">上野店 <span class="bkst bsn">NO_SHOW</span></div>
+          <div class="mc-row"><span class="mc-label">来店</span><span class="mc-val">4/9 12:30</span></div>
+          <div class="mc-row"><span class="mc-label">人数 / 金額</span><span class="mc-val">5名 ¥22,500</span></div>
+        </div>
+      </div><div style="padding:10px 20px;font-size:10px;color:var(--gray-400);border-top:1px solid var(--gray-200)">自社予約API + <span class="gl" data-gl="hmac" tabindex="0">HMAC<span class="gl-icon">?</span></span>-SHA256署名検証 | GA4 MP: event_name=purchase</div>
         </div>
       </div>
       <div class="card">
@@ -620,7 +916,18 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
             <tr><td style="padding-left:20px;font-weight:700">🔧 Synup.dev</td><td style="font-size:12px;color:var(--gray-600)">API Key（$0.002/call）</td><td><span class="bdg br">未接続</span></td><td style="font-size:12px;color:var(--gray-400)">—</td><td style="padding-right:20px"><span style="font-size:12px;color:var(--orange);cursor:pointer">接続 →</span></td></tr>
           </tbody>
         </table>
-        <div style="padding:12px 20px;border-top:1px solid var(--gray-200);font-size:11px;color:var(--gray-400)">⚠️ Secrets はKMS/Secret Managerに格納 — DBへの平文保存禁止 | TLS 1.2以上必須</div>
+        
+      <!-- MOBILE CARDS: settings -->
+      <div class="mobile-cards" id="mc-settings">
+        <div class="mc-item"><div class="mc-title">🌐 Uberall <span class="bdg bg">接続済</span></div><div class="mc-row"><span class="mc-label">認証</span><span class="mc-val" style="font-size:11px">X-API-KEY</span></div><div class="mc-row"><span class="mc-label">最終確認</span><span class="mc-val">10:05</span></div></div>
+        <div class="mc-item"><div class="mc-title">📍 Google GBP <span class="bdg bg">接続済</span></div><div class="mc-row"><span class="mc-label">認証</span><span class="mc-val" style="font-size:11px">OAuth 2.0</span></div><div class="mc-row"><span class="mc-label">最終確認</span><span class="mc-val">09:47</span></div></div>
+        <div class="mc-item"><div class="mc-title">🔍 GSC <span class="bdg bg">接続済</span></div><div class="mc-row"><span class="mc-label">認証</span><span class="mc-val" style="font-size:11px">OAuth 2.0</span></div><div class="mc-row"><span class="mc-label">最終確認</span><span class="mc-val">09:32</span></div></div>
+        <div class="mc-item"><div class="mc-title">📊 GA4 <span class="bdg bg">接続済</span></div><div class="mc-row"><span class="mc-label">認証</span><span class="mc-val" style="font-size:11px">measurement_id</span></div></div>
+        <div class="mc-item"><div class="mc-title">📈 MEOチェキ <span class="bdg by">設定待ち</span></div><div class="mc-row"><span class="mc-label">認証</span><span class="mc-val" style="font-size:11px">APIキー</span></div><div class="mc-row"><span class="mc-label">操作</span><span class="mc-val tac">設定 →</span></div></div>
+        <div class="mc-item"><div class="mc-title">📆 自社予約API <span class="bdg bg">接続済</span></div><div class="mc-row"><span class="mc-label">認証</span><span class="mc-val" style="font-size:11px">OAuth2 + JWT</span></div></div>
+        <div class="mc-item" style="border-color:rgba(239,68,68,.3)"><div class="mc-title">🌐 Yext <span class="bdg br">未接続</span></div><div class="mc-row"><span class="mc-label">操作</span><span class="mc-val tac">接続 →</span></div></div>
+        <div class="mc-item" style="border-color:rgba(239,68,68,.3)"><div class="mc-title">🔧 Synup.dev <span class="bdg br">未接続</span></div><div class="mc-row"><span class="mc-label">操作</span><span class="mc-val tac">接続 →</span></div></div>
+      </div><div style="padding:12px 20px;border-top:1px solid var(--gray-200);font-size:11px;color:var(--gray-400)">⚠️ Secrets はKMS/Secret Managerに格納 — DBへの平文保存禁止 | TLS 1.2以上必須</div>
       </div>
     </div>
   </div>
@@ -1064,6 +1371,48 @@ const GLOSSARY = {
       hidePop();
     }
   });
+})();
+
+
+// ===== DRAWER =====
+(function() {
+  const hamBtn = document.getElementById('ham-btn');
+  const drawer = document.getElementById('drawer');
+  const drawerOverlay = document.getElementById('drawer-overlay');
+  if (!hamBtn || !drawer) return;
+
+  function openDrawer() {
+    drawer.classList.add('open');
+    drawerOverlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeDrawer() {
+    drawer.classList.remove('open');
+    drawerOverlay.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  hamBtn.addEventListener('click', e => { e.stopPropagation(); openDrawer(); });
+  drawerOverlay.addEventListener('click', closeDrawer);
+
+  // ドロワー内のナビアイテム
+  document.querySelectorAll('[data-drawer]').forEach(item => {
+    item.addEventListener('click', () => {
+      nav(item.dataset.page);
+      // ドロワーのアクティブ状態更新
+      document.querySelectorAll('[data-drawer]').forEach(n => n.classList.remove('active'));
+      item.classList.add('active');
+      closeDrawer();
+    });
+  });
+
+  // nav関数をラップしてドロワーも同期
+  const _origNav = window.nav;
+  window.nav = function(id) {
+    _origNav(id);
+    document.querySelectorAll('[data-drawer]').forEach(n => {
+      n.classList.toggle('active', n.dataset.page === id);
+    });
+  };
 })();
 
 </script>
