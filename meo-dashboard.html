@@ -260,7 +260,7 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
     <div class="ni" data-page="user-new" style="padding-left:32px;font-size:12px"><span class="ic" style="font-size:12px">＋</span>新規作成</div>
     <div class="ni" data-page="user-list" style="padding-left:32px;font-size:12px"><span class="ic" style="font-size:12px">≡</span>ユーザー一覧</div>
   </nav>
-  <div class="sbot"><div class="av">IF</div><div style="flex:1"><div style="font-size:12px;color:#fff;font-weight:700">管理者ユーザー</div><div style="font-size:10px;color:var(--gray-400)">プロダクト担当</div></div><button onclick="window.open('meo-login.html')" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:5px 10px;font-size:11px;color:var(--gray-400);cursor:pointer;font-family:'BIZ UDPGothic',sans-serif;white-space:nowrap">ログアウト</button></div>
+  <div class="sbot"><div class="av">IF</div><div style="flex:1"><div style="font-size:12px;color:#fff;font-weight:700">管理者ユーザー</div><div style="font-size:10px;color:var(--gray-400)">プロダクト担当</div></div><button onclick="window.location.href='meo-login.html'" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:6px;padding:5px 10px;font-size:11px;color:var(--gray-400);cursor:pointer;font-family:'BIZ UDPGothic',sans-serif;white-space:nowrap">ログアウト</button></div>
 </aside>
 
 <div class="main">
@@ -844,7 +844,7 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
 
   <!-- USER NEW PAGE -->
   <div class="page" id="pg-user-new">
-    <div style="max-width:540px">
+    <div class="g2">
       <div class="card">
         <div class="ch"><h3>＋ 新規ユーザー作成</h3></div>
         <div class="cb" style="display:flex;flex-direction:column;gap:16px">
@@ -865,16 +865,16 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
           <div>
             <label style="font-size:12px;font-weight:700;color:var(--navy);display:block;margin-bottom:8px">ロール</label>
             <div style="display:flex;gap:8px">
-              <div onclick="this.parentNode.querySelectorAll('div').forEach(d=>d.style.cssText='flex:1;padding:12px;border:2px solid var(--gray-200);border-radius:8px;cursor:pointer;text-align:center');this.style.cssText='flex:1;padding:12px;border:2px solid var(--orange);border-radius:8px;cursor:pointer;text-align:center;background:var(--orange-dim)'" style="flex:1;padding:12px;border:2px solid var(--gray-200);border-radius:8px;cursor:pointer;text-align:center">
-                <div style="font-size:13px;font-weight:700;color:var(--navy)">管理者</div>
+              <div onclick="this.parentNode.querySelectorAll('div').forEach(d=>{d.style.border='2px solid var(--gray-200)';d.style.background='';d.querySelector('div').style.color='var(--gray-600)'});this.style.border='2px solid var(--orange)';this.style.background='var(--orange-dim)';this.querySelector('div').style.color='var(--orange)'" style="flex:1;padding:12px;border:2px solid var(--gray-200);border-radius:8px;cursor:pointer;text-align:center;transition:all .2s">
+                <div style="font-size:13px;font-weight:700;color:var(--gray-600)">管理者</div>
                 <div style="font-size:10px;color:var(--gray-400);margin-top:3px">全機能</div>
               </div>
-              <div onclick="this.parentNode.querySelectorAll('div').forEach(d=>d.style.cssText='flex:1;padding:12px;border:2px solid var(--gray-200);border-radius:8px;cursor:pointer;text-align:center');this.style.cssText='flex:1;padding:12px;border:2px solid var(--orange);border-radius:8px;cursor:pointer;text-align:center;background:var(--orange-dim)'" style="flex:1;padding:12px;border:2px solid var(--orange);border-radius:8px;cursor:pointer;text-align:center;background:var(--orange-dim)">
-                <div style="font-size:13px;font-weight:700;color:var(--navy)">編集者</div>
+              <div onclick="this.parentNode.querySelectorAll('div').forEach(d=>{d.style.border='2px solid var(--gray-200)';d.style.background='';d.querySelector('div').style.color='var(--gray-600)'});this.style.border='2px solid var(--orange)';this.style.background='var(--orange-dim)';this.querySelector('div').style.color='var(--orange)'" style="flex:1;padding:12px;border:2px solid var(--orange);border-radius:8px;cursor:pointer;text-align:center;background:var(--orange-dim);transition:all .2s">
+                <div style="font-size:13px;font-weight:700;color:var(--orange)">編集者</div>
                 <div style="font-size:10px;color:var(--gray-400);margin-top:3px">投稿・返信</div>
               </div>
-              <div onclick="this.parentNode.querySelectorAll('div').forEach(d=>d.style.cssText='flex:1;padding:12px;border:2px solid var(--gray-200);border-radius:8px;cursor:pointer;text-align:center');this.style.cssText='flex:1;padding:12px;border:2px solid var(--orange);border-radius:8px;cursor:pointer;text-align:center;background:var(--orange-dim)'" style="flex:1;padding:12px;border:2px solid var(--gray-200);border-radius:8px;cursor:pointer;text-align:center">
-                <div style="font-size:13px;font-weight:700;color:var(--navy)">閲覧者</div>
+              <div onclick="this.parentNode.querySelectorAll('div').forEach(d=>{d.style.border='2px solid var(--gray-200)';d.style.background='';d.querySelector('div').style.color='var(--gray-600)'});this.style.border='2px solid var(--orange)';this.style.background='var(--orange-dim)';this.querySelector('div').style.color='var(--orange)'" style="flex:1;padding:12px;border:2px solid var(--gray-200);border-radius:8px;cursor:pointer;text-align:center;transition:all .2s">
+                <div style="font-size:13px;font-weight:700;color:var(--gray-600)">閲覧者</div>
                 <div style="font-size:10px;color:var(--gray-400);margin-top:3px">閲覧のみ</div>
               </div>
             </div>
@@ -885,6 +885,26 @@ nav{flex:1;padding:8px 0;overflow-y:auto}
           <div style="display:flex;gap:8px">
             <button class="tbtn" style="flex:1;height:44px">📧 招待メールを送信</button>
             <button onclick="nav('user-list')" style="padding:0 20px;height:44px;border:1px solid var(--gray-200);border-radius:8px;background:#fff;font-size:13px;font-weight:700;font-family:'BIZ UDPGothic',sans-serif;color:var(--gray-600);cursor:pointer">キャンセル</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><h3>🔐 ロール説明</h3></div>
+        <div class="cb" style="display:flex;flex-direction:column;gap:10px">
+          <div style="padding:14px;border-radius:8px;border:1.5px solid rgba(240,90,26,.25);background:var(--orange-dim)">
+            <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:5px">👑 管理者</div>
+            <div style="font-size:12px;color:var(--gray-600);line-height:1.6">全機能へのアクセス、ユーザー管理、API設定変更、契約情報の閲覧・変更申請が可能</div>
+          </div>
+          <div style="padding:14px;border-radius:8px;border:1.5px solid rgba(6,182,212,.2);background:rgba(6,182,212,.05)">
+            <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:5px">✏️ 編集者</div>
+            <div style="font-size:12px;color:var(--gray-600);line-height:1.6">店舗情報編集、投稿・口コミ返信、レポート閲覧が可能。API設定・ユーザー管理は不可</div>
+          </div>
+          <div style="padding:14px;border-radius:8px;border:1.5px solid rgba(34,197,94,.2);background:rgba(34,197,94,.05)">
+            <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:5px">👁 閲覧者</div>
+            <div style="font-size:12px;color:var(--gray-600);line-height:1.6">ダッシュボード・レポートの閲覧のみ。データの変更・編集は不可</div>
+          </div>
+          <div style="margin-top:4px;padding:10px 12px;background:var(--gray-100);border-radius:8px;font-size:11px;color:var(--gray-600)">
+            ⚠️ 管理者ロールの付与は慎重に行ってください。API設定・契約情報への完全なアクセス権限が付与されます。
           </div>
         </div>
       </div>
