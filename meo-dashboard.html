@@ -231,10 +231,29 @@ nav{flex:1;padding:8px 0;overflow-y:scroll;-webkit-overflow-scrolling:touch;min-
 .gl-pop .gp-en{font-size:10px;color:var(--gray-400);margin-bottom:6px;font-family:'Outfit',sans-serif}
 .gl-pop .gp-body{color:rgba(255,255,255,.88)}
 .gl-pop .gp-ex{margin-top:7px;padding-top:7px;border-top:1px solid rgba(255,255,255,.1);font-size:11px;color:var(--cyan)}
+
+/* ===== MOBILE ONLY（768px以下） ===== */
+@media(max-width:768px){
+  /* ハンバーガーボタン */
+  .ham-btn{display:flex}
+  /* サイドバーを画面外に隠す */
+  .sidebar{transform:translateX(-100%);transition:transform .25s ease;z-index:300}
+  .sidebar.open{transform:translateX(0)}
+  /* オーバーレイ */
+  .mob-overlay{display:none;position:fixed;inset:0;background:rgba(5,10,25,.4);z-index:299}
+  .mob-overlay.open{display:block}
+  /* mainを左にずらさない */
+  .main{margin-left:0}
+  /* topbarのdbadge・etag・doc-linkを隠す */
+  .dbadge,.etag,.doc-link{display:none}
+}
+/* PC時はハンバーガーを隠す */
+.ham-btn{display:none;align-items:center;justify-content:center;width:36px;height:36px;border:none;background:none;cursor:pointer;color:var(--navy);font-size:22px;flex-shrink:0;padding:0}
 </style>
 </head>
 <body>
-<aside class="sidebar">
+<div class="mob-overlay" id="mob-overlay" onclick="toggleMenu()"></div>
+<aside class="sidebar" id="sidebar">
   <div class="logo" onclick="nav('dashboard')" style="cursor:pointer"><div class="brand">MEO<span>統合管理</span></div><div class="sub">Powered by iFLAG</div></div>
   <div class="tenant"><div class="tdot"></div><div><div class="tname">株式会社サンプルフード</div><div class="tcnt">店舗 12店 管理中</div></div></div>
   <nav>
@@ -264,6 +283,7 @@ nav{flex:1;padding:8px 0;overflow-y:scroll;-webkit-overflow-scrolling:touch;min-
 
 <div class="main">
   <div class="topbar">
+    <button class="ham-btn" id="ham-btn" onclick="toggleMenu()" aria-label="メニュー">☰</button>
     <div id="ttitle">ダッシュボード<span>概要 / 全店舗</span></div>
     <div class="dbadge">📅 2026年4月5日</div>
     <div class="etag">🔵 SoT → Uberall 配信中</div>
@@ -1317,6 +1337,27 @@ const GLOSSARY = {
     }
   });
 })();
+
+// ===== MOBILE MENU =====
+function toggleMenu(){
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('mob-overlay');
+  sb.classList.toggle('open');
+  ov.classList.toggle('open');
+}
+// メニュー項目タップ時にスマホでは自動で閉じる
+document.addEventListener('DOMContentLoaded', function(){
+  document.querySelectorAll('.ni').forEach(function(ni){
+    ni.addEventListener('click', function(){
+      if(window.innerWidth <= 768){
+        const sb = document.getElementById('sidebar');
+        const ov = document.getElementById('mob-overlay');
+        sb.classList.remove('open');
+        ov.classList.remove('open');
+      }
+    });
+  });
+});
 
 </script>
 </body>
