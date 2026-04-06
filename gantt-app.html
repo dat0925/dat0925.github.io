@@ -8,16 +8,24 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* DELETE CONFIRM MODAL */
-#del-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:8000;align-items:center;justify-content:center}
+#del-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:8000;align-items:center;justify-content:center}
 #del-modal.on{display:flex}
-#del-box{background:var(--s1);border:1px solid var(--bd2);border-radius:12px;padding:28px 28px 22px;min-width:300px;max-width:360px;display:flex;flex-direction:column;gap:14px;box-shadow:0 8px 32px rgba(0,0,0,.25)}
-#del-box .del-title{font-size:14px;font-weight:700;color:var(--rd);text-align:center}
-#del-box .del-msg{font-size:12px;color:var(--tx2);text-align:center;line-height:1.7}
-#del-box .del-pw-label{font-size:11px;color:var(--tx3);text-align:center}
-#del-box input{width:100%;padding:8px 12px;border-radius:7px;border:1px solid var(--bd2);background:var(--s3);color:var(--tx);font-size:14px;text-align:center;letter-spacing:2px;outline:none;transition:border-color .2s}
-#del-box input:focus{border-color:var(--rd)}
-#del-box .del-err{font-size:11px;color:var(--rd);text-align:center;min-height:15px}
-#del-box .del-btns{display:flex;gap:8px;justify-content:flex-end}
+#del-box{background:#1a2236;border:1px solid #2a3550;border-radius:14px;padding:36px 32px 28px;min-width:320px;max-width:380px;display:flex;flex-direction:column;align-items:center;gap:16px;box-shadow:0 8px 40px rgba(0,0,0,.5)}
+#del-box .del-title{font-size:15px;font-weight:700;color:#ef4444;letter-spacing:.5px}
+#del-box .del-msg{font-size:12px;color:#7a8fae;text-align:center;line-height:1.8}
+#del-box .del-pw-label{font-size:11px;color:#5a6f9a}
+#del-box .del-pw-wrap{position:relative;width:100%}
+#del-box .del-pw-wrap input{width:100%;padding:10px 42px 10px 14px;border-radius:8px;border:1px solid #2a3550;background:#0f1623;color:#e2e8f0;font-size:14px;text-align:center;letter-spacing:2px;outline:none;transition:border-color .2s;font-family:inherit}
+#del-box .del-pw-wrap input:focus{border-color:#ef4444}
+#del-box .del-pw-toggle{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#5a6f9a;font-size:10px;padding:2px 5px;letter-spacing:.3px;border-radius:3px;transition:color .15s}
+#del-box .del-pw-toggle:hover{color:#e2e8f0}
+#del-box .del-err{font-size:11px;color:#ef4444;min-height:15px;text-align:center}
+#del-box .del-btns{display:flex;gap:10px;width:100%}
+#del-box .del-btns button{flex:1;padding:10px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid #2a3550;transition:opacity .15s;letter-spacing:.3px}
+#del-box .del-btns .del-cancel{background:#1a2236;color:#7a8fae}
+#del-box .del-btns .del-cancel:hover{background:#243050;color:#e2e8f0}
+#del-box .del-btns .del-exec{background:#dc2626;color:#fff;border-color:#dc2626}
+#del-box .del-btns .del-exec:hover{opacity:.85}
 /* AUTH OVERLAY */
 #auth-overlay{position:fixed;inset:0;background:#0f1623;display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:0}
 #auth-overlay.hide{display:none}
@@ -30,7 +38,7 @@
 .auth-btn:hover{opacity:.85}
 .auth-pw-wrap{position:relative;width:100%}
 .auth-pw-wrap input{width:100%;padding:10px 38px 10px 14px}
-.auth-pw-toggle{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#5a6f9a;font-size:15px;padding:0;line-height:1}
+.auth-pw-toggle{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#5a6f9a;font-size:10px;padding:2px 5px;line-height:1;letter-spacing:.3px;border-radius:3px;transition:color .15s}
 .auth-pw-toggle:hover{color:#e2e8f0}
 .auth-err{font-size:11px;color:#ef4444;min-height:16px;text-align:center}
 :root{
@@ -219,14 +227,14 @@ textarea.fc{min-height:60px;resize:vertical}.fg{margin-bottom:11px}.fr{display:g
     <div class="auth-pw-wrap">
       <input class="auth-input" id="auth-pw" type="password" placeholder="••••••••"
         onkeydown="if(event.key==='Enter')authCheck()">
-      <button class="auth-pw-toggle" type="button" onclick="toggleAuthPw()" id="auth-pw-eye" title="パスワードを表示">👁</button>
+      <button class="auth-pw-toggle" type="button" onclick="toggleAuthPw()" id="auth-pw-eye" title="パスワードを表示">表示</button>
     </div>
     <button class="auth-btn" onclick="authCheck()">入室する</button>
     <div class="auth-err" id="auth-err"></div>
   </div>
 </div>
 <script>
-const PW='8452'; // ← 共通パスワード
+const PW='2759'; // ← 共通パスワード
 const AUTH_KEY='gantt_auth_exp';
 const AUTH_DAYS=3;
 (function(){
@@ -255,8 +263,8 @@ const AUTH_DAYS=3;
   function toggleAuthPw(){
     const inp=document.getElementById('auth-pw');
     const eye=document.getElementById('auth-pw-eye');
-    if(inp.type==='password'){inp.type='text';eye.textContent='🙈';}
-    else{inp.type='password';eye.textContent='👁';}
+    if(inp.type==='password'){inp.type='text';eye.textContent='隠す';}
+    else{inp.type='password';eye.textContent='表示';}
   }
   window.authCheck=authCheck;
   window.toggleAuthPw=toggleAuthPw;
@@ -359,12 +367,15 @@ const AUTH_DAYS=3;
     <div class="del-title">🗑 プロジェクトを削除</div>
     <div class="del-msg" id="del-msg"></div>
     <div class="del-pw-label">暗証番号を入力して確認してください</div>
-    <input type="password" id="del-pw" placeholder="••••" maxlength="20"
-      onkeydown="if(event.key==='Enter')delConfirm()">
+    <div class="del-pw-wrap">
+      <input type="password" id="del-pw" placeholder="••••" maxlength="20"
+        onkeydown="if(event.key==='Enter')delConfirm()">
+      <button class="del-pw-toggle" type="button" onclick="toggleDelPw()" id="del-pw-eye">表示</button>
+    </div>
     <div class="del-err" id="del-err"></div>
     <div class="del-btns">
-      <button class="btn" onclick="delCancel()">キャンセル</button>
-      <button class="btn d" onclick="delConfirm()">削除する</button>
+      <button class="del-cancel" onclick="delCancel()">キャンセル</button>
+      <button class="del-exec" onclick="delConfirm()">削除する</button>
     </div>
   </div>
 </div>
@@ -558,6 +569,16 @@ function deletePJ(){
 }
 function delCancel(){
   document.getElementById('del-modal').classList.remove('on');
+  // パスワード表示状態をリセット
+  const inp=document.getElementById('del-pw');
+  const eye=document.getElementById('del-pw-eye');
+  inp.type='password'; eye.textContent='表示';
+}
+function toggleDelPw(){
+  const inp=document.getElementById('del-pw');
+  const eye=document.getElementById('del-pw-eye');
+  if(inp.type==='password'){inp.type='text';eye.textContent='隠す';}
+  else{inp.type='password';eye.textContent='表示';}
 }
 function delConfirm(){
   const pw=document.getElementById('del-pw').value;
