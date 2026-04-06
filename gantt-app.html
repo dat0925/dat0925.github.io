@@ -7,6 +7,17 @@
 <script src="https://cdn.jsdelivr.net/npm/encoding-japanese@2/encoding.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
+/* AUTH OVERLAY */
+#auth-overlay{position:fixed;inset:0;background:#0f1623;display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:0}
+#auth-overlay.hide{display:none}
+.auth-box{background:#1a2236;border:1px solid #2a3550;border-radius:14px;padding:40px 36px;display:flex;flex-direction:column;align-items:center;gap:16px;min-width:300px;box-shadow:0 8px 40px rgba(0,0,0,.5)}
+.auth-logo{font-family:'SF Mono',Menlo,Consolas,monospace;font-size:18px;font-weight:700;color:#4f8ef7;letter-spacing:3px;margin-bottom:4px}
+.auth-sub{font-size:11px;color:#5a6f9a;margin-bottom:8px}
+.auth-input{width:100%;padding:10px 14px;border-radius:8px;border:1px solid #2a3550;background:#0f1623;color:#e2e8f0;font-size:14px;outline:none;text-align:center;letter-spacing:2px;transition:border-color .2s}
+.auth-input:focus{border-color:#4f8ef7}
+.auth-btn{width:100%;padding:10px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .15s;letter-spacing:.5px}
+.auth-btn:hover{opacity:.85}
+.auth-err{font-size:11px;color:#ef4444;min-height:16px;text-align:center}
 :root{
   --bg:#f4f5f7;--s1:#fff;--s2:#f0f2f5;--s3:#e8eaed;
   --bd:#d0d5dd;--bd2:#b0b8c8;--tx:#1a2030;--tx2:#4a5568;--tx3:#8a96a8;
@@ -185,6 +196,43 @@ textarea.fc{min-height:60px;resize:vertical}.fg{margin-bottom:11px}.fr{display:g
 </style>
 </head>
 <body>
+<!-- ===== AUTH OVERLAY ===== -->
+<div id="auth-overlay">
+  <div class="auth-box">
+    <div class="auth-logo">◈ GANTT PRO</div>
+    <div class="auth-sub">パスワードを入力してください</div>
+    <input class="auth-input" id="auth-pw" type="password" placeholder="••••••••"
+      onkeydown="if(event.key==='Enter')authCheck()">
+    <button class="auth-btn" onclick="authCheck()">入室する</button>
+    <div class="auth-err" id="auth-err"></div>
+  </div>
+</div>
+<script>
+(function(){
+  const PW='iflag2025'; // ← 共通パスワード
+  function authCheck(){
+    const v=document.getElementById('auth-pw').value;
+    if(v===PW){
+      sessionStorage.setItem('gantt_auth','1');
+      document.getElementById('auth-overlay').classList.add('hide');
+    } else {
+      const e=document.getElementById('auth-err');
+      e.textContent='パスワードが違います';
+      document.getElementById('auth-pw').value='';
+      document.getElementById('auth-pw').focus();
+      setTimeout(()=>e.textContent='',2000);
+    }
+  }
+  window.authCheck=authCheck;
+  if(sessionStorage.getItem('gantt_auth')==='1'){
+    document.getElementById('auth-overlay').classList.add('hide');
+  } else {
+    document.addEventListener('DOMContentLoaded',()=>{
+      document.getElementById('auth-pw').focus();
+    });
+  }
+})();
+</script>
 <div id="topbar">
   <div class="logo">◈ GANTT</div>
   <div class="pjs">
@@ -229,7 +277,7 @@ textarea.fc{min-height:60px;resize:vertical}.fg{margin-bottom:11px}.fr{display:g
     <button class="btn" onclick="goToday()">Today</button>
     <button class="btn" onclick="nav(-1)">◀</button>
     <button class="btn" onclick="nav(1)">▶</button>
-    <button class="btn" onclick="openSBSettings()" title="Supabase DB接続設定" id="sb-btn" style="border-color:var(--ac);color:var(--ac)"><span class="sb-dot" id="sb-ind"></span>☁ DB</button>
+    <button class="btn" onclick="openSBSettings()" title="Supabase DB接続設定" id="sb-btn" style="display:none"><span class="sb-dot" id="sb-ind"></span>☁ DB</button>
   </div>
 </div>
 <div id="main">
@@ -345,14 +393,15 @@ function diffD(a,b){return Math.round((pd(b)-pd(a))/86400000)}
 // SUPABASE
 // ══════════════════════════════════════════
 const SB_URL_LS='gp6_sb_url',SB_KEY_LS='gp6_sb_key';
+// ── Supabase接続情報（共通設定）──
+const _SB_URL='https://pkhkigrucmulzscudynz.supabase.co';
+const _SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBraGtpZ3J1Y211bHpzY3VkeW56Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4ODA1MTgsImV4cCI6MjA5MDQ1NjUxOH0.ykxMJmrqaTOzcK631cuqZK3eL1PtSVq7bbomqnr-VxE';
 let sbClient=null,sbTimer=null;
 
 function sbDot(s){const e=document.getElementById('sb-ind');if(e){e.className='sb-dot'+(s?' '+s:'');}}
 
 function initSB(){
-  const url=localStorage.getItem(SB_URL_LS),key=localStorage.getItem(SB_KEY_LS);
-  if(!url||!key)return false;
-  try{sbClient=supabase.createClient(url,key);return true;}catch(e){sbClient=null;return false;}
+  try{sbClient=supabase.createClient(_SB_URL,_SB_KEY);return true;}catch(e){sbClient=null;return false;}
 }
 
 async function sbLoad(){
@@ -383,8 +432,8 @@ function save(){
 }
 
 function openSBSettings(){
-  document.getElementById('sb-url').value=localStorage.getItem(SB_URL_LS)||'';
-  document.getElementById('sb-key').value=localStorage.getItem(SB_KEY_LS)||'';
+  document.getElementById('sb-url').value=_SB_URL;
+  document.getElementById('sb-key').value=_SB_KEY;
   document.getElementById('sb-msg').textContent='';
   document.getElementById('sb-modal').classList.add('on');
 }
@@ -404,7 +453,7 @@ async function connectSB(){
       msg.textContent=error.code==='42P01'?'テーブルが存在しません。SQLセットアップを実行してください。':'接続エラー: '+error.message;
       sbDot('err');return;
     }
-    localStorage.setItem(SB_URL_LS,url);localStorage.setItem(SB_KEY_LS,key);
+    localStorage.setItem(SB_URL_LS,_SB_URL);localStorage.setItem(SB_KEY_LS,_SB_KEY);
     sbClient=c;
     await sbSaveNow();
     msg.style.color='var(--gn)';msg.textContent='接続成功！データを同期しました。';
