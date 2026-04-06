@@ -965,7 +965,7 @@ function buildTourUI() {
       <button class="tour-chara-switch" id="tour-chara-switch">${tourChara === 'men' ? '👩 女性に変更' : '👨 男性に変更'}</button>
       <div class="tour-top-row">
         <div class="tour-step-badge" id="tour-badge">Step 1 / ${TOUR_STEPS.length}</div>
-        <span class="tour-skip" id="tour-skip">スキップ</span>
+        <span class="tour-skip" id="tour-skip">スキップ</span><span class="tour-skip" id="tour-restart" style="margin-left:8px">最初に戻る</span>
       </div>
       <h4 id="tour-title"></h4>
       <p id="tour-body"></p>
@@ -1008,6 +1008,7 @@ function buildTourUI() {
     else goStep(currentStep + 1);
   };
   document.getElementById('tour-skip').onclick = endTour;
+  document.getElementById('tour-restart').onclick = () => goStep(0);
   ov.onclick = endTour;
 }
 
