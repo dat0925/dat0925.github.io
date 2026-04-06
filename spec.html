@@ -142,7 +142,7 @@ body{font-family:'BIZ UDPGothic',sans-serif;background:var(--gray-50);color:var(
   <nav class="toc">
     <div class="toc-section">構成</div>
     <a href="#files" class="toc-item">📁 ファイル構造</a>
-    <a href="#pages" class="toc-item">🗂 ページ構成（13画面）</a>
+    <a href="#pages" class="toc-item">🗂 ページ構成（15画面）</a>
     <a href="#design" class="toc-item">🎨 CSS設計・デザイントークン</a>
     <div class="toc-section">データ</div>
     <a href="#data" class="toc-item">🗄 データ構造</a>
@@ -179,7 +179,7 @@ body{font-family:'BIZ UDPGothic',sans-serif;background:var(--gray-50);color:var(
       <p>ファイル構造・データモデル・API設計・フロントエンド実装を網羅した技術ドキュメントです。開発・保守・拡張の際に参照してください。</p>
       <div class="hero-meta">
         <div class="hero-stat"><strong>1ファイル</strong> SPA構成</div>
-        <div class="hero-stat"><strong>13ページ</strong> 機能画面</div>
+        <div class="hero-stat"><strong>15ページ</strong> 機能画面</div>
         <div class="hero-stat"><strong>8 API</strong> 連携</div>
         <div class="hero-stat">GitHub Pages <strong>master</strong></div>
       </div>
@@ -213,7 +213,7 @@ body{font-family:'BIZ UDPGothic',sans-serif;background:var(--gray-50);color:var(
     <div class="section" id="pages">
       <div class="section-header">
         <span class="section-tag">🗂 PAGES</span>
-        <h2>ページ構成（13画面）</h2>
+        <h2>ページ構成（15画面）</h2>
       </div>
       <p>すべての画面は <code>.page</code> クラスのdiv要素。 <code>nav(id)</code> 関数でactiveを切り替えてSPA遷移を実現します。</p>
       <div class="page-grid">
@@ -230,6 +230,8 @@ body{font-family:'BIZ UDPGothic',sans-serif;background:var(--gray-50);color:var(
         <div class="pg-card"><div class="pg-id">posts</div><div class="pg-name">📝 投稿管理</div><div class="pg-desc">GBP投稿・AI生成・承認フロー</div></div>
         <div class="pg-card"><div class="pg-id">settings</div><div class="pg-name">🔗 API連携設定</div><div class="pg-desc">8サービス接続管理</div></div>
         <div class="pg-card"><div class="pg-id">audit</div><div class="pg-name">🛡 監査ログ</div><div class="pg-desc">全操作記録</div></div>
+        <div class="pg-card"><div class="pg-id">user-list</div><div class="pg-name">👥 ユーザー一覧</div><div class="pg-desc">ユーザー管理・ロール確認・招待</div></div>
+        <div class="pg-card"><div class="pg-id">user-new</div><div class="pg-name">＋ 新規作成</div><div class="pg-desc">招待メール送信・ロール設定</div></div>
       </div>
       <h3>ページ切り替え実装</h3>
       <div class="code-block">

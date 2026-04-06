@@ -146,13 +146,16 @@ details[open] summary::before{transform:rotate(90deg)}
     <a href="#s1" class="toc-item">📊 ダッシュボード<span class="step">Step 1</span></a>
     <a href="#s2" class="toc-item">🏪 店舗情報（SoT）<span class="step">Step 2</span></a>
     <a href="#s3" class="toc-item">🌐 配信（Uberall）<span class="step">Step 3</span></a>
-    <a href="#s4" class="toc-item">⭐ 口コミ管理<span class="step">Step 4</span></a>
-    <a href="#s5" class="toc-item">📈 競合・順位<span class="step">Step 5</span></a>
-    <a href="#s6" class="toc-item">🔍 GSC・オーガニック<span class="step">Step 6</span></a>
-    <a href="#s7" class="toc-item">🤖 AIOアシスト<span class="step">Step 7</span></a>
-    <a href="#s8" class="toc-item">📆 予約・CV分析<span class="step">Step 8</span></a>
-    <a href="#s9" class="toc-item">🔔 Webhookログ<span class="step">Step 9</span></a>
-    <a href="#s10" class="toc-item">🔗 API連携設定<span class="step">Step 10</span></a>
+    <a href="#s3b" class="toc-item">📍 Google 運用<span class="step">Step 4</span></a>
+    <a href="#s3c" class="toc-item">📝 投稿管理<span class="step">Step 5</span></a>
+    <a href="#s4" class="toc-item">⭐ 口コミ管理<span class="step">Step 6</span></a>
+    <a href="#s5" class="toc-item">📈 競合・順位<span class="step">Step 7</span></a>
+    <a href="#s6" class="toc-item">🔍 GSC・オーガニック<span class="step">Step 8</span></a>
+    <a href="#s7" class="toc-item">🤖 AIOアシスト<span class="step">Step 9</span></a>
+    <a href="#s8" class="toc-item">📆 予約・CV分析<span class="step">Step 10</span></a>
+    <a href="#s9" class="toc-item">🔔 Webhookログ<span class="step">Step 11</span></a>
+    <a href="#s10" class="toc-item">🔗 API連携設定<span class="step">Step 12</span></a>
+    <a href="#s11" class="toc-item">👥 ユーザー管理<span class="step">Step 13</span></a>
     <div class="toc-section">サポート</div>
     <a href="#faq" class="toc-item">❓ よくある質問</a>
   </nav>
@@ -177,8 +180,8 @@ details[open] summary::before{transform:rotate(90deg)}
       <h1>MEO統合管理画面<br>操作ガイド</h1>
       <p>全店舗のMEO施策を一画面で管理するツールの使い方を、ステップごとに丁寧に解説します。初めての方はStep 1から順番にお読みください。</p>
       <div class="hero-meta">
-        <div class="hero-stat"><strong>10</strong> 画面の解説</div>
-        <div class="hero-stat"><strong>約5分</strong> で読める</div>
+        <div class="hero-stat"><strong>13</strong> 画面の解説</div>
+        <div class="hero-stat"><strong>約8分</strong> で読める</div>
         <div class="hero-stat"><strong>FAQ</strong> 付き</div>
       </div>
     </div>
@@ -261,10 +264,52 @@ details[open] summary::before{transform:rotate(90deg)}
       <div class="tip">💡 緊急時は「🔄 全店舗 一括Sync」ボタンで全店舗の同期を強制実行できます。通常は5〜30分で反映されます。</div>
     </div>
 
+    <!-- STEP 3b: Google運用 -->
+    <div class="section" id="s3b">
+      <div class="section-header">
+        <span class="section-number">Step 4</span>
+        <h2>📍 Google 運用（GBP）を確認する</h2>
+      </div>
+      <div class="goal"><strong>🎯 目的：</strong>GBPの通話・経路・Webクリックを週次で把握し、来店導線の状態を確認する</div>
+      <h3>確認できる指標</h3>
+      <table class="tbl">
+        <tr><th>指標</th><th>内容</th><th>目安</th></tr>
+        <tr><td>通話クリック</td><td>GBPから電話ボタンを押した回数</td><td>前月比 +5%以上</td></tr>
+        <tr><td>経路クリック</td><td>Googleマップで経路検索した回数</td><td>前月比 +3%以上</td></tr>
+        <tr><td>Webサイトクリック</td><td>GBPからWebサイトに飛んだ回数</td><td>CTRと合わせて確認</td></tr>
+        <tr><td>GBP経由予約数</td><td>GBP予約ボタンからの予約数</td><td>月142件（現状）</td></tr>
+        <tr><td>表示回数</td><td>マップ・検索でGBPが表示された回数</td><td>月48,200件（現状）</td></tr>
+      </table>
+      <div class="warn">⚠️ GBPで直接情報を変更するとSoT（Uberall）と競合します。変更は必ずSoT経由で行ってください。</div>
+    </div>
+
+    <!-- STEP 3c: 投稿管理 -->
+    <div class="section" id="s3c">
+      <div class="section-header">
+        <span class="section-number">Step 5</span>
+        <h2>📝 投稿を管理する</h2>
+      </div>
+      <div class="goal"><strong>🎯 目的：</strong>GBP投稿を継続的に配信し、検索順位とAIO掲載率を維持する</div>
+      <h3>投稿の流れ</h3>
+      <div class="steps">
+        <div class="step-item"><div class="step-num">1</div><div class="step-body">サイドバー「📝 投稿管理」をクリック → <strong>「承認待ち」タブ</strong>を確認</div></div>
+        <div class="step-item"><div class="step-num">2</div><div class="step-body">AI生成下書きの内容を確認。問題なければ<strong>「✅ 承認して投稿」</strong>をクリック</div></div>
+        <div class="step-item"><div class="step-num">3</div><div class="step-body">修正が必要な場合は「✏️ 編集」で内容を変更してから投稿</div></div>
+        <div class="step-item"><div class="step-num">4</div><div class="step-body">「🤖 AI投稿文を生成」から対象店舗・テーマを選んで新規生成も可能</div></div>
+      </div>
+      <table class="tbl">
+        <tr><th>ステータス</th><th>意味</th></tr>
+        <tr><td><span class="badge yellow">承認待ち</span></td><td>AI生成済み・人的確認待ち</td></tr>
+        <tr><td><span class="badge blue">予約済み</span></td><td>承認済み・配信日時待ち</td></tr>
+        <tr><td><span class="badge green">投稿済み</span></td><td>GBPへの配信完了</td></tr>
+      </table>
+      <div class="tip">💡 2週間以上投稿がない店舗は「投稿不足店舗」としてダッシュボードのToDoに表示されます。週1回以上の投稿を目標にしましょう。</div>
+    </div>
+
     <!-- STEP 4 -->
     <div class="section" id="s4">
       <div class="section-header">
-        <span class="section-number">Step 4</span>
+        <span class="section-number">Step 6</span>
         <h2>⭐ 口コミを管理する</h2>
       </div>
       <div class="goal"><strong>🎯 目的：</strong>未返信口コミをゼロに保ち、評価を維持・向上させる</div>
@@ -287,7 +332,7 @@ details[open] summary::before{transform:rotate(90deg)}
     <!-- STEP 5 -->
     <div class="section" id="s5">
       <div class="section-header">
-        <span class="section-number">Step 5</span>
+        <span class="section-number">Step 7</span>
         <h2>📈 競合・順位を確認する</h2>
       </div>
       <div class="goal"><strong>🎯 目的：</strong>キーワードごとの順位と競合店舗との差を把握し、施策を立案する</div>
@@ -317,7 +362,7 @@ details[open] summary::before{transform:rotate(90deg)}
     <!-- STEP 6 -->
     <div class="section" id="s6">
       <div class="section-header">
-        <span class="section-number">Step 6</span>
+        <span class="section-number">Step 8</span>
         <h2>🔍 GSC・オーガニック流入を分析する</h2>
       </div>
       <div class="goal"><strong>🎯 目的：</strong>オーガニック検索からの流入を最大化する</div>
@@ -335,7 +380,7 @@ details[open] summary::before{transform:rotate(90deg)}
     <!-- STEP 7 -->
     <div class="section" id="s7">
       <div class="section-header">
-        <span class="section-number">Step 7</span>
+        <span class="section-number">Step 9</span>
         <h2>🤖 AIOアシストで対策する</h2>
       </div>
       <div class="goal"><strong>🎯 目的：</strong>Google AI Overview（AI概要）に掲載されやすい状態を維持する</div>
@@ -362,7 +407,7 @@ details[open] summary::before{transform:rotate(90deg)}
     <!-- STEP 8 -->
     <div class="section" id="s8">
       <div class="section-header">
-        <span class="section-number">Step 8</span>
+        <span class="section-number">Step 10</span>
         <h2>📆 予約・CV分析を見る</h2>
       </div>
       <div class="goal"><strong>🎯 目的：</strong>MEO施策が実際の予約・売上にどう貢献しているかを把握する</div>
@@ -382,7 +427,7 @@ details[open] summary::before{transform:rotate(90deg)}
     <!-- STEP 9 -->
     <div class="section" id="s9">
       <div class="section-header">
-        <span class="section-number">Step 9</span>
+        <span class="section-number">Step 11</span>
         <h2>🔔 Webhookログを確認する</h2>
       </div>
       <div class="goal"><strong>🎯 目的：</strong>システム間の連携が正常に動作しているかを監視する</div>
@@ -402,7 +447,7 @@ details[open] summary::before{transform:rotate(90deg)}
     <!-- STEP 10 -->
     <div class="section" id="s10">
       <div class="section-header">
-        <span class="section-number">Step 10</span>
+        <span class="section-number">Step 12</span>
         <h2>🔗 API連携設定を行う</h2>
       </div>
       <div class="goal"><strong>🎯 目的：</strong>各APIを正しく接続・管理する</div>
@@ -413,6 +458,29 @@ details[open] summary::before{transform:rotate(90deg)}
         <tr><td><span class="badge blue">🔵 任意</span></td><td>Yext / Synup.dev</td><td>Uberallの補完</td></tr>
       </table>
       <div class="warn">🔐 APIキー・シークレットはKMS/Secret Managerに格納してください。DB平文保存禁止・TLS 1.2以上必須。</div>
+    </div>
+
+    <!-- STEP 11: ユーザー管理 -->
+    <div class="section" id="s11">
+      <div class="section-header">
+        <span class="section-number">Step 13</span>
+        <h2>👥 ユーザーを管理する</h2>
+      </div>
+      <div class="goal"><strong>🎯 目的：</strong>アカウントのロールを正しく設定し、セキュリティと操作権限を管理する</div>
+      <h3>ロール一覧</h3>
+      <table class="tbl">
+        <tr><th>ロール</th><th>できること</th><th>できないこと</th></tr>
+        <tr><td>👑 管理者</td><td>全機能・ユーザー管理・API設定・契約情報変更</td><td>—</td></tr>
+        <tr><td>✏️ 編集者</td><td>投稿・口コミ返信・レポート閲覧・店舗情報編集</td><td>API設定・ユーザー管理・契約変更</td></tr>
+        <tr><td>👁 閲覧者</td><td>ダッシュボード・レポートの閲覧</td><td>データの変更・編集すべて</td></tr>
+      </table>
+      <h3>新規ユーザーの招待手順</h3>
+      <div class="steps">
+        <div class="step-item"><div class="step-num">1</div><div class="step-body">左メニュー「👥 ユーザー一覧」→「＋ 新規作成」をクリック</div></div>
+        <div class="step-item"><div class="step-num">2</div><div class="step-body">姓・名・メールアドレスを入力し、ロールを選択</div></div>
+        <div class="step-item"><div class="step-num">3</div><div class="step-body">「📧 招待メールを送信」をクリック。ユーザーがリンクをクリックするとアカウント有効化</div></div>
+      </div>
+      <div class="warn">⚠️ 管理者ロールの付与は慎重に行ってください。API設定・契約情報への完全なアクセス権限が付与されます。</div>
     </div>
 
     <!-- FAQ -->
