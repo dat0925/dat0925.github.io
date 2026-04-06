@@ -167,16 +167,16 @@ nav{flex:1;padding:8px 0;overflow-y:scroll;-webkit-overflow-scrolling:touch;min-
 /* TOUR */
 .tour-overlay{position:fixed;inset:0;background:rgba(5,10,25,.12);z-index:1000;display:none}
 .tour-overlay.active{display:block}
-.tour-wrap{position:fixed;z-index:1001;display:none;align-items:flex-end;gap:0;transition:opacity .3s ease,transform .3s ease}
-.tour-wrap.tour-animating{opacity:0;transform:translateY(6px)}
-.tour-chara{width:120px;flex-shrink:0;align-self:flex-end;pointer-events:none;user-select:none;filter:drop-shadow(0 8px 16px rgba(5,10,25,.18));transition:opacity .3s ease}
+.tour-wrap{position:fixed;z-index:1001;display:none;align-items:flex-end;gap:0;transition:opacity .15s ease,transform .15s ease}
+.tour-wrap.tour-animating{opacity:0;transform:translateY(4px)}
+.tour-chara{width:120px;flex-shrink:0;align-self:flex-end;pointer-events:none;user-select:none;filter:drop-shadow(0 8px 16px rgba(5,10,25,.18));transition:opacity .15s ease}
 .tour-chara img{width:120px;display:block}
 /* 吹き出しbox */
 .tour-box{
   background:#fff;border-radius:14px;padding:20px 20px 18px 20px;width:320px;
   box-shadow:0 8px 32px rgba(5,10,25,.18),0 2px 8px rgba(5,10,25,.08);
   max-height:80vh;overflow:visible;position:relative;
-  transition:opacity .3s ease,transform .3s ease;
+  transition:opacity .15s ease,transform .15s ease;
   box-sizing:border-box;
 }
 /* スクロールが必要な場合の内側ラッパー */
@@ -1079,8 +1079,8 @@ function goStep(idx) {
         requestAnimationFrame(() => {
           wrap.classList.remove('tour-animating');
         });
-      }, 150);
-    }, 250);
+      }, 80);
+    }, 120);
   }
 }
 
@@ -1093,64 +1093,32 @@ function positionStep(step) {
   ov.classList.add('active');
 
   const vw = window.innerWidth;
-  const vh = window.innerHeight;
-  const isNarrow = vw < 1100;
-  const bw = Math.min(vw - 160, 320);  // キャラ幅120px+余白を除いた最大320px
+  const bw = Math.min(vw - 160, 320);
   box.style.width = bw + 'px';
 
-  // iPad・スマホ、またはtarget無し → 画面中央下寄りに固定
-  if (!step.target || step.pos === 'center' || isNarrow) {
-    wrap.style.position = 'fixed';
-    // ポップアップ高さ約320px想定で、画面下端から余裕を持たせる
-    // bottom固定ではなく、top:50%で中央から少し下にずらすことで下部メニューと被らない
-    const wrapH = 340; // wrap想定高さ（キャラ込み）
-    const topPos = Math.max(vh * 0.35, Math.min(vh * 0.55, vh - wrapH - 20));
-    wrap.style.top = topPos + 'px';
-    wrap.style.bottom = '';
-    wrap.style.left = '50%';
-    wrap.style.transform = 'translateX(-50%)';
-    wrap.style.display = 'flex';
-    hl.classList.remove('active');
-    return;
-  }
-
-  const el = document.querySelector(step.target);
-  if (!el) {
-    wrap.style.position = 'fixed';
-    const wrapH = 340;
-    const topPos = Math.max(vh * 0.35, Math.min(vh * 0.55, vh - wrapH - 20));
-    wrap.style.top = topPos + 'px';
-    wrap.style.bottom = '';
-    wrap.style.left = '50%';
-    wrap.style.transform = 'translateX(-50%)';
-    wrap.style.display = 'flex';
-    return;
-  }
-
-  const r = el.getBoundingClientRect();
-  const pad = 12;
-  const wrapW = bw + 120 + 0; // box + chara
-
-  // highlight ring
-  hl.style.left = r.left - 4 + 'px';
-  hl.style.top = r.top - 4 + 'px';
-  hl.style.width = r.width + 8 + 'px';
-  hl.style.height = r.height + 8 + 'px';
-  hl.classList.add('active');
-
-  // Desktop: ターゲットの右側 or 左側
-  let bx = r.right + pad;
-  let by = r.top - 10;
-  if (bx + wrapW > vw - pad) bx = r.left - wrapW - pad;
-  if (by + 280 > vh - pad) by = vh - 280 - pad;
-  if (by < pad) by = pad;
-
+  // 常に右下固定
   wrap.style.position = 'fixed';
-  wrap.style.top = by + 'px';
-  wrap.style.left = bx + 'px';
-  wrap.style.bottom = '';
+  wrap.style.bottom = '24px';
+  wrap.style.right = '24px';
+  wrap.style.top = '';
+  wrap.style.left = '';
   wrap.style.transform = 'none';
   wrap.style.display = 'flex';
+
+  // ハイライトリング（ターゲットがある場合のみ）
+  if (step.target) {
+    const el = document.querySelector(step.target);
+    if (el) {
+      const r = el.getBoundingClientRect();
+      hl.style.left = r.left - 4 + 'px';
+      hl.style.top = r.top - 4 + 'px';
+      hl.style.width = r.width + 8 + 'px';
+      hl.style.height = r.height + 8 + 'px';
+      hl.classList.add('active');
+      return;
+    }
+  }
+  hl.classList.remove('active');
 }
 
 function startTour() {
