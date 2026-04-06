@@ -7,6 +7,17 @@
 <script src="https://cdn.jsdelivr.net/npm/encoding-japanese@2/encoding.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
+/* DELETE CONFIRM MODAL */
+#del-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:8000;align-items:center;justify-content:center}
+#del-modal.on{display:flex}
+#del-box{background:var(--s1);border:1px solid var(--bd2);border-radius:12px;padding:28px 28px 22px;min-width:300px;max-width:360px;display:flex;flex-direction:column;gap:14px;box-shadow:0 8px 32px rgba(0,0,0,.25)}
+#del-box .del-title{font-size:14px;font-weight:700;color:var(--rd);text-align:center}
+#del-box .del-msg{font-size:12px;color:var(--tx2);text-align:center;line-height:1.7}
+#del-box .del-pw-label{font-size:11px;color:var(--tx3);text-align:center}
+#del-box input{width:100%;padding:8px 12px;border-radius:7px;border:1px solid var(--bd2);background:var(--s3);color:var(--tx);font-size:14px;text-align:center;letter-spacing:2px;outline:none;transition:border-color .2s}
+#del-box input:focus{border-color:var(--rd)}
+#del-box .del-err{font-size:11px;color:var(--rd);text-align:center;min-height:15px}
+#del-box .del-btns{display:flex;gap:8px;justify-content:flex-end}
 /* AUTH OVERLAY */
 #auth-overlay{position:fixed;inset:0;background:#0f1623;display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:0}
 #auth-overlay.hide{display:none}
@@ -208,8 +219,8 @@ textarea.fc{min-height:60px;resize:vertical}.fg{margin-bottom:11px}.fr{display:g
   </div>
 </div>
 <script>
+const PW='8452'; // ← 共通パスワード
 (function(){
-  const PW='8452'; // ← 共通パスワード
   function authCheck(){
     const v=document.getElementById('auth-pw').value;
     if(v===PW){
@@ -315,6 +326,21 @@ textarea.fc{min-height:60px;resize:vertical}.fg{margin-bottom:11px}.fr{display:g
     <div class="mh"><span class="mt" id="mtitle">タスク追加</span><button class="btn" onclick="closeM()" style="padding:2px 8px;font-size:14px">✕</button></div>
     <div class="mb" id="mbody"></div>
     <div class="mf"><button class="btn" onclick="closeM()">キャンセル</button><button class="btn p" onclick="subM()">保存</button></div>
+  </div>
+</div>
+<!-- DELETE CONFIRM MODAL -->
+<div id="del-modal">
+  <div id="del-box">
+    <div class="del-title">🗑 プロジェクトを削除</div>
+    <div class="del-msg" id="del-msg"></div>
+    <div class="del-pw-label">暗証番号を入力して確認してください</div>
+    <input type="password" id="del-pw" placeholder="••••" maxlength="20"
+      onkeydown="if(event.key==='Enter')delConfirm()">
+    <div class="del-err" id="del-err"></div>
+    <div class="del-btns">
+      <button class="btn" onclick="delCancel()">キャンセル</button>
+      <button class="btn d" onclick="delConfirm()">削除する</button>
+    </div>
   </div>
 </div>
 <!-- SUPABASE SETTINGS MODAL -->
@@ -499,7 +525,26 @@ function switchPJ(id){
 }
 function deletePJ(){
   if(!S.cur)return;
-  if(!confirm(`「${pj().name}」を削除しますか？`))return;
+  document.getElementById('del-msg').textContent='「'+pj().name+'」を削除します。この操作は元に戻せません。';
+  document.getElementById('del-pw').value='';
+  document.getElementById('del-err').textContent='';
+  document.getElementById('del-modal').classList.add('on');
+  setTimeout(()=>document.getElementById('del-pw').focus(),80);
+}
+function delCancel(){
+  document.getElementById('del-modal').classList.remove('on');
+}
+function delConfirm(){
+  const pw=document.getElementById('del-pw').value;
+  if(pw!==PW){
+    const e=document.getElementById('del-err');
+    e.textContent='暗証番号が違います';
+    document.getElementById('del-pw').value='';
+    document.getElementById('del-pw').focus();
+    setTimeout(()=>e.textContent='',2000);
+    return;
+  }
+  document.getElementById('del-modal').classList.remove('on');
   delete S.pjs[S.cur];S.cur=null;save();renderPJS();renderAll();
 }
 function renderPJS(){
