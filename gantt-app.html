@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <title>GANTT PRO</title>
 <script src="https://cdn.jsdelivr.net/npm/encoding-japanese@2/encoding.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
   --bg:#f4f5f7;--s1:#fff;--s2:#f0f2f5;--s3:#e8eaed;
@@ -153,6 +154,15 @@ textarea.fc{min-height:60px;resize:vertical}.fg{margin-bottom:11px}.fr{display:g
 .aps-stat-val{font-size:20px;font-weight:700;font-family:var(--fm)}
 /* SCROLLBAR */
 ::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:var(--s1)}::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:3px}
+/* SUPABASE MODAL */
+#sb-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;align-items:center;justify-content:center}
+#sb-modal.on{display:flex}
+#sb-box{background:var(--s1);border-radius:10px;padding:22px;width:460px;max-width:95vw;box-shadow:0 8px 32px rgba(0,0,0,.25)}
+#sb-box label{display:block;font-size:11px;color:var(--tx3);margin-bottom:3px}
+#sb-box input[type=text]{width:100%;padding:6px 8px;border:1px solid var(--bd2);border-radius:5px;font-size:12px;background:var(--s3);color:var(--tx);font-family:var(--fm);outline:none;margin-bottom:10px}
+#sb-sql{background:var(--s3);border:1px solid var(--bd);border-radius:5px;padding:8px 10px;font-size:10px;font-family:var(--fm);color:var(--tx2);white-space:pre;overflow-x:auto;margin-top:6px;line-height:1.5}
+.sb-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--bd2);margin-right:5px;vertical-align:middle;transition:background .2s}
+.sb-dot.ok{background:var(--gn)}.sb-dot.err{background:var(--rd)}.sb-dot.busy{background:var(--or)}
 /* MOBILE */
 @media(max-width:700px){
   html,body{height:auto;overflow:auto}
@@ -219,6 +229,7 @@ textarea.fc{min-height:60px;resize:vertical}.fg{margin-bottom:11px}.fr{display:g
     <button class="btn" onclick="goToday()">Today</button>
     <button class="btn" onclick="nav(-1)">◀</button>
     <button class="btn" onclick="nav(1)">▶</button>
+    <button class="btn" onclick="openSBSettings()" title="Supabase DB接続設定" id="sb-btn" style="border-color:var(--ac);color:var(--ac)"><span class="sb-dot" id="sb-ind"></span>☁ DB</button>
   </div>
 </div>
 <div id="main">
@@ -258,6 +269,42 @@ textarea.fc{min-height:60px;resize:vertical}.fg{margin-bottom:11px}.fr{display:g
     <div class="mf"><button class="btn" onclick="closeM()">キャンセル</button><button class="btn p" onclick="subM()">保存</button></div>
   </div>
 </div>
+<!-- SUPABASE SETTINGS MODAL -->
+<div id="sb-modal">
+  <div id="sb-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <strong style="font-size:13px">☁ Supabase DB 接続設定</strong>
+      <button class="btn" onclick="closeSBSettings()" style="padding:2px 8px;font-size:14px">✕</button>
+    </div>
+    <div style="font-size:11px;color:var(--tx2);margin-bottom:12px;line-height:1.6">
+      SupabaseプロジェクトのURLとanon keyを入力してください。<br>
+      接続後、データはクラウドに自動保存されます。
+    </div>
+    <label>Supabase URL</label>
+    <input type="text" id="sb-url" placeholder="https://xxxxxxxxxxxx.supabase.co">
+    <label>anon key</label>
+    <input type="text" id="sb-key" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
+    <details style="margin-top:2px;margin-bottom:10px">
+      <summary style="font-size:11px;color:var(--tx3);cursor:pointer;user-select:none">▶ Supabase SQLセットアップ（初回のみ実行）</summary>
+      <div id="sb-sql">create table if not exists gantt_data (
+  id text primary key,
+  projects jsonb default '{}'::jsonb,
+  cur_project text default '',
+  updated_at timestamptz default now()
+);
+-- テーブルに初期行を挿入
+insert into gantt_data (id) values ('gp6') on conflict do nothing;
+-- RLS無効化（簡易設定）
+alter table gantt_data disable row level security;</div>
+    </details>
+    <div id="sb-msg" style="font-size:11px;min-height:16px;margin-bottom:10px"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn d" onclick="disconnectSB()">切断</button>
+      <button class="btn" onclick="closeSBSettings()">キャンセル</button>
+      <button class="btn p" onclick="connectSB()">接続・テスト</button>
+    </div>
+  </div>
+</div>
 <script>
 // ══════════════════════════════════════════
 // CONSTANTS
@@ -294,7 +341,86 @@ function diffD(a,b){return Math.round((pd(b)-pd(a))/86400000)}
 // ══════════════════════════════════════════
 // STORAGE
 // ══════════════════════════════════════════
-function save(){try{localStorage.setItem('gp6',JSON.stringify(S.pjs));localStorage.setItem('gp6c',S.cur||'')}catch(e){}}
+// ══════════════════════════════════════════
+// SUPABASE
+// ══════════════════════════════════════════
+const SB_URL_LS='gp6_sb_url',SB_KEY_LS='gp6_sb_key';
+let sbClient=null,sbTimer=null;
+
+function sbDot(s){const e=document.getElementById('sb-ind');if(e){e.className='sb-dot'+(s?' '+s:'');}}
+
+function initSB(){
+  const url=localStorage.getItem(SB_URL_LS),key=localStorage.getItem(SB_KEY_LS);
+  if(!url||!key)return false;
+  try{sbClient=supabase.createClient(url,key);return true;}catch(e){sbClient=null;return false;}
+}
+
+async function sbLoad(){
+  if(!sbClient)return false;
+  try{
+    sbDot('busy');
+    const{data,error}=await sbClient.from('gantt_data').select('*').eq('id','gp6').maybeSingle();
+    if(error){sbDot('err');return false;}
+    if(!data){sbDot('ok');return false;}
+    if(data.projects)S.pjs=data.projects;
+    S.cur=data.cur_project||null;
+    if(S.cur&&!S.pjs[S.cur])S.cur=null;
+    sbDot('ok');return true;
+  }catch(e){sbDot('err');return false;}
+}
+
+async function sbSaveNow(){
+  if(!sbClient)return;
+  try{
+    const{error}=await sbClient.from('gantt_data').upsert({id:'gp6',projects:S.pjs,cur_project:S.cur||'',updated_at:new Date().toISOString()},{onConflict:'id'});
+    sbDot(error?'err':'ok');
+  }catch(e){sbDot('err');}
+}
+
+function save(){
+  try{localStorage.setItem('gp6',JSON.stringify(S.pjs));localStorage.setItem('gp6c',S.cur||'')}catch(e){}
+  if(sbClient){clearTimeout(sbTimer);sbTimer=setTimeout(sbSaveNow,800);}
+}
+
+function openSBSettings(){
+  document.getElementById('sb-url').value=localStorage.getItem(SB_URL_LS)||'';
+  document.getElementById('sb-key').value=localStorage.getItem(SB_KEY_LS)||'';
+  document.getElementById('sb-msg').textContent='';
+  document.getElementById('sb-modal').classList.add('on');
+}
+function closeSBSettings(){document.getElementById('sb-modal').classList.remove('on');}
+
+async function connectSB(){
+  const url=document.getElementById('sb-url').value.trim();
+  const key=document.getElementById('sb-key').value.trim();
+  const msg=document.getElementById('sb-msg');
+  if(!url||!key){msg.style.color='var(--rd)';msg.textContent='URLとキーを入力してください';return;}
+  msg.style.color='var(--tx2)';msg.textContent='接続中...';
+  try{
+    const c=supabase.createClient(url,key);
+    const{error}=await c.from('gantt_data').select('id').limit(1);
+    if(error){
+      msg.style.color='var(--rd)';
+      msg.textContent=error.code==='42P01'?'テーブルが存在しません。SQLセットアップを実行してください。':'接続エラー: '+error.message;
+      sbDot('err');return;
+    }
+    localStorage.setItem(SB_URL_LS,url);localStorage.setItem(SB_KEY_LS,key);
+    sbClient=c;
+    await sbSaveNow();
+    msg.style.color='var(--gn)';msg.textContent='接続成功！データを同期しました。';
+    setTimeout(closeSBSettings,1500);
+  }catch(e){msg.style.color='var(--rd)';msg.textContent='エラー: '+e.message;sbDot('err');}
+}
+
+function disconnectSB(){
+  localStorage.removeItem(SB_URL_LS);localStorage.removeItem(SB_KEY_LS);
+  sbClient=null;sbDot('');
+  document.getElementById('sb-url').value='';
+  document.getElementById('sb-key').value='';
+  document.getElementById('sb-msg').style.color='var(--tx2)';
+  document.getElementById('sb-msg').textContent='切断しました';
+}
+
 function load(){
   try{
     const d=localStorage.getItem('gp6');if(d)S.pjs=JSON.parse(d);
@@ -1431,9 +1557,14 @@ function createDemo(){
 // ══════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════
-function init(){
+async function init(){
   load();
-  if(Object.keys(S.pjs).length===0)createDemo();
+  if(initSB()){
+    const ok=await sbLoad();
+    if(!ok&&Object.keys(S.pjs).length===0)createDemo();
+  } else {
+    if(Object.keys(S.pjs).length===0)createDemo();
+  }
   if(S.cur)phases().forEach(p=>S.exp.add(p.id));
   S.sd=addD(td(),-7);
   renderPJS();updateFAs();renderAll();
@@ -1441,6 +1572,7 @@ function init(){
   initChartDrag();
   document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeM();cancelInlineAdd();}});
   document.getElementById('ov').addEventListener('click',function(e){if(e.target===this)closeM();});
+  document.getElementById('sb-modal').addEventListener('click',function(e){if(e.target===this)closeSBSettings();});
 }
 init();
 </script>
