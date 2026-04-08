@@ -120,7 +120,7 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--f);
 /* icons */
 .tog{display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:4px;color:var(--tx2);font-size:16px;cursor:pointer;font-weight:700}
 .tog:hover{background:var(--bd2);color:var(--ac)}
-.ptog{display:flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:3px;background:var(--bd);color:var(--tx2);font-size:12px;font-weight:700;transition:transform .26s cubic-bezier(0.4,0,0.2,1);cursor:pointer}
+.ptog{display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:4px;background:var(--bd);color:var(--tx2);font-size:16px;font-weight:700;transition:transform .26s cubic-bezier(0.4,0,0.2,1);cursor:pointer}
 .ptog.cl{transform:rotate(-90deg)}
 .drag-handle{display:flex;align-items:center;justify-content:center;width:18px;height:22px;color:var(--tx3);font-size:12px;cursor:grab;letter-spacing:-2px}
 .drag-handle:hover{color:var(--tx2)}
@@ -903,8 +903,10 @@ function renderPHR(ph,idx){
     onclick="togPh('${ph.id}')"
     ondblclick="editPh('${ph.id}');event.stopPropagation()">
     <span class="drag-handle" data-ph-drag-id="${ph.id}" onclick="event.stopPropagation()" title="フェーズを移動">⠿</span>
-    <span class="ptog ${exp?'':'cl'}" onclick="event.stopPropagation();togPh('${ph.id}')">▾</span>
-    <span class="pn">${esc(ph.name)}</span>
+    <span style="grid-column:span 2;display:flex;align-items:center;gap:4px;min-width:0;overflow:hidden">
+      <span class="ptog ${exp?'':'cl'}" onclick="event.stopPropagation();togPh('${ph.id}')">▾</span>
+      <span class="pn">${esc(ph.name)}</span>
+    </span>
     <span style="overflow:hidden">${phStBadge}</span>
     <span class="td">${fmt(sd)}</span>
     <span class="td">${fmt(ed)}</span>
