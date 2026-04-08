@@ -458,7 +458,7 @@ const SB_URL_LS='gp6_sb_url',SB_KEY_LS='gp6_sb_key';
 // ── Supabase接続情報（共通設定）──
 const _SB_URL='https://pkhkigrucmulzscudynz.supabase.co';
 const _SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBraGtpZ3J1Y211bHpzY3VkeW56Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4ODA1MTgsImV4cCI6MjA5MDQ1NjUxOH0.ykxMJmrqaTOzcK631cuqZK3eL1PtSVq7bbomqnr-VxE';
-let sbClient=null,sbTimer=null;
+let sbClient=null,sbTimer=null,sbLoadedAt=null;
 
 function sbDot(s){const e=document.getElementById('sb-ind');if(e){e.className='sb-dot'+(s?' '+s:'');}}
 
@@ -476,6 +476,7 @@ async function sbLoad(){
     if(data.projects)S.pjs=data.projects;
     S.cur=data.cur_project||null;
     if(S.cur&&!S.pjs[S.cur])S.cur=null;
+    sbLoadedAt=data.updated_at||null;
     sbDot('ok');return true;
   }catch(e){sbDot('err');return false;}
 }
@@ -483,7 +484,28 @@ async function sbLoad(){
 async function sbSaveNow(){
   if(!sbClient)return;
   try{
-    const{error}=await sbClient.from('gantt_data').upsert({id:'gp6',projects:S.pjs,cur_project:S.cur||'',updated_at:new Date().toISOString()},{onConflict:'id'});
+    // コンフリクトチェック: 自分がロードした後にDBが更新されていないか確認
+    if(sbLoadedAt){
+      const{data:latest}=await sbClient.from('gantt_data').select('updated_at').eq('id','gp6').maybeSingle();
+      if(latest&&latest.updated_at&&latest.updated_at!==sbLoadedAt){
+        // DB側が新しい → 警告ダイアログ
+        const msg=`⚠️ 別のPCでデータが更新されています。\n\n`+
+          `DB更新日時: ${new Date(latest.updated_at).toLocaleString('ja-JP')}\n\n`+
+          `このまま上書きすると他PCの変更が失われます。\n`+
+          `「OK」→ 上書き保存（他PCの変更を無視）\n`+
+          `「キャンセル」→ 保存を中止してページをリロード`;
+        if(!confirm(msg)){
+          // キャンセル → DBの最新データをリロード
+          sbLoadedAt=null;
+          const ok=await sbLoad();
+          if(ok){renderPJS();renderAll();updateFAs();}
+          return;
+        }
+      }
+    }
+    const nowISO=new Date().toISOString();
+    const{error}=await sbClient.from('gantt_data').upsert({id:'gp6',projects:S.pjs,cur_project:S.cur||'',updated_at:nowISO},{onConflict:'id'});
+    if(!error)sbLoadedAt=nowISO;
     sbDot(error?'err':'ok');
   }catch(e){sbDot('err');}
 }
