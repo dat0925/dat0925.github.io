@@ -396,16 +396,49 @@ const AUTH_DAYS=3;
     <input type="text" id="sb-key" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
     <details style="margin-top:2px;margin-bottom:10px">
       <summary style="font-size:11px;color:var(--tx3);cursor:pointer;user-select:none">▶ Supabase SQLセットアップ（初回のみ実行）</summary>
-      <div id="sb-sql">create table if not exists gantt_data (
+      <div id="sb-sql">-- ① プロジェクトテーブル
+create table if not exists gp6_projects (
   id text primary key,
-  projects jsonb default '{}'::jsonb,
-  cur_project text default '',
+  name text not null,
+  sort_order int default 0,
+  created_at timestamptz default now()
+);
+alter table gp6_projects disable row level security;
+
+-- ② フェーズテーブル
+create table if not exists gp6_phases (
+  id text primary key,
+  project_id text references gp6_projects(id) on delete cascade,
+  name text not null,
+  start_date date,
+  end_date date,
+  sort_order int default 0
+);
+alter table gp6_phases disable row level security;
+
+-- ③ タスクテーブル
+create table if not exists gp6_tasks (
+  id text primary key,
+  project_id text references gp6_projects(id) on delete cascade,
+  phase_id text references gp6_phases(id) on delete set null,
+  parent_id text references gp6_tasks(id) on delete set null,
+  name text not null,
+  start_date date,
+  end_date date,
+  completed_date date,
+  status text default 'todo',
+  assignee text default '',
+  effort numeric default 1,
+  memo text default '',
+  sort_order int default 0,
   updated_at timestamptz default now()
 );
--- テーブルに初期行を挿入
-insert into gantt_data (id) values ('gp6') on conflict do nothing;
--- RLS無効化（簡易設定）
-alter table gantt_data disable row level security;</div>
+alter table gp6_tasks disable row level security;
+
+-- ④ Realtime有効化
+alter publication supabase_realtime add table gp6_projects;
+alter publication supabase_realtime add table gp6_phases;
+alter publication supabase_realtime add table gp6_tasks;</div>
     </details>
     <div id="sb-msg" style="font-size:11px;min-height:16px;margin-bottom:10px"></div>
     <div style="display:flex;gap:8px;justify-content:flex-end">
@@ -458,61 +491,87 @@ const SB_URL_LS='gp6_sb_url',SB_KEY_LS='gp6_sb_key';
 // ── Supabase接続情報（共通設定）──
 const _SB_URL='https://pkhkigrucmulzscudynz.supabase.co';
 const _SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBraGtpZ3J1Y211bHpzY3VkeW56Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4ODA1MTgsImV4cCI6MjA5MDQ1NjUxOH0.ykxMJmrqaTOzcK631cuqZK3eL1PtSVq7bbomqnr-VxE';
-let sbClient=null,sbTimer=null,sbLoadedAt=null;
+let sbClient=null,sbRealtime=null;
 
 function sbDot(s){const e=document.getElementById('sb-ind');if(e){e.className='sb-dot'+(s?' '+s:'');}}
 
 function initSB(){
-  try{sbClient=supabase.createClient(_SB_URL,_SB_KEY);return true;}catch(e){sbClient=null;return false;}
+  try{sbClient=supabase.createClient(_SB_URL,_SB_KEY,{realtime:{params:{eventsPerSecond:10}}});return true;}catch(e){sbClient=null;return false;}
 }
 
+// ── 全データ読み込み（起動時） ──
 async function sbLoad(){
   if(!sbClient)return false;
   try{
     sbDot('busy');
-    const{data,error}=await sbClient.from('gantt_data').select('*').eq('id','gp6').maybeSingle();
-    if(error){sbDot('err');return false;}
-    if(!data){sbDot('ok');return false;}
-    if(data.projects)S.pjs=data.projects;
-    S.cur=data.cur_project||null;
-    if(S.cur&&!S.pjs[S.cur])S.cur=null;
-    sbLoadedAt=data.updated_at||null;
-    sbDot('ok');return true;
+    const[{data:pjRows,error:e1},{data:phRows,error:e2},{data:tkRows,error:e3}]=await Promise.all([
+      sbClient.from('gp6_projects').select('*').order('sort_order'),
+      sbClient.from('gp6_phases').select('*').order('sort_order'),
+      sbClient.from('gp6_tasks').select('*').order('sort_order'),
+    ]);
+    if(e1||e2||e3){sbDot('err');return false;}
+    S.pjs={};
+    (pjRows||[]).forEach(r=>{S.pjs[r.id]={name:r.name,tasks:[],phases:[]};});
+    (phRows||[]).forEach(r=>{if(S.pjs[r.project_id])S.pjs[r.project_id].phases.push({id:r.id,name:r.name,startDate:r.start_date,endDate:r.end_date});});
+    (tkRows||[]).forEach(r=>{if(S.pjs[r.project_id])S.pjs[r.project_id].tasks.push({id:r.id,phaseId:r.phase_id,parentId:r.parent_id,name:r.name,startDate:r.start_date,endDate:r.end_date,completedDate:r.completed_date,status:r.status,assignee:r.assignee,effort:r.effort,memo:r.memo,updatedAt:r.updated_at});});
+    sbDot('ok');
+    sbSubscribe();
+    return true;
   }catch(e){sbDot('err');return false;}
 }
 
-async function sbSaveNow(){
+// ── Realtime購読（他PCの変更を自動反映） ──
+function sbSubscribe(){
+  if(sbRealtime)sbClient.removeChannel(sbRealtime);
+  sbRealtime=sbClient.channel('gp6-realtime')
+    .on('postgres_changes',{event:'*',schema:'public',table:'gp6_projects'},()=>sbReload())
+    .on('postgres_changes',{event:'*',schema:'public',table:'gp6_phases'},()=>sbReload())
+    .on('postgres_changes',{event:'*',schema:'public',table:'gp6_tasks'},()=>sbReload())
+    .subscribe(status=>{sbDot(status==='SUBSCRIBED'?'ok':status==='CLOSED'?'':'busy');});
+}
+let _reloadTimer=null;
+async function sbReload(){
+  clearTimeout(_reloadTimer);
+  _reloadTimer=setTimeout(async()=>{
+    const ok=await sbLoad();
+    if(ok){renderPJS();updateFAs();renderAll();}
+  },300);
+}
+
+// ── 行単位の保存関数群 ──
+async function sbSavePJ(id){
   if(!sbClient)return;
-  try{
-    // コンフリクトチェック: 自分がロードした後にDBが更新されていないか確認
-    if(sbLoadedAt){
-      const{data:latest}=await sbClient.from('gantt_data').select('updated_at').eq('id','gp6').maybeSingle();
-      if(latest&&latest.updated_at&&latest.updated_at!==sbLoadedAt){
-        // DB側が新しい → 警告ダイアログ
-        const msg=`⚠️ 別のPCでデータが更新されています。\n\n`+
-          `DB更新日時: ${new Date(latest.updated_at).toLocaleString('ja-JP')}\n\n`+
-          `このまま上書きすると他PCの変更が失われます。\n`+
-          `「OK」→ 上書き保存（他PCの変更を無視）\n`+
-          `「キャンセル」→ 保存を中止してページをリロード`;
-        if(!confirm(msg)){
-          // キャンセル → DBの最新データをリロード
-          sbLoadedAt=null;
-          const ok=await sbLoad();
-          if(ok){renderPJS();renderAll();updateFAs();}
-          return;
-        }
-      }
-    }
-    const nowISO=new Date().toISOString();
-    const{error}=await sbClient.from('gantt_data').upsert({id:'gp6',projects:S.pjs,cur_project:S.cur||'',updated_at:nowISO},{onConflict:'id'});
-    if(!error)sbLoadedAt=nowISO;
-    sbDot(error?'err':'ok');
-  }catch(e){sbDot('err');}
+  const p=S.pjs[id];if(!p)return;
+  const{error}=await sbClient.from('gp6_projects').upsert({id,name:p.name,sort_order:Object.keys(S.pjs).indexOf(id)},{onConflict:'id'});
+  sbDot(error?'err':'ok');
+}
+async function sbDeletePJ(id){
+  if(!sbClient)return;
+  await sbClient.from('gp6_projects').delete().eq('id',id);
+}
+async function sbSavePH(ph,projectId){
+  if(!sbClient)return;
+  const p=S.pjs[projectId];if(!p)return;
+  const{error}=await sbClient.from('gp6_phases').upsert({id:ph.id,project_id:projectId,name:ph.name,start_date:ph.startDate||null,end_date:ph.endDate||null,sort_order:p.phases.findIndex(x=>x.id===ph.id)},{onConflict:'id'});
+  sbDot(error?'err':'ok');
+}
+async function sbDeletePH(id){
+  if(!sbClient)return;
+  await sbClient.from('gp6_phases').delete().eq('id',id);
+}
+async function sbSaveTask(t,projectId){
+  if(!sbClient)return;
+  const p=S.pjs[projectId];if(!p)return;
+  const{error}=await sbClient.from('gp6_tasks').upsert({id:t.id,project_id:projectId,phase_id:t.phaseId||null,parent_id:t.parentId||null,name:t.name,start_date:t.startDate||null,end_date:t.endDate||null,completed_date:t.completedDate||null,status:t.status,assignee:t.assignee||'',effort:t.effort||1,memo:t.memo||'',sort_order:p.tasks.findIndex(x=>x.id===t.id),updated_at:new Date().toISOString()},{onConflict:'id'});
+  sbDot(error?'err':'ok');
+}
+async function sbDeleteTask(id){
+  if(!sbClient)return;
+  await sbClient.from('gp6_tasks').delete().eq('id',id);
 }
 
 function save(){
   try{localStorage.setItem('gp6',JSON.stringify(S.pjs));localStorage.setItem('gp6c',S.cur||'')}catch(e){}
-  if(sbClient){clearTimeout(sbTimer);sbTimer=setTimeout(sbSaveNow,800);}
 }
 
 function openSBSettings(){
@@ -539,7 +598,8 @@ async function connectSB(){
     }
     localStorage.setItem(SB_URL_LS,_SB_URL);localStorage.setItem(SB_KEY_LS,_SB_KEY);
     sbClient=c;
-    await sbSaveNow();
+    await migrateFromLegacy();
+    await sbLoad();
     msg.style.color='var(--gn)';msg.textContent='接続成功！データを同期しました。';
     setTimeout(closeSBSettings,1500);
   }catch(e){msg.style.color='var(--rd)';msg.textContent='エラー: '+e.message;sbDot('err');}
@@ -574,7 +634,7 @@ function addPJ(){
   const id='pj_'+Date.now();
   S.pjs[id]={name:n,tasks:[],phases:[]};
   document.getElementById('pjname').value='';
-  save();renderPJS();switchPJ(id);
+  save();sbSavePJ(id);renderPJS();switchPJ(id);
 }
 function switchPJ(id){
   S.cur=id||null;S.sel.clear();S.exp.clear();
@@ -613,7 +673,7 @@ function delConfirm(){
     return;
   }
   document.getElementById('del-modal').classList.remove('on');
-  delete S.pjs[S.cur];S.cur=null;save();renderPJS();renderAll();
+  const _delId=S.cur;delete S.pjs[_delId];S.cur=null;save();sbDeletePJ(_delId);renderPJS();renderAll();
 }
 function renderPJS(){
   const sel=document.getElementById('pjsel');
@@ -767,7 +827,7 @@ function submitInlineAdd(){
   p.tasks.push(t);
   if(parentId) S.exp.add('c_'+parentId);
   inlineAddParent=null;inlineAddAfterIdx=-1;
-  save();updateFAs();renderAll();
+  save();sbSaveTask(t,S.cur);updateFAs();renderAll();
 }
 
 function renderPHR(ph,idx){
@@ -855,7 +915,7 @@ function setStatus(status){
     if(status!=='done')t.completedDate=null;
     t.updatedAt=td();
   }
-  closeStPopup();save();renderAll();
+  closeStPopup();save();{const _t=stPopTarget?pj()?.tasks.find(x=>x.id===stPopTarget):null;if(_t)sbSaveTask(_t,S.cur);}renderAll();
 }
 document.addEventListener('click',e=>{
   if(!e.target.closest('.stbdg')&&!e.target.closest('.st-popup'))closeStPopup();
@@ -960,7 +1020,7 @@ function rowDragEnd(){
         srcTask.parentId=null;
       }
     }
-    save();
+    save();{const _cur=S.cur;pj()?.tasks.forEach(t=>sbSaveTask(t,_cur));}
   }
   rdrag.active=false;rdrag.taskId=null;rdrag.dropEl=null;
   renderAll();
@@ -990,7 +1050,7 @@ function toggleParentChild(taskId){
       }
     }
   }
-  save();renderAll();
+  save();{const _cur=S.cur;pj()?.tasks.forEach(t=>sbSaveTask(t,_cur));pj()?.phases.forEach(ph=>sbSavePH(ph,_cur));}renderAll();
 }
 
 // ══════════════════════════════════════════
@@ -1007,7 +1067,7 @@ function applyBulk(){
   const st=document.getElementById('bst').value;if(!st)return;
   const p=pj();if(!p)return;
   p.tasks.forEach(t=>{if(S.sel.has(t.id)){t.status=st;if(st==='done'&&!t.completedDate)t.completedDate=td();if(st!=='done')t.completedDate=null;t.updatedAt=td();}});
-  save();renderAll();document.getElementById('bst').value='';
+  save();{const _cur=S.cur;p.tasks.forEach(t=>{if(S.sel.has(t.id))sbSaveTask(t,_cur);});}renderAll();document.getElementById('bst').value='';
 }
 
 // ══════════════════════════════════════════
@@ -1328,7 +1388,7 @@ function initChartDrag(){
     if(!cdrag.active)return;
     cdrag.active=false;
     const p=pj();
-    if(p){const t=p.tasks.find(t=>t.id===cdrag.taskId);if(t)t.updatedAt=td();save();}
+    if(p){const t=p.tasks.find(t=>t.id===cdrag.taskId);if(t){t.updatedAt=td();save();sbSaveTask(t,S.cur);}}
     renderAll();canvas.style.cursor='default';
   };
   document.addEventListener('mouseup',endCDrag);
@@ -1459,7 +1519,7 @@ function subTask(){
   const p=pj();
   if(mMode==='addTask')p.tasks.push(t);
   else{const i=p.tasks.findIndex(x=>x.id===mId);if(i>=0)p.tasks[i]=t;}
-  save();closeM();updateFAs();renderAll();
+  save();sbSaveTask(t,S.cur);closeM();updateFAs();renderAll();
 }
 function subPh(){
   const name=document.getElementById('fn').value.trim();if(!name)return alert('フェーズ名を入力してください');
@@ -1469,7 +1529,7 @@ function subPh(){
   const p=pj();
   if(mMode==='addPh'){p.phases.push(ph);S.exp.add(ph.id);}
   else{const i=p.phases.findIndex(x=>x.id===mId);if(i>=0)p.phases[i]=ph;}
-  save();closeM();renderAll();
+  save();sbSavePH(ph,S.cur);closeM();renderAll();
 }
 function dupTask(id){
   const p=pj();if(!p)return;
@@ -1477,7 +1537,7 @@ function dupTask(id){
   const nt={...t,id:'t_'+Date.now()+'_'+Math.random().toString(36).slice(2,5),name:t.name+' (複製)',completedDate:null,status:t.status==='done'?'todo':t.status,updatedAt:td()};
   const idx=p.tasks.findIndex(x=>x.id===id);
   p.tasks.splice(idx+1,0,nt);
-  save();renderAll();
+  save();sbSaveTask(nt,S.cur);renderAll();
 }
 
 // ══════════════════════════════════════════
@@ -1643,7 +1703,7 @@ function importCSV(ev){
       const p=pj();
       if(confirm(`${nt.length}件タスク、${np.length}件フェーズ。追加統合しますか？（キャンセル=置き換え）`)){p.tasks=[...p.tasks,...nt];p.phases=[...p.phases,...np];}
       else{p.tasks=nt;p.phases=np;}
-      save();updateFAs();renderAll();alert('インポート完了');
+      save();{const _cur=S.cur;pj()?.tasks.forEach(t=>sbSaveTask(t,_cur));pj()?.phases.forEach(ph=>sbSavePH(ph,_cur));}updateFAs();renderAll();alert('インポート完了');
     }catch(err){alert('CSVエラー: '+err.message);}
     ev.target.value='';
   };
@@ -1719,9 +1779,32 @@ function createDemo(){
 // ══════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════
+// ── 旧gantt_dataから新テーブルへの移行（初回のみ） ──
+async function migrateFromLegacy(){
+  if(!sbClient)return;
+  // 新テーブルにデータが既にあれば移行済みとみなす
+  const{data:existing}=await sbClient.from('gp6_projects').select('id').limit(1);
+  if(existing&&existing.length>0)return;
+  // 旧テーブルからデータ取得
+  const{data:legacy}=await sbClient.from('gantt_data').select('*').eq('id','gp6').maybeSingle();
+  if(!legacy||!legacy.projects)return;
+  const pjs=legacy.projects;
+  for(const[pjId,pj] of Object.entries(pjs)){
+    await sbClient.from('gp6_projects').upsert({id:pjId,name:pj.name,sort_order:Object.keys(pjs).indexOf(pjId)},{onConflict:'id'});
+    for(const[i,ph] of (pj.phases||[]).entries()){
+      await sbClient.from('gp6_phases').upsert({id:ph.id,project_id:pjId,name:ph.name,start_date:ph.startDate||null,end_date:ph.endDate||null,sort_order:i},{onConflict:'id'});
+    }
+    for(const[i,t] of (pj.tasks||[]).entries()){
+      await sbClient.from('gp6_tasks').upsert({id:t.id,project_id:pjId,phase_id:t.phaseId||null,parent_id:t.parentId||null,name:t.name,start_date:t.startDate||null,end_date:t.endDate||null,completed_date:t.completedDate||null,status:t.status||'todo',assignee:t.assignee||'',effort:t.effort||1,memo:t.memo||'',sort_order:i,updated_at:t.updatedAt||new Date().toISOString()},{onConflict:'id'});
+    }
+  }
+  console.log('✅ 旧データを新テーブルに移行しました');
+}
+
 async function init(){
   load();
   if(initSB()){
+    await migrateFromLegacy();
     const ok=await sbLoad();
     if(!ok&&Object.keys(S.pjs).length===0)createDemo();
   } else {
