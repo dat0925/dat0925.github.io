@@ -159,9 +159,11 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--f);
 .bdg.todo{background:rgba(90,100,120,.25);color:#5a6478}.bdg.inprogress{background:var(--ac2);color:var(--ac)}
 .bdg.requested{background:rgba(217,119,6,.15);color:var(--or)}.bdg.done{background:rgba(22,163,74,.15);color:var(--gn)}.bdg.cancelled{background:rgba(220,38,38,.15);color:var(--rd)}
 /* MODAL */
-#ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:400;align-items:center;justify-content:center;padding:12px}
+#ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,0);z-index:400;align-items:center;justify-content:center;padding:12px;transition:background .22s ease}
 #ov.on{display:flex}
-.mo{background:var(--s1);border:1px solid var(--bd2);border-radius:10px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+#ov.ani{background:rgba(0,0,0,.6)}
+.mo{background:var(--s1);border:1px solid var(--bd2);border-radius:10px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.4);transform:translateY(18px) scale(.97);opacity:0;transition:transform .25s cubic-bezier(0.34,1.56,0.64,1),opacity .22s ease}
+.mo.ani{transform:translateY(0) scale(1);opacity:1}
 .mh{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--bd)}
 .mt{font-size:13px;font-weight:600}.mb{padding:14px 16px}.mf{display:flex;justify-content:flex-end;gap:8px;padding:12px 16px;border-top:1px solid var(--bd)}
 .fl{display:block;font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
@@ -1751,7 +1753,7 @@ function showAddTask(pid=''){
   mMode='addTask';mId=null;
   document.getElementById('mtitle').textContent=pid?'サブタスク追加':'タスク追加';
   document.getElementById('mbody').innerHTML=tForm(null,pid);
-  document.getElementById('ov').classList.add('on');
+  openOv();
   updateAsgDatalist();
 }
 function showAddPhase(){
@@ -1759,14 +1761,14 @@ function showAddPhase(){
   mMode='addPh';mId=null;
   document.getElementById('mtitle').textContent='フェーズ追加';
   document.getElementById('mbody').innerHTML=phForm(null);
-  document.getElementById('ov').classList.add('on');
+  openOv();
 }
 function editTask(id){
   const t=tasks().find(t=>t.id===id);if(!t)return;
   mMode='editTask';mId=id;
   document.getElementById('mtitle').textContent='タスク編集';
   document.getElementById('mbody').innerHTML=tForm(t,t.parentId||'');
-  document.getElementById('ov').classList.add('on');
+  openOv();
   updateAsgDatalist();
 }
 function editPh(id){
@@ -1774,9 +1776,28 @@ function editPh(id){
   mMode='editPh';mId=id;
   document.getElementById('mtitle').textContent='フェーズ編集';
   document.getElementById('mbody').innerHTML=phForm(ph);
-  document.getElementById('ov').classList.add('on');
+  openOv();
 }
-function closeM(){document.getElementById('ov').classList.remove('on');mMode=mId=null;}
+function openOv(){
+  const ov=document.getElementById('ov');
+  const mo=ov.querySelector('.mo');
+  ov.style.display='flex';
+  requestAnimationFrame(()=>{
+    ov.classList.add('ani');
+    mo.classList.add('ani');
+  });
+}
+function closeM(){
+  const ov=document.getElementById('ov');
+  const mo=ov.querySelector('.mo');
+  ov.classList.remove('ani');
+  mo.classList.remove('ani');
+  setTimeout(()=>{
+    ov.style.display='none';
+    ov.classList.remove('on');
+    mMode=mId=null;
+  },240);
+}
 
 function tForm(t,pid=''){
   const phs=phases();
