@@ -292,6 +292,8 @@ const AUTH_DAYS=3;
     </div>
     <button class="btn" onclick="showAddTask()">+ タスク</button>
     <button class="btn" onclick="showAddPhase()">+ フェーズ</button>
+    <button class="btn" onclick="expandAllPh()" title="フェーズを全て開く">▾全開</button>
+    <button class="btn" onclick="collapseAllPh()" title="フェーズを全て閉じる">▸全閉</button>
     <button class="btn" onclick="document.getElementById('csi').click()">↑CSV</button>
     <input type="file" id="csi" accept=".csv" style="display:none" onchange="importCSV(event)">
     <button class="btn" onclick="exportCSV()">↓CSV</button>
@@ -646,7 +648,10 @@ function addPJ(){
 }
 function switchPJ(id){
   S.cur=id||null;S.sel.clear();S.exp.clear();
-  if(id)phases().forEach(p=>S.exp.add(p.id));
+  if(id){
+    // localStorageに保存済みの開閉状態があれば復元、なければ全開
+    if(!loadExp())phases().forEach(p=>S.exp.add(p.id));
+  }
   save();renderPJS();updateFAs();renderAll();
 }
 function deletePJ(){
@@ -1037,8 +1042,12 @@ function rowDragEnd(){
 // ══════════════════════════════════════════
 // PARENT/CHILD TOGGLE
 // ══════════════════════════════════════════
-function togPh(id){S.exp.has(id)?S.exp.delete(id):S.exp.add(id);renderTP();drawBody();}
-function togC(id){const k='c_'+id;S.exp.has(k)?S.exp.delete(k):S.exp.add(k);renderTP();drawBody();}
+function togPh(id){S.exp.has(id)?S.exp.delete(id):S.exp.add(id);saveExp();renderTP();drawBody();}
+function togC(id){const k='c_'+id;S.exp.has(k)?S.exp.delete(k):S.exp.add(k);saveExp();renderTP();drawBody();}
+function expandAllPh(){phases().forEach(p=>S.exp.add(p.id));saveExp();renderTP();drawBody();}
+function collapseAllPh(){phases().forEach(p=>S.exp.delete(p.id));saveExp();renderTP();drawBody();}
+function saveExp(){try{const key='gp6_exp_'+(S.cur||'');localStorage.setItem(key,JSON.stringify([...S.exp]));}catch(e){}}
+function loadExp(){try{const key='gp6_exp_'+(S.cur||'');const d=localStorage.getItem(key);if(d){S.exp=new Set(JSON.parse(d));return true;}}catch(e){}return false;}
 
 function toggleParentChild(taskId){
   const p=pj();if(!p)return;
@@ -1818,7 +1827,7 @@ async function init(){
   } else {
     if(Object.keys(S.pjs).length===0)createDemo();
   }
-  if(S.cur)phases().forEach(p=>S.exp.add(p.id));
+  if(S.cur){if(!loadExp())phases().forEach(p=>S.exp.add(p.id));}
   S.sd=addD(td(),-7);
   renderPJS();updateFAs();renderAll();
   initSync();
