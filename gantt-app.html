@@ -321,7 +321,7 @@ const AUTH_DAYS=3;
     <button class="btn" onclick="goToday()">Today</button>
     <button class="btn" onclick="nav(-1)">◀</button>
     <button class="btn" onclick="nav(1)">▶</button>
-    <button class="btn" onclick="openSBSettings()" title="Supabase DB接続設定" id="sb-btn" style="display:none"><span class="sb-dot" id="sb-ind"></span>☁ DB</button>
+    <span id="sb-status" title="DB同期状態" style="font-size:11px;color:var(--tx3);display:flex;align-items:center;gap:4px;padding:0 4px"><span class="sb-dot" id="sb-ind"></span><span id="sb-label">接続中…</span></span>
   </div>
 </div>
 <div id="main">
@@ -493,7 +493,12 @@ const _SB_URL='https://pkhkigrucmulzscudynz.supabase.co';
 const _SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBraGtpZ3J1Y211bHpzY3VkeW56Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4ODA1MTgsImV4cCI6MjA5MDQ1NjUxOH0.ykxMJmrqaTOzcK631cuqZK3eL1PtSVq7bbomqnr-VxE';
 let sbClient=null,sbRealtime=null;
 
-function sbDot(s){const e=document.getElementById('sb-ind');if(e){e.className='sb-dot'+(s?' '+s:'');}}
+function sbDot(s){
+  const e=document.getElementById('sb-ind');
+  if(e)e.className='sb-dot'+(s?' '+s:'');
+  const l=document.getElementById('sb-label');
+  if(l)l.textContent=s==='ok'?'✅ 保存済':s==='busy'?'⏳ 保存中…':s==='err'?'❌ 保存失敗':'接続中…';
+}
 
 function initSB(){
   try{sbClient=supabase.createClient(_SB_URL,_SB_KEY,{realtime:{params:{eventsPerSecond:10}}});return true;}catch(e){sbClient=null;return false;}
@@ -541,6 +546,7 @@ async function sbReload(){
 // ── 行単位の保存関数群 ──
 async function sbSavePJ(id){
   if(!sbClient)return;
+  sbDot('busy');
   const p=S.pjs[id];if(!p)return;
   const{error}=await sbClient.from('gp6_projects').upsert({id,name:p.name,sort_order:Object.keys(S.pjs).indexOf(id)},{onConflict:'id'});
   sbDot(error?'err':'ok');
@@ -551,6 +557,7 @@ async function sbDeletePJ(id){
 }
 async function sbSavePH(ph,projectId){
   if(!sbClient)return;
+  sbDot('busy');
   const p=S.pjs[projectId];if(!p)return;
   const{error}=await sbClient.from('gp6_phases').upsert({id:ph.id,project_id:projectId,name:ph.name,start_date:ph.startDate||null,end_date:ph.endDate||null,sort_order:p.phases.findIndex(x=>x.id===ph.id)},{onConflict:'id'});
   sbDot(error?'err':'ok');
@@ -561,6 +568,7 @@ async function sbDeletePH(id){
 }
 async function sbSaveTask(t,projectId){
   if(!sbClient)return;
+  sbDot('busy');
   const p=S.pjs[projectId];if(!p)return;
   const{error}=await sbClient.from('gp6_tasks').upsert({id:t.id,project_id:projectId,phase_id:t.phaseId||null,parent_id:t.parentId||null,name:t.name,start_date:t.startDate||null,end_date:t.endDate||null,completed_date:t.completedDate||null,status:t.status,assignee:t.assignee||'',effort:t.effort||1,memo:t.memo||'',sort_order:p.tasks.findIndex(x=>x.id===t.id),updated_at:new Date().toISOString()},{onConflict:'id'});
   sbDot(error?'err':'ok');
@@ -915,7 +923,7 @@ function setStatus(status){
     if(status!=='done')t.completedDate=null;
     t.updatedAt=td();
   }
-  closeStPopup();save();{const _t=stPopTarget?pj()?.tasks.find(x=>x.id===stPopTarget):null;if(_t)sbSaveTask(_t,S.cur);}renderAll();
+  const _tid=stPopTarget;closeStPopup();save();{const _t=_tid?pj()?.tasks.find(x=>x.id===_tid):null;if(_t)sbSaveTask(_t,S.cur);}renderAll();
 }
 document.addEventListener('click',e=>{
   if(!e.target.closest('.stbdg')&&!e.target.closest('.st-popup'))closeStPopup();
