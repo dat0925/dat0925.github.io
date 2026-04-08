@@ -49,7 +49,7 @@
   --f:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic UI',sans-serif;
   --fm:'SF Mono',Menlo,Consolas,monospace;
   --row:35px;--phrow:35px;--hdr:52px;
-  --gc:16px 20px 22px 1fr 54px 52px 52px 24px 24px;
+  --gc:14px 18px 28px 1fr 58px 54px 54px 26px 26px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--f);font-size:13px;overflow:hidden}
@@ -129,7 +129,7 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--f);
 .dt-cell{cursor:pointer;border-radius:3px;padding:1px 3px}
 .dt-cell:hover{background:var(--bd2);color:var(--ac)}
 .ef{font-size:11px;color:var(--tx2);font-family:var(--fm);text-align:center}
-.pn{font-size:12px;font-weight:700;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pn{font-size:12px;font-weight:700;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:4px}
 .ic-btn{display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:4px;cursor:pointer;font-size:12px;color:var(--tx3);border:none;background:none;flex-shrink:0}
 .ic-btn:hover{background:var(--bd2);color:var(--ac)}
 /* CHART */
@@ -201,6 +201,7 @@ textarea.fc{min-height:60px;resize:vertical}.fg{margin-bottom:11px}.fr{display:g
 .sb-dot.ok{background:var(--gn)}.sb-dot.err{background:var(--rd)}.sb-dot.busy{background:var(--or)}
 /* MOBILE */
 @media(max-width:700px){
+  :root{--gc:14px 18px 28px 1fr 50px 46px 46px 22px 22px;}
   html,body{height:auto;overflow:auto}
   #main{height:auto;overflow:visible}
   #gw{flex-direction:column;height:auto;overflow:visible}
@@ -300,6 +301,7 @@ const AUTH_DAYS=3;
     <input type="file" id="csi" accept=".csv" style="display:none" onchange="importCSV(event)">
     <button class="btn" onclick="exportCSV()">↓CSV</button>
     <button class="btn d" onclick="deletePJ()">🗑</button>
+    <button class="btn" onclick="openMemberSettings()" title="担当者管理">👥</button>
   </div>
 </div>
 <div id="tabs">
@@ -358,7 +360,24 @@ const AUTH_DAYS=3;
   <div onclick="setStatus('done')">🟢 完了</div>
   <div onclick="setStatus('cancelled')">🔴 不用</div>
 </div>
-<!-- DATE PICKER POPUP -->
+<!-- MEMBER SETTINGS MODAL -->
+<div id="mbr-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:600;align-items:center;justify-content:center">
+  <div style="background:var(--s1);border:1px solid var(--bd2);border-radius:10px;padding:20px;width:320px;max-width:92vw">
+    <div style="font-size:14px;font-weight:700;margin-bottom:12px">👥 担当者管理</div>
+    <div style="font-size:11px;color:var(--tx3);margin-bottom:8px">プロジェクトのメンバーを登録すると、タスク編集時に候補として表示されます。</div>
+    <div id="mbr-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;min-height:32px"></div>
+    <div style="display:flex;gap:6px">
+      <input id="mbr-input" type="text" placeholder="名前を入力してEnter" style="flex:1;padding:6px 8px;border:1px solid var(--bd2);border-radius:5px;background:var(--s2);color:var(--tx);font-size:12px;outline:none"
+        onkeydown="if(event.key==='Enter')addMember()">
+      <button class="btn p" onclick="addMember()">追加</button>
+    </div>
+    <div style="margin-top:14px;font-size:11px;color:var(--tx3)">過去の入力履歴からも候補は自動表示されます。</div>
+    <div style="display:flex;justify-content:flex-end;margin-top:14px">
+      <button class="btn" onclick="closeMemberSettings()">閉じる</button>
+    </div>
+  </div>
+</div>
+<datalist id="asg-list"></datalist>
 <div class="st-popup" id="dtpop" style="display:none;padding:8px;min-width:160px">
   <div style="font-size:10px;color:var(--tx3);margin-bottom:4px" id="dtpop-label"></div>
   <input type="date" id="dtpop-input" style="width:100%;padding:4px;border:1px solid var(--bd2);border-radius:4px;background:var(--s2);color:var(--tx);font-size:12px;outline:none"
@@ -414,6 +433,8 @@ create table if not exists gp6_projects (
   created_at timestamptz default now()
 );
 alter table gp6_projects disable row level security;
+alter table gp6_projects add column if not exists members jsonb default '[]'::jsonb;
+alter table gp6_projects add column if not exists members jsonb default '[]'::jsonb;
 
 -- ② フェーズテーブル
 create table if not exists gp6_phases (
@@ -526,7 +547,7 @@ async function sbLoad(){
     ]);
     if(e1||e2||e3){sbDot('err');return false;}
     S.pjs={};
-    (pjRows||[]).forEach(r=>{S.pjs[r.id]={name:r.name,tasks:[],phases:[]};});
+    (pjRows||[]).forEach(r=>{S.pjs[r.id]={name:r.name,tasks:[],phases:[],members:r.members||[]};});
     (phRows||[]).forEach(r=>{if(S.pjs[r.project_id])S.pjs[r.project_id].phases.push({id:r.id,name:r.name,startDate:r.start_date,endDate:r.end_date});});
     (tkRows||[]).forEach(r=>{if(S.pjs[r.project_id])S.pjs[r.project_id].tasks.push({id:r.id,phaseId:r.phase_id,parentId:r.parent_id,name:r.name,startDate:r.start_date,endDate:r.end_date,completedDate:r.completed_date,status:r.status,assignee:r.assignee,effort:r.effort,memo:r.memo,updatedAt:r.updated_at});});
     sbDot('ok');
@@ -558,7 +579,7 @@ async function sbSavePJ(id){
   if(!sbClient)return;
   sbDot('busy');
   const p=S.pjs[id];if(!p)return;
-  const{error}=await sbClient.from('gp6_projects').upsert({id,name:p.name,sort_order:Object.keys(S.pjs).indexOf(id)},{onConflict:'id'});
+  const{error}=await sbClient.from('gp6_projects').upsert({id,name:p.name,sort_order:Object.keys(S.pjs).indexOf(id),members:p.members||[]},{onConflict:'id'});
   sbDot(error?'err':'ok');
 }
 async function sbDeletePJ(id){
@@ -943,7 +964,62 @@ document.addEventListener('click',e=>{
   if(!e.target.closest('.dt-cell')&&!e.target.closest('#dtpop'))closeDatePicker();
 });
 
-// ── 日付インライン編集 ──
+// ── 担当者管理 ──
+function getMembers(){
+  const p=pj();if(!p)return[];
+  if(!p.members)p.members=[];
+  return p.members;
+}
+function getMemberCandidates(){
+  // 登録メンバー + 過去の入力履歴をマージして重複排除
+  const registered=getMembers();
+  const history=[...new Set(tasks().map(t=>t.assignee).filter(Boolean))];
+  return [...new Set([...registered,...history])].sort();
+}
+function updateAsgDatalist(){
+  const dl=document.getElementById('asg-list');
+  if(!dl)return;
+  dl.innerHTML=getMemberCandidates().map(n=>`<option value="${esc(n)}">`).join('');
+}
+function openMemberSettings(){
+  if(!S.cur)return alert('プロジェクトを選択してください');
+  renderMemberList();
+  document.getElementById('mbr-modal').style.display='flex';
+  setTimeout(()=>document.getElementById('mbr-input').focus(),80);
+}
+function closeMemberSettings(){
+  document.getElementById('mbr-modal').style.display='none';
+  document.getElementById('mbr-input').value='';
+}
+function renderMemberList(){
+  const list=document.getElementById('mbr-list');
+  const members=getMembers();
+  list.innerHTML=members.length===0
+    ?'<span style="font-size:11px;color:var(--tx3)">まだ登録されていません</span>'
+    :members.map((m,i)=>`<span style="display:inline-flex;align-items:center;gap:4px;background:var(--s2);border:1px solid var(--bd2);border-radius:12px;padding:3px 10px;font-size:12px">${esc(m)}<button onclick="removeMember(${i})" style="background:none;border:none;cursor:pointer;color:var(--tx3);font-size:11px;padding:0;line-height:1">✕</button></span>`).join('');
+}
+function addMember(){
+  const inp=document.getElementById('mbr-input');
+  const name=inp.value.trim();if(!name)return;
+  const p=pj();if(!p)return;
+  if(!p.members)p.members=[];
+  if(!p.members.includes(name))p.members.push(name);
+  inp.value='';
+  save();sbSavePJ(S.cur);
+  renderMemberList();updateAsgDatalist();
+}
+function removeMember(idx){
+  const p=pj();if(!p||!p.members)return;
+  p.members.splice(idx,1);
+  save();sbSavePJ(S.cur);
+  renderMemberList();updateAsgDatalist();
+}
+// モーダルを開いた時にdatalistも更新
+document.addEventListener('click',e=>{
+  if(!e.target.closest('#mbr-modal')&&document.getElementById('mbr-modal').style.display==='flex'&&!e.target.closest('[onclick*="openMemberSettings"]'))closeMemberSettings();
+});
+
+
 let dtTarget={taskId:null,field:null};
 function openDatePicker(e,taskId,field){
   closeDatePicker();
@@ -1600,6 +1676,7 @@ function showAddTask(pid=''){
   document.getElementById('mtitle').textContent=pid?'サブタスク追加':'タスク追加';
   document.getElementById('mbody').innerHTML=tForm(null,pid);
   document.getElementById('ov').classList.add('on');
+  updateAsgDatalist();
 }
 function showAddPhase(){
   if(!S.cur)return alert('プロジェクトを選択してください');
@@ -1614,6 +1691,7 @@ function editTask(id){
   document.getElementById('mtitle').textContent='タスク編集';
   document.getElementById('mbody').innerHTML=tForm(t,t.parentId||'');
   document.getElementById('ov').classList.add('on');
+  updateAsgDatalist();
 }
 function editPh(id){
   const ph=phases().find(p=>p.id===id);if(!ph)return;
@@ -1635,7 +1713,7 @@ function tForm(t,pid=''){
 <div class="fg"><label class="fl">親タスク（設定すると子タスクになります）</label><select class="fc" id="fpar2"><option value="">なし（親タスク）</option>${ptOpts}</select></div>
 <div class="fr"><div class="fg"><label class="fl">開始日 *</label><input class="fc" type="date" id="fsd" value="${d.startDate}"></div><div class="fg"><label class="fl">終了予定日 *</label><input class="fc" type="date" id="fed" value="${d.endDate}"></div></div>
 <div class="fr"><div class="fg"><label class="fl">ステータス</label><select class="fc" id="fst2">${Object.entries(SL).map(([v,l])=>`<option value="${v}"${d.status===v?' selected':''}>${l}</option>`).join('')}</select></div><div class="fg"><label class="fl">工数（h）</label><input class="fc" type="number" id="fef" value="${d.effort||1}" min="0" step="0.5"></div></div>
-<div class="fr"><div class="fg"><label class="fl">担当者</label><input class="fc" id="fasg" value="${esc(d.assignee||'')}" placeholder="担当者名"></div><div class="fg"><label class="fl">完了日</label><input class="fc" type="date" id="fcd" value="${d.completedDate||''}"></div></div>
+<div class="fr"><div class="fg"><label class="fl">担当者 <span style="font-size:10px;color:var(--tx3);font-weight:400">（↓で候補表示）</span></label><input class="fc" id="fasg" value="${esc(d.assignee||'')}" placeholder="担当者名" list="asg-list" autocomplete="off"></div><div class="fg"><label class="fl">完了日</label><input class="fc" type="date" id="fcd" value="${d.completedDate||''}"></div></div>
 <div class="fg"><label class="fl">進捗メモ</label><textarea class="fc" id="fmo">${esc(d.memo||'')}</textarea></div>
 <input type="hidden" id="fpar" value="${pid}">`;
 }
