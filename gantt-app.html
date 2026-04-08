@@ -1057,23 +1057,32 @@ function rowDragEnd(){
         const srcTask=p.tasks.splice(srcIdx,1)[0];
         const newDstIdx=p.tasks.findIndex(t=>t.id===dropId);
         p.tasks.splice(newDstIdx,0,srcTask);
-        // 親子付け替え: ドロップ先が子タスクなら同じ親に
         const dstTask=p.tasks.find(t=>t.id===dropId);
+        const newPhaseId=dstTask?.phaseId||null;
+        const newParentId=dstTask?.parentId||null;
         if(dstTask&&dstTask.parentId){
+          // ドロップ先が子タスク → 同じ親・同じフェーズ
           srcTask.parentId=dstTask.parentId;
-          srcTask.phaseId=dstTask.phaseId;
-        } else if(dstTask&&!dstTask.parentId){
-          // ドロップ先がルートタスク → フェーズも合わせる
+          srcTask.phaseId=newPhaseId;
+        } else {
+          // ドロップ先がルートタスク or フェーズ → フェーズだけ合わせ、親は解除
           srcTask.parentId=null;
-          srcTask.phaseId=dstTask.phaseId;
+          srcTask.phaseId=newPhaseId;
         }
+        // 親タスクなら子タスクのphaseIdも連動更新
+        p.tasks.filter(t=>t.parentId===srcTask.id).forEach(child=>{
+          child.phaseId=srcTask.phaseId;
+        });
       }
     } else if(dropType==='ph'){
-      // フェーズ行にドロップ → そのフェーズに移動
+      // フェーズ行にドロップ → そのフェーズに移動（子タスクも連動）
       if(srcIdx>=0){
         const srcTask=p.tasks[srcIdx];
         srcTask.phaseId=dropId;
         srcTask.parentId=null;
+        p.tasks.filter(t=>t.parentId===srcTask.id).forEach(child=>{
+          child.phaseId=dropId;
+        });
       }
     }
     save();{const _cur=S.cur;pj()?.tasks.forEach(t=>sbSaveTask(t,_cur));}
