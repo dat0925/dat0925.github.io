@@ -114,9 +114,9 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--f);
 .st-popup div{padding:6px 12px;font-size:11px;cursor:pointer;transition:background .1s}
 .st-popup div:hover{background:var(--s2)}
 /* icons */
-.tog{display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:4px;color:var(--tx2);font-size:14px;cursor:pointer;font-weight:700}
+.tog{display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:4px;color:var(--tx2);font-size:16px;cursor:pointer;font-weight:700}
 .tog:hover{background:var(--bd2);color:var(--ac)}
-.ptog{display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:4px;background:var(--bd);color:var(--tx2);font-size:14px;font-weight:700;transition:transform .15s;cursor:pointer}
+.ptog{display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:4px;background:var(--bd);color:var(--tx2);font-size:16px;font-weight:700;transition:transform .15s;cursor:pointer}
 .ptog.cl{transform:rotate(-90deg)}
 .drag-handle{display:flex;align-items:center;justify-content:center;width:18px;height:22px;color:var(--tx3);font-size:12px;cursor:grab;letter-spacing:-2px}
 .drag-handle:hover{color:var(--tx2)}
@@ -126,6 +126,8 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--f);
 .tn{font-size:12px;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
 .tn.dn{text-decoration:line-through;color:var(--tx3)}
 .td{font-size:11px;color:var(--tx2);font-family:var(--fm);white-space:nowrap;overflow:hidden}
+.dt-cell{cursor:pointer;border-radius:3px;padding:1px 3px}
+.dt-cell:hover{background:var(--bd2);color:var(--ac)}
 .ef{font-size:11px;color:var(--tx2);font-family:var(--fm);text-align:center}
 .pn{font-size:12px;font-weight:700;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ic-btn{display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:4px;cursor:pointer;font-size:12px;color:var(--tx3);border:none;background:none;flex-shrink:0}
@@ -335,7 +337,7 @@ const AUTH_DAYS=3;
         <span></span><!-- expand -->
         <span>タスク名</span>
         <span>ステータス</span>
-        <span>開始</span><span>終了</span>
+        <span>開始日</span><span>終了日</span>
         <span></span><span></span>
       </div>
       <div id="tpb"></div>
@@ -355,6 +357,12 @@ const AUTH_DAYS=3;
   <div onclick="setStatus('requested')">🟡 依頼中</div>
   <div onclick="setStatus('done')">🟢 完了</div>
   <div onclick="setStatus('cancelled')">🔴 不用</div>
+</div>
+<!-- DATE PICKER POPUP -->
+<div class="st-popup" id="dtpop" style="display:none;padding:8px;min-width:160px">
+  <div style="font-size:10px;color:var(--tx3);margin-bottom:4px" id="dtpop-label"></div>
+  <input type="date" id="dtpop-input" style="width:100%;padding:4px;border:1px solid var(--bd2);border-radius:4px;background:var(--s2);color:var(--tx);font-size:12px;outline:none"
+    onchange="submitDatePicker()" onkeydown="if(event.key==='Escape')closeDatePicker()">
 </div>
 <div id="ov">
   <div class="mo">
@@ -858,7 +866,7 @@ function renderPHR(ph,idx){
   return `<div class="ph-r" data-idx="${idx}" data-type="ph" data-id="${ph.id}"
     onclick="togPh('${ph.id}')"
     ondblclick="editPh('${ph.id}');event.stopPropagation()">
-    <span class="drag-handle" onclick="event.stopPropagation()">⠿</span>
+    <span class="drag-handle" data-ph-drag-id="${ph.id}" onclick="event.stopPropagation()" title="フェーズを移動">⠿</span>
     <span></span>
     <span class="ptog ${exp?'':'cl'}" onclick="event.stopPropagation();togPh('${ph.id}')">▾</span>
     <span class="pn">${esc(ph.name)}</span>
@@ -894,8 +902,8 @@ function renderTR(t,ch=false,idx=0){
       <span class="tn${t.status==='done'?' dn':''}" ondblclick="event.stopPropagation();editTask('${t.id}')" title="${esc(t.name)}">${esc(t.name)}</span>
     </span>
     <span style="overflow:hidden"><span class="stbdg ${t.status}" onclick="event.stopPropagation();openStPopup(event,'${t.id}')">${SL[t.status]}</span></span>
-    <span class="td">${fmt(sd)}</span>
-    <span class="td">${fmt(ed)}</span>
+    <span class="td dt-cell" onclick="event.stopPropagation();openDatePicker(event,'${t.id}','start')" title="クリックで開始日編集">${fmt(sd)}</span>
+    <span class="td dt-cell" onclick="event.stopPropagation();openDatePicker(event,'${t.id}','end')" title="クリックで終了日編集">${fmt(ed)}</span>
     <button class="ic-btn" onclick="event.stopPropagation();editTask('${t.id}')" title="詳細編集">✏</button>
     <button class="ic-btn" onclick="event.stopPropagation();dupTask('${t.id}')" title="複製">⧉</button>
   </div>`;
@@ -932,15 +940,53 @@ function setStatus(status){
 }
 document.addEventListener('click',e=>{
   if(!e.target.closest('.stbdg')&&!e.target.closest('.st-popup'))closeStPopup();
+  if(!e.target.closest('.dt-cell')&&!e.target.closest('#dtpop'))closeDatePicker();
 });
 
-// ══════════════════════════════════════════
-// ROW DRAG (sort tasks)
+// ── 日付インライン編集 ──
+let dtTarget={taskId:null,field:null};
+function openDatePicker(e,taskId,field){
+  closeDatePicker();
+  const t=pj()?.tasks.find(x=>x.id===taskId);if(!t)return;
+  dtTarget={taskId,field};
+  const pop=document.getElementById('dtpop');
+  const lbl=document.getElementById('dtpop-label');
+  const inp=document.getElementById('dtpop-input');
+  lbl.textContent=field==='start'?'開始日':'終了日';
+  inp.value=field==='start'?(t.startDate||''):(t.endDate||'');
+  pop.style.display='block';
+  const r=e.target.getBoundingClientRect();
+  pop.style.left=Math.min(r.left,window.innerWidth-180)+'px';
+  pop.style.top=(r.bottom+2)+'px';
+  setTimeout(()=>inp.showPicker?.(),50);
+  e.stopPropagation();
+}
+function closeDatePicker(){
+  document.getElementById('dtpop').style.display='none';
+  dtTarget={taskId:null,field:null};
+}
+function submitDatePicker(){
+  const val=document.getElementById('dtpop-input').value;
+  if(!val||!dtTarget.taskId)return;
+  const p=pj();if(!p)return;
+  const t=p.tasks.find(x=>x.id===dtTarget.taskId);if(!t)return;
+  if(dtTarget.field==='start')t.startDate=val;
+  else t.endDate=val;
+  t.updatedAt=new Date().toISOString();
+  save();sbSaveTask(t,S.cur);
+  closeDatePicker();renderAll();
+}
+
+
 // ══════════════════════════════════════════
 function attachRowDragEvents(){
   document.querySelectorAll('.drag-handle[data-drag-id]').forEach(el=>{
     el.addEventListener('mousedown',rowDragStart);
     el.addEventListener('touchstart',rowDragStartTouch,{passive:false});
+  });
+  document.querySelectorAll('.drag-handle[data-ph-drag-id]').forEach(el=>{
+    el.addEventListener('mousedown',phDragStart);
+    el.addEventListener('touchstart',phDragStartTouch,{passive:false});
   });
 }
 
@@ -1017,12 +1063,9 @@ function rowDragEnd(){
           srcTask.parentId=dstTask.parentId;
           srcTask.phaseId=dstTask.phaseId;
         } else if(dstTask&&!dstTask.parentId){
-          // ドロップ先がルートタスクの場合は親を解除
-          // ただし既に子タスクだった場合のみ確認
-          if(srcTask.parentId){
-            srcTask.parentId=null;
-            srcTask.phaseId=dstTask.phaseId;
-          }
+          // ドロップ先がルートタスク → フェーズも合わせる
+          srcTask.parentId=null;
+          srcTask.phaseId=dstTask.phaseId;
         }
       }
     } else if(dropType==='ph'){
@@ -1337,6 +1380,76 @@ function drawBody(){
 }
 function rr(ctx,x,y,w,h,r){
   ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();
+}
+
+// ══════════════════════════════════════════
+// PHASE DRAG (sort phases)
+// ══════════════════════════════════════════
+let phdrag={active:false,phId:null,startY:0,dropEl:null};
+let phDropLine=null;
+
+function phDragStart(e){
+  const id=e.currentTarget.dataset.phDragId;
+  if(!id)return;
+  e.preventDefault();e.stopPropagation();
+  phdrag.active=true;phdrag.phId=id;phdrag.startY=e.clientY;
+  document.addEventListener('mousemove',phDragMove);
+  document.addEventListener('mouseup',phDragEnd);
+}
+function phDragStartTouch(e){
+  const id=e.currentTarget.dataset.phDragId;
+  if(!id)return;
+  e.preventDefault();e.stopPropagation();
+  phdrag.active=true;phdrag.phId=id;phdrag.startY=e.touches[0].clientY;
+  document.addEventListener('touchmove',phDragMoveTouch,{passive:false});
+  document.addEventListener('touchend',phDragEnd);
+}
+function phDragMove(e){if(!phdrag.active)return;phUpdateDrop(e.clientY);}
+function phDragMoveTouch(e){if(!phdrag.active)return;e.preventDefault();phUpdateDrop(e.touches[0].clientY);}
+function phUpdateDrop(clientY){
+  const rows=document.querySelectorAll('.ph-r');
+  if(phDropLine){phDropLine.remove();phDropLine=null;}
+  phdrag.dropEl=null;
+  let best=null,bestDist=Infinity;
+  rows.forEach(row=>{
+    if(row.dataset.id===phdrag.phId)return;
+    const r=row.getBoundingClientRect();
+    const mid=(r.top+r.bottom)/2;
+    const dist=Math.abs(clientY-mid);
+    if(dist<bestDist){bestDist=dist;best={row,above:clientY<mid};}
+  });
+  if(best){
+    phdrag.dropEl=best;
+    phDropLine=document.createElement('div');
+    phDropLine.style.cssText='position:fixed;left:0;right:0;height:2px;background:var(--ac);z-index:999;pointer-events:none';
+    const r=best.row.getBoundingClientRect();
+    phDropLine.style.top=(best.above?r.top:r.bottom)+'px';
+    document.body.appendChild(phDropLine);
+  }
+}
+function phDragEnd(){
+  document.removeEventListener('mousemove',phDragMove);
+  document.removeEventListener('mouseup',phDragEnd);
+  document.removeEventListener('touchmove',phDragMoveTouch);
+  document.removeEventListener('touchend',phDragEnd);
+  if(phDropLine){phDropLine.remove();phDropLine=null;}
+  if(phdrag.dropEl&&phdrag.phId){
+    const p=pj();if(!p){phdrag.active=false;return;}
+    const srcIdx=p.phases.findIndex(x=>x.id===phdrag.phId);
+    const dstIdx=p.phases.findIndex(x=>x.id===phdrag.dropEl.row.dataset.id);
+    if(srcIdx>=0&&dstIdx>=0&&srcIdx!==dstIdx){
+      const [moved]=p.phases.splice(srcIdx,1);
+      const newDst=phdrag.dropEl.above
+        ?p.phases.findIndex(x=>x.id===phdrag.dropEl.row.dataset.id)
+        :p.phases.findIndex(x=>x.id===phdrag.dropEl.row.dataset.id)+1;
+      p.phases.splice(newDst<0?p.phases.length:newDst,0,moved);
+      save();
+      const _cur=S.cur;
+      p.phases.forEach(ph=>sbSavePH(ph,_cur));
+    }
+  }
+  phdrag.active=false;phdrag.phId=null;phdrag.dropEl=null;
+  renderAll();
 }
 
 // ══════════════════════════════════════════
