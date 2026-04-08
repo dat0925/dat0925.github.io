@@ -903,8 +903,7 @@ function renderPHR(ph,idx){
     onclick="togPh('${ph.id}')"
     ondblclick="editPh('${ph.id}');event.stopPropagation()">
     <span class="drag-handle" data-ph-drag-id="${ph.id}" onclick="event.stopPropagation()" title="フェーズを移動">⠿</span>
-    <span></span>
-    <span class="ptog ${exp?'':'cl'}" onclick="event.stopPropagation();togPh('${ph.id}')">▾</span>
+    <span class="ptog ${exp?'':'cl'}" style="grid-column:span 2" onclick="event.stopPropagation();togPh('${ph.id}')">▾</span>
     <span class="pn">${esc(ph.name)}</span>
     <span style="overflow:hidden">${phStBadge}</span>
     <span class="td">${fmt(sd)}</span>
