@@ -116,7 +116,7 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--f);
 /* icons */
 .tog{display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:4px;color:var(--tx2);font-size:16px;cursor:pointer;font-weight:700}
 .tog:hover{background:var(--bd2);color:var(--ac)}
-.ptog{display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:4px;background:var(--bd);color:var(--tx2);font-size:16px;font-weight:700;transition:transform .15s;cursor:pointer}
+.ptog{display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:4px;background:var(--bd);color:var(--tx2);font-size:16px;font-weight:700;transition:transform .26s cubic-bezier(0.4,0,0.2,1);cursor:pointer}
 .ptog.cl{transform:rotate(-90deg)}
 .drag-handle{display:flex;align-items:center;justify-content:center;width:18px;height:22px;color:var(--tx3);font-size:12px;cursor:grab;letter-spacing:-2px}
 .drag-handle:hover{color:var(--tx2)}
@@ -1167,11 +1167,74 @@ function rowDragEnd(){
   renderAll();
 }
 
+
+// ══════════════════════════════════════════
+// ACCORDION ANIMATION
+// ══════════════════════════════════════════
+function animateRows(type, id, expanding, callback){
+  const DURATION = 260; // ms
+  const EASING   = 'cubic-bezier(0.4,0,0.2,1)';
+  const b = document.getElementById('tpb');
+
+  // 対象行を特定するフィルタ
+  function matchRow(el){
+    const tid = el.dataset.id;
+    const t   = tasks().find(x=>x.id===tid);
+    if(!t) return false;
+    return type==='ph' ? (t.phaseId===id && !t.parentId) : (t.parentId===id);
+  }
+
+  if(!expanding){
+    // ── 折りたたみ: アニメ→DOM削除 ──
+    const targets = [...b.querySelectorAll('.t-r')].filter(matchRow);
+    if(!targets.length){ renderTP(); callback && callback(); return; }
+    let done = 0;
+    targets.forEach(el=>{
+      const anim = el.animate(
+        [{height:'35px', opacity:'1', overflow:'hidden'},
+         {height:'0px',  opacity:'0', overflow:'hidden'}],
+        {duration: DURATION, easing: EASING, fill:'forwards'}
+      );
+      anim.onfinish = ()=>{
+        done++;
+        if(done === targets.length){
+          renderTP();
+          callback && callback();
+        }
+      };
+    });
+  } else {
+    // ── 展開: DOM追加→アニメ ──
+    renderTP();
+    const targets = [...b.querySelectorAll('.t-r')].filter(matchRow);
+    if(!targets.length){ callback && callback(); return; }
+    targets.forEach(el=>{
+      el.animate(
+        [{height:'0px', opacity:'0', overflow:'hidden'},
+         {height:'35px',opacity:'1', overflow:'hidden'}],
+        {duration: DURATION, easing: EASING, fill:'forwards'}
+      );
+    });
+    setTimeout(()=>{ callback && callback(); }, DURATION);
+  }
+}
+
 // ══════════════════════════════════════════
 // PARENT/CHILD TOGGLE
 // ══════════════════════════════════════════
-function togPh(id){S.exp.has(id)?S.exp.delete(id):S.exp.add(id);saveExp();renderTP();drawBody();}
-function togC(id){const k='c_'+id;S.exp.has(k)?S.exp.delete(k):S.exp.add(k);saveExp();renderTP();drawBody();}
+function togPh(id){
+  const expanding=!S.exp.has(id);
+  S.exp.has(id)?S.exp.delete(id):S.exp.add(id);
+  saveExp();
+  animateRows('ph',id,expanding,()=>drawBody());
+}
+function togC(id){
+  const k='c_'+id;
+  const expanding=!S.exp.has(k);
+  S.exp.has(k)?S.exp.delete(k):S.exp.add(k);
+  saveExp();
+  animateRows('c',id,expanding,()=>drawBody());
+}
 function expandAllPh(){phases().forEach(p=>S.exp.add(p.id));saveExp();renderTP();drawBody();}
 function collapseAllPh(){phases().forEach(p=>S.exp.delete(p.id));saveExp();renderTP();drawBody();}
 function saveExp(){try{const key='gp6_exp_'+(S.cur||'');localStorage.setItem(key,JSON.stringify([...S.exp]));}catch(e){}}
