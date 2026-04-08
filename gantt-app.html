@@ -162,8 +162,8 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--f);
 #ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,0);z-index:400;align-items:center;justify-content:center;padding:12px;transition:background .22s ease}
 #ov.on{display:flex}
 #ov.ani{background:rgba(0,0,0,.6)}
-.mo{background:var(--s1);border:1px solid var(--bd2);border-radius:10px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.4);transform:translateY(18px) scale(.97);opacity:0;transition:transform .25s cubic-bezier(0.34,1.56,0.64,1),opacity .22s ease}
-.mo.ani{transform:translateY(0) scale(1);opacity:1}
+.mo{background:var(--s1);border:1px solid var(--bd2);border-radius:10px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.4);transform:translateY(40px);opacity:0;transition:transform .3s cubic-bezier(0.22,1,0.36,1),opacity .25s ease}
+.mo.ani{transform:translateY(0);opacity:1}
 .mh{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--bd)}
 .mt{font-size:13px;font-weight:600}.mb{padding:14px 16px}.mf{display:flex;justify-content:flex-end;gap:8px;padding:12px 16px;border-top:1px solid var(--bd)}
 .fl{display:block;font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
@@ -1781,11 +1781,13 @@ function editPh(id){
 function openOv(){
   const ov=document.getElementById('ov');
   const mo=ov.querySelector('.mo');
+  mo.classList.remove('ani');
   ov.style.display='flex';
-  requestAnimationFrame(()=>{
+  // 2フレーム待ってからクラス追加（display反映を確実に待つ）
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
     ov.classList.add('ani');
     mo.classList.add('ani');
-  });
+  }));
 }
 function closeM(){
   const ov=document.getElementById('ov');
