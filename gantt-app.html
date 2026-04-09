@@ -415,6 +415,15 @@ const AUTH_DAYS=3;
       <button class="del-exec" onclick="delConfirm()">削除する</button>
     </div>
   </div>
+  <!-- 最終確認画面（暗証番号入力後 or タスク単体） -->
+  <div id="del-confirm2" style="display:none;flex-direction:column;align-items:center;gap:18px;padding:32px 28px;background:#fff;border:1px solid #e2e8f0;border-radius:14px;min-width:300px;max-width:380px;box-shadow:0 8px 40px rgba(0,0,0,.15)">
+    <div style="font-size:13px;font-weight:700;color:#dc2626">最終確認</div>
+    <div id="del-confirm2-msg" style="font-size:12px;color:#4b5563;text-align:center;line-height:1.8"></div>
+    <div style="display:flex;gap:10px;width:100%">
+      <button onclick="delCancel()" style="flex:1;padding:10px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid #e2e8f0;background:#f3f4f6;color:#6b7280">キャンセル</button>
+      <button onclick="delExec()" style="flex:1;padding:10px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:none;background:#dc2626;color:#fff">削除する</button>
+    </div>
+  </div>
   <!-- 削除完了画面 -->
   <div id="del-done" style="display:none;flex-direction:column;align-items:center;gap:18px;padding:32px 28px;background:#fff;border:1px solid #e2e8f0;border-radius:14px;min-width:300px;max-width:360px;box-shadow:0 8px 40px rgba(0,0,0,.15)">
     <div style="font-size:28px">✅</div>
@@ -706,20 +715,26 @@ function switchPJ(id){
 }
 function openDelModal(type, id, label){
   delTarget={type, id};
-  const titles={task:'タスクを削除', phase:'フェーズを削除', project:'プロジェクトを削除', bulk:'選択タスクを一括削除'};
-  document.getElementById('del-title').textContent='🗑 '+titles[type];
-  // task単体は暗証番号不要：確認メッセージのみ
-  const noPw = type==='task';
-  document.getElementById('del-msg').textContent=noPw
-    ? `「${label}」を削除します。この操作は元に戻せません。本当によいですか？`
-    : `「${label}」を削除します。この操作は元に戻せません。`;
-  document.getElementById('del-pw').value='';
-  document.getElementById('del-err').textContent='';
-  // 暗証番号欄・ラベルの表示切替
-  document.querySelector('#del-box .del-pw-label').style.display=noPw?'none':'';
-  document.querySelector('#del-box .del-pw-wrap').style.display=noPw?'none':'';
+  document.getElementById('del-confirm2').style.display='none';
+  document.getElementById('del-done').style.display='none';
+  if(type==='task'){
+    // タスク単体：いきなり最終確認へ
+    document.getElementById('del-box').style.display='none';
+    document.getElementById('del-confirm2-msg').textContent=`「${label}」を削除します。この操作は元に戻せません。本当によいですか？`;
+    document.getElementById('del-confirm2').style.display='flex';
+  } else {
+    // フェーズ・複数・プロジェクト：暗証番号入力
+    document.getElementById('del-box').style.display='';
+    const titles={phase:'フェーズを削除', project:'プロジェクトを削除', bulk:'選択タスクを一括削除'};
+    document.getElementById('del-title').textContent='🗑 '+titles[type];
+    document.getElementById('del-msg').textContent=`「${label}」を削除します。この操作は元に戻せません。`;
+    document.getElementById('del-pw').value='';
+    document.getElementById('del-err').textContent='';
+    document.querySelector('#del-box .del-pw-label').style.display='';
+    document.querySelector('#del-box .del-pw-wrap').style.display='';
+  }
   document.getElementById('del-modal').classList.add('on');
-  if(!noPw) setTimeout(()=>document.getElementById('del-pw').focus(),80);
+  if(type!=='task') setTimeout(()=>document.getElementById('del-pw').focus(),80);
 }
 function deletePJ(){
   if(!S.cur)return;
@@ -742,15 +757,18 @@ function showDelDone(msg){
 function delDoneClose(){
   document.getElementById('del-modal').classList.remove('on');
   document.getElementById('del-done').style.display='none';
+  document.getElementById('del-confirm2').style.display='none';
   document.getElementById('del-box').style.display='';
 }
 function delCancel(){
   document.getElementById('del-modal').classList.remove('on');
   document.getElementById('del-done').style.display='none';
+  document.getElementById('del-confirm2').style.display='none';
   document.getElementById('del-box').style.display='';
   const inp=document.getElementById('del-pw');
   const eye=document.getElementById('del-pw-eye');
   inp.type='password'; eye.textContent='表示';
+  delTarget=null;
 }
 function toggleDelPw(){
   const inp=document.getElementById('del-pw');
@@ -759,21 +777,36 @@ function toggleDelPw(){
   else{inp.type='password';eye.textContent='表示';}
 }
 async function delConfirm(){
-  const noPw=delTarget?.type==='task';
-  if(!noPw){
-    const pw=document.getElementById('del-pw').value;
-    if(pw!==PW){
-      const e=document.getElementById('del-err');
-      e.textContent='暗証番号が違います';
-      document.getElementById('del-pw').value='';
-      document.getElementById('del-pw').focus();
-      setTimeout(()=>e.textContent='',2000);
-      return;
-    }
+  const pw=document.getElementById('del-pw').value;
+  if(pw!==PW){
+    const e=document.getElementById('del-err');
+    e.textContent='暗証番号が違います';
+    document.getElementById('del-pw').value='';
+    document.getElementById('del-pw').focus();
+    setTimeout(()=>e.textContent='',2000);
+    return;
   }
   const inp2=document.getElementById('del-pw');
   const eye2=document.getElementById('del-pw-eye');
   inp2.type='password'; eye2.textContent='表示';
+  if(!delTarget)return;
+  // 暗証番号確認後→最終確認画面へ
+  const {type, id}=delTarget;
+  const labelMap={
+    phase: ()=>pj()?.phases.find(ph=>ph.id===id)?.name||'フェーズ',
+    project: ()=>pj()?.name||'プロジェクト',
+    bulk: ()=>{
+      const names=[...S.sel].map(id=>tasks().find(t=>t.id===id)?.name||'').filter(Boolean);
+      return names.slice(0,2).join('、')+(names.length>2?` 他${names.length-2}件`:'');
+    }
+  };
+  const lbl=labelMap[type]?labelMap[type]():'';
+  document.getElementById('del-box').style.display='none';
+  document.getElementById('del-confirm2-msg').textContent=`「${lbl}」を削除します。この操作は元に戻せません。本当によいですか？`;
+  document.getElementById('del-confirm2').style.display='flex';
+}
+async function delExec(){
+  document.getElementById('del-confirm2').style.display='none';
   if(!delTarget)return;
   const {type, id}=delTarget; delTarget=null;
   const p=pj();
