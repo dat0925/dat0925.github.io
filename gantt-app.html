@@ -625,7 +625,7 @@ async function sbLoad(){
     S.pjs={};
     (pjRows||[]).forEach(r=>{S.pjs[r.id]={name:r.name,tasks:[],phases:[],members:r.members||[]};});
     (phRows||[]).forEach(r=>{if(S.pjs[r.project_id])S.pjs[r.project_id].phases.push({id:r.id,name:r.name,startDate:r.start_date,endDate:r.end_date,assignee:r.assignee||''});});
-    (tkRows||[]).forEach(r=>{if(S.pjs[r.project_id])S.pjs[r.project_id].tasks.push({id:r.id,phaseId:r.phase_id,parentId:r.parent_id,name:r.name,startDate:r.start_date,endDate:r.end_date,completedDate:r.completed_date,status:r.status,assignee:r.assignee,effort:r.effort,memo:r.memo,updatedAt:r.updated_at});});
+    (tkRows||[]).forEach(r=>{if(S.pjs[r.project_id])S.pjs[r.project_id].tasks.push({id:r.id,phaseId:r.phase_id,parentId:r.parent_id,name:r.name,startDate:r.start_date,endDate:r.end_date,completedDate:r.completed_date,status:r.status,assignee:r.assignee,effort:r.effort,memo:r.memo,starred:r.starred||false,updatedAt:r.updated_at});});
     sbDot('ok');
     applyStarred(); // Supabase再読み込み後にstarredを復元
     sbSubscribe();
@@ -678,7 +678,7 @@ async function sbSaveTask(t,projectId){
   if(!sbClient)return;
   sbDot('busy');
   const p=S.pjs[projectId];if(!p)return;
-  const{error}=await sbClient.from('gp6_tasks').upsert({id:t.id,project_id:projectId,phase_id:t.phaseId||null,parent_id:t.parentId||null,name:t.name,start_date:t.startDate||null,end_date:t.endDate||null,completed_date:t.completedDate||null,status:t.status,assignee:t.assignee||'',effort:t.effort||1,memo:t.memo||'',sort_order:p.tasks.findIndex(x=>x.id===t.id),updated_at:new Date().toISOString()},{onConflict:'id'});
+  const{error}=await sbClient.from('gp6_tasks').upsert({id:t.id,project_id:projectId,phase_id:t.phaseId||null,parent_id:t.parentId||null,name:t.name,start_date:t.startDate||null,end_date:t.endDate||null,completed_date:t.completedDate||null,status:t.status,assignee:t.assignee||'',effort:t.effort||1,memo:t.memo||'',starred:t.starred||false,sort_order:p.tasks.findIndex(x=>x.id===t.id),updated_at:new Date().toISOString()},{onConflict:'id'});
   sbDot(error?'err':'ok');
 }
 async function sbDeleteTask(id){
