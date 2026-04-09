@@ -1509,25 +1509,34 @@ function rowDragEnd(){
     if(dropType==='t'&&srcIdx>=0){
       const dstIdx=p.tasks.findIndex(t=>t.id===dropId);
       if(srcIdx>=0&&dstIdx>=0&&srcIdx!==dstIdx){
-        const srcTask=p.tasks.splice(srcIdx,1)[0];
+        const srcTask=p.tasks[srcIdx];
+        const dstTask=p.tasks.find(t=>t.id===dropId);
+        const srcHasChildren=p.tasks.some(t=>t.parentId===srcTask.id);
+
+        // ドロップ先判定
+        if(dstTask&&dstTask.parentId){
+          // ドロップ先が子タスク → 同じ親の子に
+          srcTask.parentId=dstTask.parentId;
+          srcTask.phaseId=dstTask.phaseId;
+        } else if(dstTask&&!dstTask.parentId&&!srcHasChildren&&srcTask.parentId===null){
+          // 両方ともルートタスク（子なし）→ ドロップ先の子タスクに
+          srcTask.parentId=dstTask.id;
+          srcTask.phaseId=dstTask.phaseId;
+        } else {
+          // それ以外 → フェーズだけ合わせ、親は解除
+          srcTask.parentId=null;
+          srcTask.phaseId=dstTask?.phaseId||null;
+        }
+        // 移動
+        p.tasks.splice(srcIdx,1);
         const newDstIdx=p.tasks.findIndex(t=>t.id===dropId);
         p.tasks.splice(newDstIdx,0,srcTask);
-        const dstTask=p.tasks.find(t=>t.id===dropId);
-        const newPhaseId=dstTask?.phaseId||null;
-        const newParentId=dstTask?.parentId||null;
-        if(dstTask&&dstTask.parentId){
-          // ドロップ先が子タスク → 同じ親・同じフェーズ
-          srcTask.parentId=dstTask.parentId;
-          srcTask.phaseId=newPhaseId;
-        } else {
-          // ドロップ先がルートタスク or フェーズ → フェーズだけ合わせ、親は解除
-          srcTask.parentId=null;
-          srcTask.phaseId=newPhaseId;
-        }
-        // 親タスクなら子タスクのphaseIdも連動更新
+        // 子タスクのphaseIdも連動
         p.tasks.filter(t=>t.parentId===srcTask.id).forEach(child=>{
           child.phaseId=srcTask.phaseId;
         });
+        // 子タスク化した場合は親を展開
+        if(srcTask.parentId)S.exp.add('c_'+srcTask.parentId);
       }
     } else if(dropType==='ph'){
       // フェーズ行にドロップ → そのフェーズに移動（子タスクも連動）
