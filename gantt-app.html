@@ -721,10 +721,9 @@ function addPJ(){
 function switchPJ(id){
   S.cur=id||null;S.sel.clear();S.exp.clear();
   if(id){
-    // localStorageに保存済みの開閉状態があれば復元、なければ全開
     if(!loadExp())phases().forEach(p=>S.exp.add(p.id));
   }
-  save();renderPJS();updateFAs();renderAll();
+  save();renderPJS();updateFAs();renderAll();pushURL();
 }
 function openDelModal(type, id, label){
   delTarget={type, id};
@@ -1912,6 +1911,37 @@ function setView(v){
   document.getElementById('apsv').style.display=v==='allprojects'?'block':'none';
   if(v==='summary')renderSummary();
   else if(v==='allprojects')renderAllProjects();
+  pushURL();
+}
+
+
+// ══════════════════════════════════════════
+// URL SYNC
+// ══════════════════════════════════════════
+function pushURL(){
+  const p=new URLSearchParams();
+  if(S.cur)p.set('pj',S.cur);
+  if(S.view&&S.view!=='gantt')p.set('view',S.view);
+  if(mMode==='editTask'&&mId)p.set('task',mId);
+  else if(mMode==='editPh'&&mId)p.set('phase',mId);
+  const qs=p.toString();
+  const url=location.pathname+(qs?'?'+qs:'');
+  history.replaceState(null,'',url);
+}
+function applyURL(){
+  const p=new URLSearchParams(location.search);
+  const pjId=p.get('pj');
+  const view=p.get('view')||'gantt';
+  const taskId=p.get('task');
+  const phaseId=p.get('phase');
+  if(pjId&&S.pjs[pjId]){
+    S.cur=pjId;
+    if(!loadExp())phases().forEach(ph=>S.exp.add(ph.id));
+  }
+  setView(view);
+  renderPJS();updateFAs();renderAll();
+  if(taskId){const t=tasks().find(x=>x.id===taskId);if(t)editTask(taskId);}
+  else if(phaseId){const ph=phases().find(x=>x.id===phaseId);if(ph)editPh(phaseId);}
 }
 
 // ══════════════════════════════════════════
@@ -1950,6 +1980,7 @@ function editTask(id){
   showDelBtn(true);
   openOv();
   updateAsgDatalist();
+  pushURL();
 }
 function editPh(id){
   const ph=phases().find(p=>p.id===id);if(!ph)return;
@@ -1958,6 +1989,7 @@ function editPh(id){
   document.getElementById('mbody').innerHTML=phForm(ph);
   showDelBtn(true);
   openOv();
+  pushURL();
 }
 function openOv(){
   const ov=document.getElementById('ov');
@@ -1979,6 +2011,7 @@ function closeM(){
     ov.style.display='none';
     ov.classList.remove('on');
     mMode=mId=null;
+    pushURL();
   },240);
 }
 
@@ -2316,6 +2349,8 @@ async function init(){
   document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeM();cancelInlineAdd();}});
   document.getElementById('ov').addEventListener('click',function(e){if(e.target===this)closeM();});
   document.getElementById('sb-modal').addEventListener('click',function(e){if(e.target===this)closeSBSettings();});
+  // URLパラメータから状態を復元
+  if(location.search)applyURL();
 }
 init();
 </script>
