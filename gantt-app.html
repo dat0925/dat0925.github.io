@@ -548,7 +548,7 @@ const ROW=35,PHROW=35,HDR=52;
 // ══════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════
-let S={pjs:{},cur:null,view:'gantt',scale:'day',sd:null,sel:new Set(),exp:new Set()};
+let S={pjs:{},cur:null,view:'gantt',scale:'day',sd:null,sel:new Set(),exp:new Set(),members:[]};
 let mMode=null,mId=null;
 let stPopTarget=null; // task id for status popup
 let delTarget=null; // {type:'task'|'phase'|'project', id}
@@ -673,7 +673,7 @@ async function sbDeletePhase(id){
 }
 
 function save(){
-  try{localStorage.setItem('gp6',JSON.stringify(S.pjs));localStorage.setItem('gp6c',S.cur||'')}catch(e){}
+  try{localStorage.setItem('gp6',JSON.stringify(S.pjs));localStorage.setItem('gp6c',S.cur||'');localStorage.setItem('gp6m',JSON.stringify(S.members||[]));}catch(e){}
 }
 
 function openSBSettings(){
@@ -721,6 +721,14 @@ function load(){
     const d=localStorage.getItem('gp6');if(d)S.pjs=JSON.parse(d);
     S.cur=localStorage.getItem('gp6c')||null;
     if(S.cur&&!S.pjs[S.cur])S.cur=null;
+    const m=localStorage.getItem('gp6m');if(m)S.members=JSON.parse(m);
+    // 既存プロジェクトのmembersを共通リストにマイグレーション
+    Object.values(S.pjs).forEach(p=>{
+      if(p.members&&p.members.length){
+        p.members.forEach(n=>{if(!S.members.includes(n))S.members.push(n);});
+        p.members=[];
+      }
+    });
   }catch(e){S.pjs={};}
 }
 function pj(){return S.cur?S.pjs[S.cur]:null}
@@ -1192,14 +1200,13 @@ document.addEventListener('click',e=>{
 
 // ── 担当者管理 ──
 function getMembers(){
-  const p=pj();if(!p)return[];
-  if(!p.members)p.members=[];
-  return p.members;
+  if(!S.members)S.members=[];
+  return S.members;
 }
 function getMemberCandidates(){
-  // 登録メンバー + 過去の入力履歴をマージして重複排除
   const registered=getMembers();
-  const history=[...new Set(tasks().map(t=>t.assignee).filter(Boolean))];
+  // 全プロジェクトのタスク履歴をマージ
+  const history=[...new Set(Object.values(S.pjs).flatMap(p=>(p.tasks||[]).map(t=>t.assignee).filter(Boolean)))];
   return [...new Set([...registered,...history])].sort();
 }
 function updateAsgDatalist(){
@@ -1208,7 +1215,6 @@ function updateAsgDatalist(){
   dl.innerHTML=getMemberCandidates().map(n=>`<option value="${esc(n)}">`).join('');
 }
 function openMemberSettings(){
-  if(!S.cur)return alert('プロジェクトを選択してください');
   renderMemberList();
   document.getElementById('mbr-modal').style.display='flex';
   setTimeout(()=>document.getElementById('mbr-input').focus(),80);
@@ -1227,17 +1233,16 @@ function renderMemberList(){
 function addMember(){
   const inp=document.getElementById('mbr-input');
   const name=inp.value.trim();if(!name)return;
-  const p=pj();if(!p)return;
-  if(!p.members)p.members=[];
-  if(!p.members.includes(name))p.members.push(name);
+  if(!S.members)S.members=[];
+  if(!S.members.includes(name))S.members.push(name);
   inp.value='';
-  save();sbSavePJ(S.cur);
+  save();
   renderMemberList();updateAsgDatalist();
 }
 function removeMember(idx){
-  const p=pj();if(!p||!p.members)return;
-  p.members.splice(idx,1);
-  save();sbSavePJ(S.cur);
+  if(!S.members)return;
+  S.members.splice(idx,1);
+  save();
   renderMemberList();updateAsgDatalist();
 }
 // モーダルを開いた時にdatalistも更新
