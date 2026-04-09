@@ -351,6 +351,7 @@ const AUTH_DAYS=3;
     <button class="btn" onclick="nav(-1)">◀</button>
     <button class="btn" onclick="nav(1)">▶</button>
     <span id="sb-status" title="DB同期状態" style="font-size:11px;color:var(--tx3);display:flex;align-items:center;gap:4px;padding:0 4px"><span class="sb-dot" id="sb-ind"></span><span id="sb-label">接続中…</span></span>
+    <button class="btn" onclick="forceReload()" title="DBから最新データを再読み込み" style="font-size:11px;padding:2px 7px">🔄</button>
   </div>
 </div>
 <div id="main">
@@ -1825,6 +1826,12 @@ function phDragEnd(){
 // SCROLL SYNC (one-time setup)
 // ══════════════════════════════════════════
 let syncing=false;
+async function forceReload(){
+  if(!sbClient)return alert('DB未接続です');
+  document.getElementById('sb-label').textContent='再読込中…';
+  const ok=await sbLoad();
+  if(ok){renderPJS();updateFAs();renderAll();}
+}
 function initSync(){
   const tb=document.getElementById('tpb'),cb=document.getElementById('cbw');
   tb.addEventListener('scroll',()=>{if(syncing)return;syncing=true;cb.scrollTop=tb.scrollTop;syncing=false;},{passive:true});
