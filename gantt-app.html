@@ -49,7 +49,7 @@
   --f:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic UI',sans-serif;
   --fm:'SF Mono',Menlo,Consolas,monospace;
   --row:35px;--phrow:35px;--hdr:52px;
-  --gc:14px 18px 28px 2fr 58px 54px 54px 70px 24px;
+  --gc:14px 18px 28px 2fr 58px 54px 54px 60px 20px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--f);font-size:13px;overflow:hidden}
@@ -221,7 +221,7 @@ textarea.fc{min-height:60px;resize:vertical}.fg{margin-bottom:11px}.fr{display:g
 .sb-dot.ok{background:var(--gn)}.sb-dot.err{background:var(--rd)}.sb-dot.busy{background:var(--or)}
 /* MOBILE */
 @media(max-width:700px){
-  :root{--gc:14px 18px 28px 2fr 50px 46px 46px 60px 20px;}
+  :root{--gc:14px 18px 28px 2fr 50px 46px 46px 50px 18px;}
   html,body{height:auto;overflow:auto}
   #main{height:auto;overflow:visible}
   #gw{flex-direction:column;height:auto;overflow:visible}
@@ -2374,7 +2374,8 @@ function subTask(){
   if(status==='done'&&!cd)cd=td();if(status!=='done')cd=null;
   const fpar2=document.getElementById('fpar2');const parentId=fpar2.value||null;
   const phaseId=document.getElementById('fph').value||null;
-  const t={id:mId||('t_'+Date.now()+'_'+Math.random().toString(36).slice(2,5)),phaseId,parentId,name,startDate:s,endDate:e,completedDate:cd,status,assignee:document.getElementById('fasg').value.trim(),effort:parseFloat(document.getElementById('fef').value)||1,memo:document.getElementById('fmo').value.trim(),updatedAt:td()};
+  const _prev=mId?pj()?.tasks.find(x=>x.id===mId):null;
+  const t={id:mId||('t_'+Date.now()+'_'+Math.random().toString(36).slice(2,5)),phaseId,parentId,name,startDate:s,endDate:e,completedDate:cd,status,assignee:document.getElementById('fasg').value.trim(),effort:parseFloat(document.getElementById('fef').value)||1,memo:document.getElementById('fmo').value.trim(),starred:_prev?.starred||false,updatedAt:td()};
   const p=pj();
   if(mMode==='addTask')p.tasks.push(t);
   else{const i=p.tasks.findIndex(x=>x.id===mId);if(i>=0)p.tasks[i]=t;}
