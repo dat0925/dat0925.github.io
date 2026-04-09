@@ -331,12 +331,20 @@ const AUTH_DAYS=3;
   </div>
 </div>
 <div id="tabs">
-  <div class="tg">
-    <div class="tab on" data-v="gantt" onclick="setView('gantt')">ガント</div>
-    <div class="tab" data-v="summary" onclick="setView('summary')">サマリー</div>
+  <div class="tg" style="border:1.5px solid var(--bd2);padding:2px;gap:1px">
+    <div class="tab on" data-v="gantt" onclick="setView('gantt')" style="font-weight:600">ガント</div>
+    <div class="tab" data-v="summary" onclick="setView('summary')" style="border-left:1px solid var(--bd2);border-right:1px solid var(--bd2)">サマリー</div>
     <div class="tab" data-v="allprojects" onclick="setView('allprojects')">全プロジェクト</div>
   </div>
-  <!-- 一括操作: 常時表示 -->
+  <button class="btn" onclick="undo()" title="操作を元に戻す (Ctrl+Z)" id="undo-btn" style="margin-left:6px;padding:3px 10px;font-size:12px">↩ Undo</button>
+  <!-- iPad用タスク移動ボタン -->
+  <div id="move-btns" style="display:flex;align-items:center;gap:4px;margin-left:4px">
+    <span style="font-size:10px;color:var(--tx3);white-space:nowrap">選択タスク:</span>
+    <button class="btn" onclick="moveSelTask(-1)" title="上へ移動" style="padding:3px 8px;font-size:13px;font-weight:700">↑</button>
+    <button class="btn" onclick="moveSelTask(1)" title="下へ移動" style="padding:3px 8px;font-size:13px;font-weight:700">↓</button>
+    <button class="btn" onclick="indentSelTask(false)" title="子タスクにする（右）" style="padding:3px 8px;font-size:13px;font-weight:700">→</button>
+    <button class="btn" onclick="indentSelTask(true)" title="親タスクに昇格（左）" style="padding:3px 8px;font-size:13px;font-weight:700">←</button>
+  </div>
   <div id="bulk-inline" style="display:flex;align-items:center;gap:5px;margin-left:8px">
     <span class="bc" id="bcc" style="font-size:11px;color:var(--tx3);white-space:nowrap">0件選択</span>
     <select id="bst" style="background:var(--s3);border:1px solid var(--bd2);color:var(--tx);padding:3px 6px;border-radius:4px;font-family:var(--f);font-size:11px;outline:none"><option value="">ステータス変更</option><option value="todo">未着手</option><option value="inprogress">進行中</option><option value="requested">依頼中</option><option value="done">完了</option><option value="cancelled">不用</option></select>
@@ -351,9 +359,9 @@ const AUTH_DAYS=3;
       <div class="tab" data-s="week" onclick="setScale('week')">週</div>
       <div class="tab" data-s="month" onclick="setScale('month')">月</div>
     </div>
-    <button class="btn" onclick="goToday()">Today</button>
-    <button class="btn" onclick="nav(-1)">◀</button>
-    <button class="btn" onclick="nav(1)">▶</button>
+    <button class="btn" onclick="goToday()">今日</button>
+    <button class="btn" onclick="navSmooth(-1)">◀</button>
+    <button class="btn" onclick="navSmooth(1)">▶</button>
     <span id="sb-status" title="DB同期状態" style="font-size:11px;color:var(--tx3);display:flex;align-items:center;gap:4px;padding:0 4px"><span class="sb-dot" id="sb-ind"></span><span id="sb-label">接続中…</span></span>
     <button class="btn" onclick="forceReload()" title="DBから最新データを再読み込み" style="font-size:11px;padding:2px 7px">🔄</button>
   </div>
@@ -573,6 +581,8 @@ let undoStack=[];
 function pushUndo(){
   undoStack.push({pjs:JSON.parse(JSON.stringify(S.pjs)),members:JSON.parse(JSON.stringify(S.members||[]))});
   if(undoStack.length>UNDO_MAX)undoStack.shift();
+  // ボタン状態更新（DOMロード後のみ）
+  if(document.readyState!=='loading')updateUndoBtn?.();
 }
 function undo(){
   if(!undoStack.length)return;
@@ -583,6 +593,7 @@ function undo(){
   applyStarred();
   save();
   renderPJS();updateFAs();renderAll();
+  updateUndoBtn?.();
 }
 let mMode=null,mId=null;
 let stPopTarget=null; // task id for status popup
@@ -1004,12 +1015,51 @@ function getMinStart(){
 function nav(d){
   const n=S.scale==='day'?30:S.scale==='week'?60:90;
   let next=addD(S.sd||addD(td(),-7),d*n);
-  // 過去方向の場合は最古開始日の7日前より前には行かせない
   if(d<0){
     const min=getMinStart();
     if(min){const limit=addD(min,-7);if(next<limit)next=limit;}
   }
   S.sd=next;drawChart();
+}
+
+// スムーズアニメーション付き左右ナビ
+function navSmooth(d){
+  const cbw=document.getElementById('cbw');
+  const chw=document.getElementById('chw');
+  const n=S.scale==='day'?30:S.scale==='week'?60:90;
+  let next=addD(S.sd||addD(td(),-7),d*n);
+  if(d<0){
+    const min=getMinStart();
+    if(min){const limit=addD(min,-7);if(next<limit)next=limit;}
+  }
+  // スライドアニメーション
+  const slideDir=d>0?'-60px':'60px';
+  const canvas=document.getElementById('cbc');
+  const hdrCanvas=document.getElementById('chc');
+  canvas.style.transition='transform 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.25s';
+  hdrCanvas.style.transition='transform 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.25s';
+  canvas.style.transform=`translateX(${slideDir})`;
+  hdrCanvas.style.transform=`translateX(${slideDir})`;
+  canvas.style.opacity='0';
+  hdrCanvas.style.opacity='0';
+  setTimeout(()=>{
+    S.sd=next;drawChart();
+    canvas.style.transition='none';
+    hdrCanvas.style.transition='none';
+    const fromDir=d>0?'60px':'-60px';
+    canvas.style.transform=`translateX(${fromDir})`;
+    hdrCanvas.style.transform=`translateX(${fromDir})`;
+    canvas.style.opacity='0';
+    hdrCanvas.style.opacity='0';
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      canvas.style.transition='transform 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.25s';
+      hdrCanvas.style.transition='transform 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.25s';
+      canvas.style.transform='translateX(0)';
+      hdrCanvas.style.transform='translateX(0)';
+      canvas.style.opacity='1';
+      hdrCanvas.style.opacity='1';
+    }));
+  },220);
 }
 function setScale(s){S.scale=s;document.querySelectorAll('#sctabs .tab').forEach(t=>t.classList.toggle('on',t.dataset.s===s));drawChart()}
 
@@ -1643,7 +1693,27 @@ function collapseAllPh(){phases().forEach(p=>S.exp.delete(p.id));saveExp();rende
 function toggleAllPh(){
   const phs=phases();
   const allClosed=phs.every(p=>!S.exp.has(p.id));
-  if(allClosed){expandAllPh();}else{collapseAllPh();}
+  const btn=document.getElementById('toggle-all-btn');
+  if(btn){
+    btn.style.transform='scale(0.88)';
+    btn.style.transition='transform 0.12s cubic-bezier(0.4,0,0.2,1)';
+    setTimeout(()=>{btn.style.transform='scale(1)';},120);
+  }
+  if(allClosed){
+    // 段階的に開くアニメーション
+    phs.forEach((p,i)=>{
+      setTimeout(()=>{
+        S.exp.add(p.id);
+        saveExp();
+        animateRows('ph',p.id,true,()=>{ if(i===phs.length-1)drawBody(); });
+        renderTP();
+      }, i*40);
+    });
+  } else {
+    // まとめて閉じる
+    phs.forEach(p=>S.exp.delete(p.id));
+    saveExp();renderTP();drawBody();
+  }
 }
 function saveExp(){try{const key='gp6_exp_'+(S.cur||'');localStorage.setItem(key,JSON.stringify([...S.exp]));}catch(e){}}
 function loadExp(){try{const key='gp6_exp_'+(S.cur||'');const d=localStorage.getItem(key);if(d){S.exp=new Set(JSON.parse(d));return true;}}catch(e){}return false;}
@@ -2400,8 +2470,43 @@ function taskMoveUpDown(id, dir){
   save();{const _cur=S.cur;pj()?.tasks.forEach(t=>sbSaveTask(t,_cur));}renderAll();
 }
 
-// ══════════════════════════════════════════
-// URL SYNC
+// ── iPad用移動ボタン ──
+function moveSelTask(dir){
+  if(S.sel.size!==1){
+    // 選択がなければ何もしない（軽く震わせてフィードバック）
+    const btns=document.querySelectorAll('#move-btns .btn');
+    btns.forEach(b=>{b.style.transition='transform 0.1s';b.style.transform='translateX(3px)';setTimeout(()=>{b.style.transform='translateX(-3px)';setTimeout(()=>{b.style.transform='';},80);},80);});
+    return;
+  }
+  const id=[...S.sel][0];
+  taskMoveUpDown(id,dir);
+}
+function indentSelTask(shiftKey){
+  if(S.sel.size!==1)return;
+  const id=[...S.sel][0];
+  taskIndent(id,shiftKey);
+}
+
+// ── Undoボタンの状態を更新 ──
+function updateUndoBtn(){
+  const btn=document.getElementById('undo-btn');
+  if(!btn)return;
+  btn.disabled=undoStack.length===0;
+  btn.style.opacity=undoStack.length===0?'0.4':'1';
+}
+
+// pushUndoをラップしてボタン状態も更新
+const _origPushUndo=pushUndo;
+// undo関数もラップ
+const _origUndo=undo;
+window.undoWithFeedback=function(){
+  if(!undoStack.length)return;
+  // ボタンフラッシュ
+  const btn=document.getElementById('undo-btn');
+  if(btn){btn.style.transform='scale(0.88)';setTimeout(()=>{btn.style.transform='scale(1)';},120);}
+  _origUndo();
+  updateUndoBtn();
+};
 // ══════════════════════════════════════════
 function pushURL(){
   const p=new URLSearchParams();
@@ -2888,6 +2993,8 @@ async function init(){
   document.getElementById('bk-modal').addEventListener('click',function(e){if(e.target===this)closeBK();});
   // URLパラメータから状態を復元
   if(location.search)applyURL();
+  // Undoボタン初期状態
+  updateUndoBtn();
 }
 init();
 </script>
