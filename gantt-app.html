@@ -304,7 +304,9 @@ const AUTH_DAYS=3;
 <div id="topbar">
   <div class="logo">📋 商品企画部</div>
   <div class="pjs">
+    <button class="btn" onclick="navPJ(-1)" title="前のプロジェクト" style="padding:3px 7px;font-size:12px">◀</button>
     <select id="pjsel" onchange="switchPJ(this.value)"><option value="">プロジェクト選択...</option></select>
+    <button class="btn" onclick="navPJ(1)" title="次のプロジェクト" style="padding:3px 7px;font-size:12px">▶</button>
     <button class="btn" id="pj-rename-btn" onclick="startRenamePJ()" title="プロジェクト名を変更" style="display:none;padding:3px 7px;font-size:12px">✏</button>
     <input type="text" id="pjname" placeholder="新規プロジェクト名" maxlength="40">
     <button class="btn p" onclick="addPJ()">+ 作成</button>
@@ -728,6 +730,13 @@ function phases(){return pj()?.phases||[]}
 // ══════════════════════════════════════════
 // PROJECT
 // ══════════════════════════════════════════
+function navPJ(dir){
+  const ids=Object.keys(S.pjs);
+  if(!ids.length)return;
+  const idx=S.cur?ids.indexOf(S.cur):-1;
+  const next=ids[(idx+dir+ids.length)%ids.length];
+  switchPJ(next);
+}
 function startRenamePJ(){
   if(!S.cur)return;
   const name=prompt('新しいプロジェクト名を入力してください',pj().name);
