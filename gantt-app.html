@@ -179,7 +179,7 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--f);
 .mo{background:var(--s1);border:1px solid var(--bd2);border-radius:10px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.4);transform:translateY(40px);opacity:0;transition:transform .45s cubic-bezier(0.22,1,0.36,1),opacity .35s ease}
 .mo.ani{transform:translateY(0);opacity:1}
 .mh{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--bd);position:sticky;top:0;background:var(--s1);z-index:10}
-.mt{font-size:13px;font-weight:600}.mb{padding:14px 16px}.mf{display:flex;justify-content:flex-end;gap:8px;padding:12px 16px;border-top:1px solid var(--bd);position:sticky;bottom:0;background:var(--s1);z-index:10}
+.mt{font-size:13px;font-weight:600}.mb{padding:14px 16px;overflow:hidden}.mf{display:flex;justify-content:flex-end;gap:8px;padding:12px 16px;border-top:1px solid var(--bd);position:sticky;bottom:0;background:var(--s1);z-index:10}
 .fl{display:block;font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
 .fc{width:100%;background:var(--s3);border:1px solid var(--bd2);color:var(--tx);padding:6px 9px;border-radius:5px;font-family:var(--f);font-size:12px;outline:none;transition:border-color .1s}
 .fc:focus{border-color:var(--ac)}.fc option{background:var(--s3)}
@@ -2704,17 +2704,17 @@ function tForm(t,pid=''){
   return `<div class="fg"><label class="fl">タスク名 *</label><input class="fc" id="fn" value="${esc(d.name||'')}" placeholder="タスク名を入力"></div>
 <div class="fg"><label class="fl">フェーズ</label><select class="fc" id="fph"><option value="">なし</option>${phs.map(p=>`<option value="${p.id}"${d.phaseId===p.id?' selected':''}>${esc(p.name)}</option>`).join('')}</select></div>
 <div class="fg"><label class="fl">親タスク（設定すると子タスクになります）</label><select class="fc" id="fpar2"><option value="">なし（親タスク）</option>${ptOpts}</select></div>
-<div style="display:flex;gap:10px;margin-bottom:11px">
-  <div style="flex:1;min-width:0"><label class="fl">開始日 *</label><input class="fc" type="date" id="fsd" value="${d.startDate}" style="text-align:center"></div>
-  <div style="flex:1;min-width:0"><label class="fl">終了予定日 *</label><input class="fc" type="date" id="fed" value="${d.endDate}" style="text-align:center"></div>
+<div style="display:flex;flex-direction:row;gap:10px;margin-bottom:11px;width:100%">
+  <div style="width:calc(50% - 5px)"><label class="fl">開始日 *</label><input class="fc" type="date" id="fsd" value="${d.startDate}"></div>
+  <div style="width:calc(50% - 5px)"><label class="fl">終了予定日 *</label><input class="fc" type="date" id="fed" value="${d.endDate}"></div>
 </div>
-<div style="display:flex;gap:10px;margin-bottom:11px">
-  <div style="flex:1;min-width:0"><label class="fl">ステータス</label><select class="fc" id="fst2">${Object.entries(SL).map(([v,l])=>`<option value="${v}"${d.status===v?' selected':''}>${l}</option>`).join('')}</select></div>
-  <div style="flex:1;min-width:0"><label class="fl">工数（h）</label><input class="fc" type="number" id="fef" value="${d.effort||1}" min="0" step="0.5"></div>
+<div style="display:flex;flex-direction:row;gap:10px;margin-bottom:11px;width:100%">
+  <div style="width:calc(50% - 5px)"><label class="fl">ステータス</label><select class="fc" id="fst2">${Object.entries(SL).map(([v,l])=>`<option value="${v}"${d.status===v?' selected':''}>${l}</option>`).join('')}</select></div>
+  <div style="width:calc(50% - 5px)"><label class="fl">工数（h）</label><input class="fc" type="number" id="fef" value="${d.effort||1}" min="0" step="0.5"></div>
 </div>
-<div style="display:flex;gap:10px;margin-bottom:11px;align-items:flex-end">
-  <div style="flex:1;min-width:0"><label class="fl">担当者 <span style="font-size:10px;color:var(--tx3);font-weight:400">（↓で候補表示）</span></label><input class="fc" id="fasg" value="${esc(d.assignee||'')}" placeholder="担当者名" list="asg-list" autocomplete="off"></div>
-  <div style="flex:1;min-width:0"><label class="fl">完了日</label><input class="fc" type="date" id="fcd" value="${d.completedDate||''}"></div>
+<div style="display:flex;flex-direction:row;gap:10px;margin-bottom:11px;width:100%;align-items:flex-end">
+  <div style="width:calc(50% - 5px)"><label class="fl">担当者 <span style="font-size:10px;color:var(--tx3);font-weight:400">（↓で候補表示）</span></label><input class="fc" id="fasg" value="${esc(d.assignee||'')}" placeholder="担当者名" list="asg-list" autocomplete="off"></div>
+  <div style="width:calc(50% - 5px)"><label class="fl">完了日</label><input class="fc" type="date" id="fcd" value="${d.completedDate||''}"></div>
 </div>
 <div class="fg">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
