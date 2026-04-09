@@ -1053,11 +1053,10 @@ function renderPHR(ph,idx){
     phStBadge=`<span class="ph-stbdg ${phSt}">${phStLabel}</span>`;
   }
   return `<div class="ph-r" data-idx="${idx}" data-type="ph" data-id="${ph.id}"
-    onclick="togPh('${ph.id}')"
-    ondblclick="editPh('${ph.id}');event.stopPropagation()">
+    onclick="togPh('${ph.id}')">
     <span class="drag-handle" data-ph-drag-id="${ph.id}" onclick="event.stopPropagation()" title="フェーズを移動">⠿</span>
     <span class="ptog ${exp?'':'cl'}" onclick="event.stopPropagation();togPh('${ph.id}')">▾</span>
-    <span class="pn" style="grid-column:3/5">${esc(ph.name)}</span>
+    <span class="pn" style="grid-column:3/5" ondblclick="event.stopPropagation();editPh('${ph.id}')" title="ダブルクリックで編集">${esc(ph.name)}</span>
     <span style="overflow:hidden">${phStBadge}</span>
     <span class="td">${fmt(sd)}</span>
     <span class="td">${fmt(ed)}</span>
