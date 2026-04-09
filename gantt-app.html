@@ -315,7 +315,9 @@ const AUTH_DAYS=3;
     <div class="fb">
       <input type="text" id="srch" placeholder="🔍 検索" oninput="renderAll()">
       <button id="ffav" onclick="toggleFavFilter()" title="お気に入りのみ表示" style="background:none;border:1px solid var(--bd2);border-radius:5px;cursor:pointer;font-size:14px;padding:2px 6px;color:var(--tx3);transition:all .1s">☆</button>
-      <select id="fst" onchange="renderAll()"><option value="">全ステータス</option><option value="todo">未着手</option><option value="inprogress">進行中</option><option value="requested">依頼中</option><option value="done">完了</option><option value="cancelled">不用</option><option value="__active__">完了以外</option><option value="__needs_adjust__">要期間調整</option></select>
+      <button class="btn" onclick="navFst(-1)" style="padding:3px 7px;font-size:12px">◀</button>
+      <select id="fst" onchange="renderAll()" style="max-width:90px"><option value="">全ステータス</option><option value="todo">未着手</option><option value="inprogress">進行中</option><option value="requested">依頼中</option><option value="done">完了</option><option value="cancelled">不用</option><option value="__active__">完了以外</option><option value="__needs_adjust__">要期間調整</option></select>
+      <button class="btn" onclick="navFst(1)" style="padding:3px 7px;font-size:12px">▶</button>
       <select id="fas" onchange="renderAll()"><option value="">全担当者</option></select>
       <button class="btn" onclick="clearFilters()" title="フィルタをクリア" style="padding:2px 7px;font-size:11px;white-space:nowrap">✕ クリア</button>
     </div>
@@ -775,6 +777,14 @@ function phases(){return pj()?.phases||[]}
 // ══════════════════════════════════════════
 // PROJECT
 // ══════════════════════════════════════════
+function navFst(dir){
+  const sel=document.getElementById('fst');
+  const opts=[...sel.options];
+  const idx=opts.findIndex(o=>o.value===sel.value);
+  const next=(idx+dir+opts.length)%opts.length;
+  sel.selectedIndex=next;
+  renderAll();
+}
 function navPJ(dir){
   const ids=Object.keys(S.pjs);
   if(!ids.length)return;
