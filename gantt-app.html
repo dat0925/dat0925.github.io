@@ -894,7 +894,21 @@ function getDays(){
 }
 function cw(){return S.scale==='day'?28:S.scale==='week'?14:7}
 function goToday(){S.sd=addD(td(),-7);drawChart()}
-function nav(d){const n=S.scale==='day'?30:S.scale==='week'?60:90;S.sd=addD(S.sd||addD(td(),-7),d*n);drawChart()}
+function getMinStart(){
+  const all=tasks().map(t=>t.startDate).filter(Boolean);
+  phases().forEach(ph=>{if(ph.startDate)all.push(ph.startDate);});
+  return all.length?all.sort()[0]:null;
+}
+function nav(d){
+  const n=S.scale==='day'?30:S.scale==='week'?60:90;
+  let next=addD(S.sd||addD(td(),-7),d*n);
+  // 過去方向の場合は最古開始日の7日前より前には行かせない
+  if(d<0){
+    const min=getMinStart();
+    if(min){const limit=addD(min,-7);if(next<limit)next=limit;}
+  }
+  S.sd=next;drawChart();
+}
 function setScale(s){S.scale=s;document.querySelectorAll('#sctabs .tab').forEach(t=>t.classList.toggle('on',t.dataset.s===s));drawChart()}
 
 // ══════════════════════════════════════════
