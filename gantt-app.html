@@ -2722,6 +2722,9 @@ function tForm(t,pid=''){
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
     <label class="fl" style="margin-bottom:0">進捗メモ</label>
     <div style="display:flex;gap:5px">
+      <button type="button" onclick="insertCurrentUrl()" style="display:flex;align-items:center;gap:4px;padding:2px 8px;border:1px solid var(--bd2);border-radius:4px;background:var(--s3);color:var(--tx2);font-size:10px;cursor:pointer;transition:background .1s" onmouseenter="this.style.background='var(--bd)'" onmouseleave="this.style.background='var(--s3)'" title="現在のURLを挿入">
+        🔗 URL
+      </button>
       <button type="button" onclick="insertDateTime()" style="display:flex;align-items:center;gap:4px;padding:2px 8px;border:1px solid var(--bd2);border-radius:4px;background:var(--s3);color:var(--tx2);font-size:10px;cursor:pointer;transition:background .1s" onmouseenter="this.style.background='var(--bd)'" onmouseleave="this.style.background='var(--s3)'" title="現在日時を挿入">
         🕐 日時
       </button>
@@ -2772,10 +2775,35 @@ function subPh(){pushUndo();
   sbSavePH(ph,S.cur);
   closeM();renderAll();
 }
-function insertDateTime(){
+function insertCurrentUrl(){
   const el=document.getElementById('fmo');
   if(!el)return;
-  const now=new Date();
+  // クリップボードからURLを読み取り試行、失敗したら現在ページのURLを使用
+  navigator.clipboard.readText().then(text=>{
+    const trimmed=text.trim();
+    // URLっぽければそれを使う
+    const isUrl=/^https?:\/\//.test(trimmed);
+    _doInsertUrl(el, isUrl?trimmed:location.href);
+  }).catch(()=>{
+    // クリップボード読取不可なら現在ページのURLを挿入
+    _doInsertUrl(el, location.href);
+  });
+}
+function _doInsertUrl(el, url){
+  const start=el.selectionStart;
+  const val=el.value;
+  const before=val.slice(0,start);
+  const after=val.slice(el.selectionEnd);
+  const prefix=(before.length>0&&!before.endsWith('\n'))?'\n':'';
+  const insert=prefix+url+'\n';
+  el.value=before+insert+after;
+  const pos=before.length+insert.length;
+  el.setSelectionRange(pos,pos);
+  el.focus();
+}
+
+function insertDateTime(){
+  const el=document.getElementById('fmo');
   const yy=now.getFullYear();
   const mm=String(now.getMonth()+1).padStart(2,'0');
   const dd=String(now.getDate()).padStart(2,'0');
