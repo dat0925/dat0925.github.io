@@ -100,6 +100,10 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--f);
 .t-r.overdue:hover{background:rgba(220,38,38,.1)}
 .t-r.overdue::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:#dc2626;border-radius:0}
 .t-r.overdue .td.end-dt{color:#dc2626;font-weight:600}
+.t-r.delayed{background:rgba(217,119,6,.06)}
+.t-r.delayed:hover{background:rgba(217,119,6,.1)}
+.t-r.delayed::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:#d97706;border-radius:0}
+.t-r.delayed .td.start-dt{color:#d97706;font-weight:600}
 /* ch = child task: name列だけ左paddingでインデント、gridは崩さない */
 .t-r.ch .tn-wrap{padding-left:14px}
 /* drag ghost */
@@ -1098,6 +1102,8 @@ function renderTR(t,ch=false,idx=0){
   // 期限切れ判定（終了日を過ぎていて完了・不用でない）
   const today=td();
   const isOverdue=ed&&ed<today&&t.status!=='done'&&t.status!=='cancelled';
+  // 開始日を過ぎているのに未着手
+  const isDelayed=!isOverdue&&sd&&sd<today&&t.status==='todo';
   // ▸/▾=開閉(子ありのとき) / +=サブタスク追加(子なしのとき)
   // 子タスク(ch=true)の+は同レベル追加、親タスクの+はサブタスク追加
   const col3 = hasC
@@ -1105,7 +1111,7 @@ function renderTR(t,ch=false,idx=0){
     : ch
       ? `<span class="tog" onclick="event.stopPropagation();addSibling('${t.id}','${idx}')" title="同レベルで追加" style="color:var(--tx3)">+</span>`
       : `<span class="tog" onclick="event.stopPropagation();startInlineAdd('${t.id}','${idx}')" title="サブタスク追加" style="color:var(--tx3)">+</span>`;
-  return `<div class="t-r${ch?' ch':''}${sel?' sel':''}${isOverdue?' overdue':''}" data-idx="${idx}" data-type="t" data-id="${t.id}" id="tr_${t.id}">
+  return `<div class="t-r${ch?' ch':''}${sel?' sel':''}${isOverdue?' overdue':isDelayed?' delayed':''}" data-idx="${idx}" data-type="t" data-id="${t.id}" id="tr_${t.id}">
     <span class="drag-handle" data-drag-id="${t.id}">⠿</span>
     <span><input type="checkbox"${sel?' checked':''} style="accent-color:var(--ac);width:15.6px;height:15.6px" onclick="event.stopPropagation();togSel('${t.id}',this.checked)"></span>
     ${col3}
@@ -1113,7 +1119,7 @@ function renderTR(t,ch=false,idx=0){
       <span class="tn${t.status==='done'?' dn':''}" ondblclick="event.stopPropagation();editTask('${t.id}')" title="${esc(t.name)}">${esc(t.name)}</span>
     </span>
     <span style="overflow:hidden"><span class="stbdg ${t.status}" onclick="event.stopPropagation();openStPopup(event,'${t.id}')">${SL[t.status]}</span></span>
-    <span class="td dt-cell" onclick="event.stopPropagation();openDatePicker(event,'${t.id}','start')" title="クリックで開始日編集">${fmt(sd)}</span>
+    <span class="td dt-cell${isDelayed?' start-dt':''}" onclick="event.stopPropagation();openDatePicker(event,'${t.id}','start')" title="クリックで開始日編集">${fmt(sd)}</span>
     <span class="td dt-cell${isOverdue?' end-dt':''}" onclick="event.stopPropagation();openDatePicker(event,'${t.id}','end')" title="クリックで終了日編集">${fmt(ed)}</span>
     <button class="ic-btn" onclick="event.stopPropagation();editTask('${t.id}')" title="詳細編集">✏</button>
     <button class="ic-btn" onclick="event.stopPropagation();dupTask('${t.id}')" title="複製">⧉</button>
