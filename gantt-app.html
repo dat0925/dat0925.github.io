@@ -2069,7 +2069,7 @@ function subTask(){
   const status=document.getElementById('fst2').value;
   let cd=document.getElementById('fcd').value||null;
   if(status==='done'&&!cd)cd=td();if(status!=='done')cd=null;
-  const parentId=document.getElementById('fpar2').value||document.getElementById('fpar').value||null;
+  const fpar2=document.getElementById('fpar2');const parentId=fpar2.value||null;
   const phaseId=document.getElementById('fph').value||null;
   const t={id:mId||('t_'+Date.now()+'_'+Math.random().toString(36).slice(2,5)),phaseId,parentId,name,startDate:s,endDate:e,completedDate:cd,status,assignee:document.getElementById('fasg').value.trim(),effort:parseFloat(document.getElementById('fef').value)||1,memo:document.getElementById('fmo').value.trim(),updatedAt:td()};
   const p=pj();
