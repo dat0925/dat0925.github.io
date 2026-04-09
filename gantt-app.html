@@ -15,7 +15,7 @@
 #del-box .del-msg{font-size:12px;color:#7a8fae;text-align:center;line-height:1.8}
 #del-box .del-pw-label{font-size:11px;color:#5a6f9a}
 #del-box .del-pw-wrap{position:relative;width:100%}
-#del-box .del-pw-wrap input{width:100%;padding:10px 42px 10px 14px;border-radius:8px;border:1px solid #2a3550;background:#0f1623;color:#e2e8f0;font-size:14px;text-align:center;letter-spacing:2px;outline:none;transition:border-color .2s;font-family:inherit}
+#del-box .del-pw-wrap input{width:100%;padding:10px 42px 10px 14px;border-radius:8px;border:1px solid #2a3550;background:#0f1623;color:#e2e8f0;font-size:14px;text-align:center;outline:none;transition:border-color .2s;font-family:inherit}
 #del-box .del-pw-wrap input:focus{border-color:#ef4444}
 #del-box .del-pw-toggle{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#5a6f9a;font-size:10px;padding:2px 5px;letter-spacing:.3px;border-radius:3px;transition:color .15s}
 #del-box .del-pw-toggle:hover{color:#e2e8f0}
@@ -323,7 +323,7 @@ const AUTH_DAYS=3;
     <select id="bst" style="background:var(--s3);border:1px solid var(--bd2);color:var(--tx);padding:3px 6px;border-radius:4px;font-family:var(--f);font-size:11px;outline:none"><option value="">ステータス変更</option><option value="todo">未着手</option><option value="inprogress">進行中</option><option value="requested">依頼中</option><option value="done">完了</option><option value="cancelled">不用</option></select>
     <button class="btn p" style="padding:3px 8px;font-size:11px" onclick="applyBulk()">適用</button>
     <button class="btn" style="padding:3px 8px;font-size:11px" onclick="clearSel()">解除</button>
-    <button class="btn d" style="padding:3px 8px;font-size:11px" onclick="bulkDelete()" title="選択したタスクを削除">🗑削除</button>
+    <button class="btn d" style="padding:3px 8px;font-size:11px" onclick="bulkDelete()" title="選択したタスクを削除">削除</button>
   </div>
   <div class="sp"></div>
   <div class="rc">
@@ -393,9 +393,9 @@ const AUTH_DAYS=3;
 </div>
 <div id="ov">
   <div class="mo">
-    <div class="mh"><span class="mt" id="mtitle">タスク追加</span><div style="display:flex;align-items:center;gap:6px"><button class="btn d" id="m-del-btn" onclick="modeDelete()" style="padding:2px 8px;font-size:11px;display:none">🗑 削除</button><button class="btn" onclick="closeM()" style="padding:2px 8px;font-size:14px">✕</button></div></div>
+    <div class="mh"><span class="mt" id="mtitle">タスク追加</span><button class="btn" onclick="closeM()" style="padding:2px 8px;font-size:14px">✕</button></div>
     <div class="mb" id="mbody"></div>
-    <div class="mf"><button class="btn" onclick="closeM()">キャンセル</button><button class="btn p" onclick="subM()">保存</button></div>
+    <div class="mf"><button class="btn d" id="m-del-btn" onclick="modeDelete()" style="display:none;margin-right:auto">削除</button><button class="btn" onclick="closeM()">キャンセル</button><button class="btn p" onclick="subM()">保存</button></div>
   </div>
 </div>
 <!-- DELETE CONFIRM MODAL -->
@@ -405,7 +405,7 @@ const AUTH_DAYS=3;
     <div class="del-msg" id="del-msg"></div>
     <div class="del-pw-label">暗証番号を入力して確認してください</div>
     <div class="del-pw-wrap">
-      <input type="password" id="del-pw" placeholder="••••" maxlength="20"
+      <input type="password" id="del-pw" placeholder="" maxlength="20"
         onkeydown="if(event.key==='Enter')delConfirm()">
       <button class="del-pw-toggle" type="button" onclick="toggleDelPw()" id="del-pw-eye">表示</button>
     </div>
