@@ -341,7 +341,12 @@ const AUTH_DAYS=3;
     <div class="tab" data-v="summary" onclick="setView('summary')" style="border-left:1px solid var(--bd2);border-right:1px solid var(--bd2)">サマリー</div>
     <div class="tab" data-v="allprojects" onclick="setView('allprojects')">全プロジェクト</div>
   </div>
-  <button class="btn" onclick="undo()" title="操作を元に戻す (Ctrl+Z)" id="undo-btn" style="margin-left:6px;padding:3px 10px;font-size:12px">↩ Undo</button>
+  <button class="btn" onclick="undo()" title="操作を元に戻す (Ctrl+Z)" id="undo-btn" style="margin-left:6px;padding:3px 8px;display:flex;align-items:center;justify-content:center">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M3 9h13a5 5 0 0 1 0 10H7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M7 5L3 9l4 4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
   <!-- iPad用タスク移動ボタン -->
   <div id="move-btns" style="display:flex;align-items:center;gap:4px;margin-left:4px">
     <span style="font-size:10px;color:var(--tx3);white-space:nowrap">選択タスク:</span>
