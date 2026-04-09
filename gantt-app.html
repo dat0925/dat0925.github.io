@@ -319,8 +319,6 @@ const AUTH_DAYS=3;
       <select id="fas" onchange="renderAll()"><option value="">全担当者</option></select>
       <button class="btn" onclick="clearFilters()" title="フィルタをクリア" style="padding:2px 7px;font-size:11px;white-space:nowrap">✕ クリア</button>
     </div>
-    <button class="btn" onclick="showAddTask()">+ タスク</button>
-    <button class="btn" onclick="showAddPhase()">+ フェーズ</button>
     <button class="btn" onclick="expandAllPh()" title="フェーズを全て開く">▾全開</button>
     <button class="btn" onclick="collapseAllPh()" title="フェーズを全て閉じる">▸全閉</button>
     <button class="btn" onclick="document.getElementById('csi').click()">↑CSV</button>
@@ -1078,7 +1076,7 @@ function renderTP(){
   if(!S.cur){b.innerHTML='<div class="emp"><div class="ic">📋</div><div class="et">プロジェクトを選択してください</div></div>';return}
   const rows=getRows();
   if(!rows.length&&inlineAddParent===null){
-    b.innerHTML='<div class="emp"><div class="ic">✅</div><div class="et">タスクがありません</div><div class="ed">「+ タスク」から追加してください</div></div>';
+    b.innerHTML='<div class="emp"><div class="ic">✅</div><div class="et">タスクがありません</div><div class="ed">下の「＋ タスクを追加」から追加してください</div></div>';
     // still show inline add if triggered
   }
   const parts=rows.map((r,i)=>{
@@ -1094,7 +1092,7 @@ function renderTP(){
     parts.push(renderInlineAddRow());
   }
   // タスク追加フッター行をスクロールコンテンツ末尾に追加
-  const addRow='<div class="tpb-add-row" onclick="showAddTask()"><span class="add-ic">＋</span>タスクを追加...</div>';
+  const addRow='<div class="tpb-add-row" onclick="showAddTask()"><span class="add-ic">＋</span>タスクを追加...</div><div class="tpb-add-row" onclick="showAddPhase()" style="border-top:1px dashed var(--bd)"><span class="add-ic">＋</span>フェーズを追加...</div>';
   b.innerHTML=parts.join('')+addRow;
   attachRowDragEvents();
 }
