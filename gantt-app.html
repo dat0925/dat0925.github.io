@@ -2721,10 +2721,15 @@ function tForm(t,pid=''){
 <div class="fg">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
     <label class="fl" style="margin-bottom:0">進捗メモ</label>
-    <button type="button" onclick="copyMemo()" style="display:flex;align-items:center;gap:4px;padding:2px 8px;border:1px solid var(--bd2);border-radius:4px;background:var(--s3);color:var(--tx2);font-size:10px;cursor:pointer;transition:background .1s" onmouseenter="this.style.background='var(--bd)'" onmouseleave="this.style.background='var(--s3)'" title="メモをコピー">
-      <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="2"/></svg>
-      コピー
-    </button>
+    <div style="display:flex;gap:5px">
+      <button type="button" onclick="insertDateTime()" style="display:flex;align-items:center;gap:4px;padding:2px 8px;border:1px solid var(--bd2);border-radius:4px;background:var(--s3);color:var(--tx2);font-size:10px;cursor:pointer;transition:background .1s" onmouseenter="this.style.background='var(--bd)'" onmouseleave="this.style.background='var(--s3)'" title="現在日時を挿入">
+        🕐 日時
+      </button>
+      <button type="button" onclick="copyMemo()" style="display:flex;align-items:center;gap:4px;padding:2px 8px;border:1px solid var(--bd2);border-radius:4px;background:var(--s3);color:var(--tx2);font-size:10px;cursor:pointer;transition:background .1s" onmouseenter="this.style.background='var(--bd)'" onmouseleave="this.style.background='var(--s3)'" title="メモをコピー">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="2"/></svg>
+        コピー
+      </button>
+    </div>
   </div>
   <textarea class="fc" id="fmo" style="min-height:120px;resize:vertical">${esc(d.memo||'')}</textarea>
 </div>
@@ -2766,6 +2771,29 @@ function subPh(){pushUndo();
   // Realtimeの即時リロードで担当者が消えるのを防ぐため保存完了後に反映
   sbSavePH(ph,S.cur);
   closeM();renderAll();
+}
+function insertDateTime(){
+  const el=document.getElementById('fmo');
+  if(!el)return;
+  const now=new Date();
+  const yy=now.getFullYear();
+  const mm=String(now.getMonth()+1).padStart(2,'0');
+  const dd=String(now.getDate()).padStart(2,'0');
+  const days=['日','月','火','水','木','金','土'];
+  const dow=days[now.getDay()];
+  const hh=String(now.getHours()).padStart(2,'0');
+  const min=String(now.getMinutes()).padStart(2,'0');
+  const stamp=`${yy}/${mm}/${dd}(${dow})${hh}:${min}\n`;
+  const start=el.selectionStart;
+  const end=el.selectionEnd;
+  const val=el.value;
+  const before=val.slice(0,start);
+  const after=val.slice(end);
+  const prefix=(before.length>0&&!before.endsWith('\n'))?'\n':'';
+  el.value=before+prefix+stamp+after;
+  const pos=before.length+prefix.length+stamp.length;
+  el.setSelectionRange(pos,pos);
+  el.focus();
 }
 function copyMemo(){
   const el=document.getElementById('fmo');
