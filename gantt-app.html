@@ -621,7 +621,13 @@ async function sbSaveTask(t,projectId){
 }
 async function sbDeleteTask(id){
   if(!sbClient)return;
-  await sbClient.from('gp6_tasks').delete().eq('id',id);
+  const {error}=await sbClient.from('gp6_tasks').delete().eq('id',id);
+  if(error)console.error('sbDeleteTask error:',error);
+}
+async function sbDeletePhase(id){
+  if(!sbClient)return;
+  const {error}=await sbClient.from('gp6_phases').delete().eq('id',id);
+  if(error)console.error('sbDeletePhase error:',error);
 }
 
 function save(){
@@ -752,7 +758,7 @@ function toggleDelPw(){
   if(inp.type==='password'){inp.type='text';eye.textContent='隠す';}
   else{inp.type='password';eye.textContent='表示';}
 }
-function delConfirm(){
+async function delConfirm(){
   const noPw=delTarget?.type==='task';
   if(!noPw){
     const pw=document.getElementById('del-pw').value;
@@ -781,9 +787,7 @@ function delConfirm(){
     const children=p.tasks.filter(t=>t.parentId===id).map(t=>t.id);
     p.tasks=p.tasks.filter(t=>t.id!==id&&t.parentId!==id);
     save();
-    [id,...children].forEach(tid=>{
-      if(window.sbClient)sbClient.from('gp6_tasks').delete().eq('id',tid).then(()=>{});
-    });
+    await Promise.all([id,...children].map(tid=>sbDeleteTask(tid)));
     renderAll();
     const sub=children.length?`（サブタスク${children.length}件を含む）`:'';
     showDelDone(`「${_name}」を削除しました${sub}`);
@@ -799,9 +803,7 @@ function delConfirm(){
     p.tasks=p.tasks.filter(t=>!toDelete.has(t.id));
     S.sel.clear();updateBulk();
     save();
-    toDelete.forEach(tid=>{
-      if(window.sbClient)sbClient.from('gp6_tasks').delete().eq('id',tid).then(()=>{});
-    });
+    await Promise.all([...toDelete].map(tid=>sbDeleteTask(tid)));
     renderAll();
     const label=names.slice(0,2).join('、')+(names.length>2?` 他${names.length-2}件`:'');
     showDelDone(`「${label}」を削除しました`);
@@ -813,10 +815,8 @@ function delConfirm(){
     p.phases=p.phases.filter(ph=>ph.id!==id);
     S.exp.delete(id);
     save();
-    phTasks.forEach(tid=>{
-      if(window.sbClient)sbClient.from('gp6_tasks').delete().eq('id',tid).then(()=>{});
-    });
-    if(window.sbClient)sbClient.from('gp6_phases').delete().eq('id',id).then(()=>{});
+    await Promise.all(phTasks.map(tid=>sbDeleteTask(tid)));
+    await sbDeletePhase(id);
     renderAll();
     const sub=phTasks.length?`（タスク${phTasks.length}件を含む）`:'';
     showDelDone(`「${_name}」を削除しました${sub}`);
