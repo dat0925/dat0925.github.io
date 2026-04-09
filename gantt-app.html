@@ -627,6 +627,7 @@ async function sbLoad(){
     (phRows||[]).forEach(r=>{if(S.pjs[r.project_id])S.pjs[r.project_id].phases.push({id:r.id,name:r.name,startDate:r.start_date,endDate:r.end_date,assignee:r.assignee||''});});
     (tkRows||[]).forEach(r=>{if(S.pjs[r.project_id])S.pjs[r.project_id].tasks.push({id:r.id,phaseId:r.phase_id,parentId:r.parent_id,name:r.name,startDate:r.start_date,endDate:r.end_date,completedDate:r.completed_date,status:r.status,assignee:r.assignee,effort:r.effort,memo:r.memo,updatedAt:r.updated_at});});
     sbDot('ok');
+    applyStarred(); // Supabase再読み込み後にstarredを復元
     sbSubscribe();
     return true;
   }catch(e){sbDot('err');return false;}
@@ -692,7 +693,15 @@ async function sbDeletePhase(id){
 }
 
 function save(){
-  try{localStorage.setItem('gp6',JSON.stringify(S.pjs));localStorage.setItem('gp6c',S.cur||'');localStorage.setItem('gp6m',JSON.stringify(S.members||[]));}catch(e){}
+  try{
+    localStorage.setItem('gp6',JSON.stringify(S.pjs));
+    localStorage.setItem('gp6c',S.cur||'');
+    localStorage.setItem('gp6m',JSON.stringify(S.members||[]));
+    // starredを別途保存（Supabase再読み込み後も維持するため）
+    const starred={};
+    Object.values(S.pjs).forEach(p=>(p.tasks||[]).forEach(t=>{if(t.starred)starred[t.id]=true;}));
+    localStorage.setItem('gp6s',JSON.stringify(starred));
+  }catch(e){}
 }
 
 function openSBSettings(){
@@ -748,7 +757,17 @@ function load(){
         p.members=[];
       }
     });
+    // starredを復元
+    applyStarred();
   }catch(e){S.pjs={};}
+}
+function applyStarred(){
+  try{
+    const d=localStorage.getItem('gp6s');
+    if(!d)return;
+    const starred=JSON.parse(d);
+    Object.values(S.pjs).forEach(p=>(p.tasks||[]).forEach(t=>{t.starred=!!starred[t.id];}));
+  }catch(e){}
 }
 function pj(){return S.cur?S.pjs[S.cur]:null}
 function tasks(){return pj()?.tasks||[]}
@@ -1961,7 +1980,7 @@ async function forceReload(){
   if(!sbClient)return alert('DB未接続です');
   document.getElementById('sb-label').textContent='再読込中…';
   const ok=await sbLoad();
-  if(ok){renderPJS();updateFAs();renderAll();}
+  if(ok){applyStarred();renderPJS();updateFAs();renderAll();}
 }
 function initSync(){
   const tb=document.getElementById('tpb'),cb=document.getElementById('cbw');
