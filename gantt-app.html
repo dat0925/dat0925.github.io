@@ -2698,16 +2698,33 @@ function closeM(){
 function tForm(t,pid=''){
   const phs=phases();
   const d=t||{name:'',startDate:td(),endDate:addD(td(),6),status:'todo',effort:1,phaseId:'',assignee:'',memo:'',completedDate:''};
-  // parent task options (for parent/child switching)
   const pt=tasks().filter(x=>!x.parentId&&x.id!==d.id);
   const ptOpts=pt.map(x=>`<option value="${x.id}"${d.parentId===x.id?' selected':''}>${esc(x.name)}</option>`).join('');
   return `<div class="fg"><label class="fl">タスク名 *</label><input class="fc" id="fn" value="${esc(d.name||'')}" placeholder="タスク名を入力"></div>
 <div class="fg"><label class="fl">フェーズ</label><select class="fc" id="fph"><option value="">なし</option>${phs.map(p=>`<option value="${p.id}"${d.phaseId===p.id?' selected':''}>${esc(p.name)}</option>`).join('')}</select></div>
 <div class="fg"><label class="fl">親タスク（設定すると子タスクになります）</label><select class="fc" id="fpar2"><option value="">なし（親タスク）</option>${ptOpts}</select></div>
-<div class="fr"><div class="fg"><label class="fl">開始日 *</label><input class="fc" type="date" id="fsd" value="${d.startDate}"></div><div class="fg"><label class="fl">終了予定日 *</label><input class="fc" type="date" id="fed" value="${d.endDate}"></div></div>
-<div class="fr"><div class="fg"><label class="fl">ステータス</label><select class="fc" id="fst2">${Object.entries(SL).map(([v,l])=>`<option value="${v}"${d.status===v?' selected':''}>${l}</option>`).join('')}</select></div><div class="fg"><label class="fl">工数（h）</label><input class="fc" type="number" id="fef" value="${d.effort||1}" min="0" step="0.5"></div></div>
-<div class="fr"><div class="fg"><label class="fl">担当者 <span style="font-size:10px;color:var(--tx3);font-weight:400">（↓で候補表示）</span></label><input class="fc" id="fasg" value="${esc(d.assignee||'')}" placeholder="担当者名" list="asg-list" autocomplete="off"></div><div class="fg"><label class="fl">完了日</label><input class="fc" type="date" id="fcd" value="${d.completedDate||''}"></div></div>
-<div class="fg"><label class="fl">進捗メモ</label><textarea class="fc" id="fmo">${esc(d.memo||'')}</textarea></div>
+<div class="fr">
+  <div class="fg"><label class="fl">開始日 *</label><input class="fc" type="date" id="fsd" value="${d.startDate}"></div>
+  <div class="fg"><label class="fl">終了予定日 *</label><input class="fc" type="date" id="fed" value="${d.endDate}"></div>
+</div>
+<div class="fr">
+  <div class="fg"><label class="fl">ステータス</label><select class="fc" id="fst2">${Object.entries(SL).map(([v,l])=>`<option value="${v}"${d.status===v?' selected':''}>${l}</option>`).join('')}</select></div>
+  <div class="fg"><label class="fl">工数（h）</label><input class="fc" type="number" id="fef" value="${d.effort||1}" min="0" step="0.5"></div>
+</div>
+<div class="fr">
+  <div class="fg"><label class="fl">担当者 <span style="font-size:10px;color:var(--tx3);font-weight:400">（↓で候補表示）</span></label><input class="fc" id="fasg" value="${esc(d.assignee||'')}" placeholder="担当者名" list="asg-list" autocomplete="off"></div>
+  <div class="fg"><label class="fl">完了日</label><input class="fc" type="date" id="fcd" value="${d.completedDate||''}"></div>
+</div>
+<div class="fg">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+    <label class="fl" style="margin-bottom:0">進捗メモ</label>
+    <button type="button" onclick="copyMemo()" style="display:flex;align-items:center;gap:4px;padding:2px 8px;border:1px solid var(--bd2);border-radius:4px;background:var(--s3);color:var(--tx2);font-size:10px;cursor:pointer;transition:background .1s" onmouseenter="this.style.background='var(--bd)'" onmouseleave="this.style.background='var(--s3)'" title="メモをコピー">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="2"/></svg>
+      コピー
+    </button>
+  </div>
+  <textarea class="fc" id="fmo" style="min-height:120px;resize:vertical">${esc(d.memo||'')}</textarea>
+</div>
 <input type="hidden" id="fpar" value="${pid}">`;
 }
 function phForm(ph){
@@ -2747,6 +2764,26 @@ function subPh(){pushUndo();
   sbSavePH(ph,S.cur);
   closeM();renderAll();
 }
+function copyMemo(){
+  const el=document.getElementById('fmo');
+  if(!el)return;
+  const text=el.value;
+  if(!text){return;}
+  navigator.clipboard.writeText(text).then(()=>{
+    // コピー完了フィードバック
+    const btn=event.currentTarget||event.target.closest('button');
+    if(btn){
+      const orig=btn.innerHTML;
+      btn.innerHTML='<svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg> コピー済';
+      btn.style.color='var(--gn)';btn.style.borderColor='var(--gn)';
+      setTimeout(()=>{btn.innerHTML=orig;btn.style.color='';btn.style.borderColor='';},1500);
+    }
+  }).catch(()=>{
+    // fallback
+    el.select();document.execCommand('copy');
+  });
+}
+
 function dupTask(id){
   const p=pj();if(!p)return;
   const t=p.tasks.find(t=>t.id===id);if(!t)return;
