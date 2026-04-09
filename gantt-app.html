@@ -546,6 +546,7 @@ create table if not exists gp6_phases (
   sort_order int default 0
 );
 alter table gp6_phases disable row level security;
+alter table gp6_phases add column if not exists assignee text default '';
 
 -- ③ タスクテーブル
 create table if not exists gp6_tasks (
@@ -689,21 +690,25 @@ function sbSubscribe(){
     .subscribe(status=>{sbDot(status==='SUBSCRIBED'?'ok':status==='CLOSED'?'':'busy');});
 }
 let _reloadTimer=null;
+let _pendingSave=false; // 自分の保存中はreloadを抑制
 async function sbReload(){
+  if(_pendingSave)return; // 自分の保存中はスキップ
   clearTimeout(_reloadTimer);
   _reloadTimer=setTimeout(async()=>{
     const ok=await sbLoad();
     if(ok){renderPJS();updateFAs();renderAll();}
-  },300);
+  },600); // 保存完了を待つため少し長めに
 }
 
 // ── 行単位の保存関数群 ──
 async function sbSavePJ(id){
   if(!sbClient)return;
+  _pendingSave=true;
   sbDot('busy');
   const p=S.pjs[id];if(!p)return;
   const{error}=await sbClient.from('gp6_projects').upsert({id,name:p.name,sort_order:Object.keys(S.pjs).indexOf(id),members:p.members||[]},{onConflict:'id'});
   sbDot(error?'err':'ok');
+  setTimeout(()=>{_pendingSave=false;},800);
 }
 async function sbDeletePJ(id){
   if(!sbClient)return;
@@ -711,10 +716,12 @@ async function sbDeletePJ(id){
 }
 async function sbSavePH(ph,projectId){
   if(!sbClient)return;
+  _pendingSave=true;
   sbDot('busy');
   const p=S.pjs[projectId];if(!p)return;
   const{error}=await sbClient.from('gp6_phases').upsert({id:ph.id,project_id:projectId,name:ph.name,start_date:ph.startDate||null,end_date:ph.endDate||null,assignee:ph.assignee||'',sort_order:p.phases.findIndex(x=>x.id===ph.id)},{onConflict:'id'});
   sbDot(error?'err':'ok');
+  setTimeout(()=>{_pendingSave=false;},800);
 }
 async function sbDeletePH(id){
   if(!sbClient)return;
@@ -722,10 +729,12 @@ async function sbDeletePH(id){
 }
 async function sbSaveTask(t,projectId){
   if(!sbClient)return;
+  _pendingSave=true;
   sbDot('busy');
   const p=S.pjs[projectId];if(!p)return;
   const{error}=await sbClient.from('gp6_tasks').upsert({id:t.id,project_id:projectId,phase_id:t.phaseId||null,parent_id:t.parentId||null,name:t.name,start_date:t.startDate||null,end_date:t.endDate||null,completed_date:t.completedDate||null,status:t.status,assignee:t.assignee||'',effort:t.effort||1,memo:t.memo||'',starred:t.starred||false,sort_order:p.tasks.findIndex(x=>x.id===t.id),updated_at:new Date().toISOString()},{onConflict:'id'});
   sbDot(error?'err':'ok');
+  setTimeout(()=>{_pendingSave=false;},800);
 }
 async function sbDeleteTask(id){
   if(!sbClient)return;
@@ -2702,7 +2711,10 @@ function subPh(){pushUndo();
   const p=pj();
   if(mMode==='addPh'){p.phases.push(ph);S.exp.add(ph.id);}
   else{const i=p.phases.findIndex(x=>x.id===mId);if(i>=0)p.phases[i]=ph;}
-  save();sbSavePH(ph,S.cur);closeM();renderAll();
+  save();
+  // Realtimeの即時リロードで担当者が消えるのを防ぐため保存完了後に反映
+  sbSavePH(ph,S.cur);
+  closeM();renderAll();
 }
 function dupTask(id){
   const p=pj();if(!p)return;
