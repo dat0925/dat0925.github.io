@@ -2291,6 +2291,54 @@ async function renderBKList(){
 async function openBK(){document.getElementById('bk-modal').style.display='flex';await renderBKList();}
 function closeBK(){document.getElementById('bk-modal').style.display='none';}
 
+
+// ══════════════════════════════════════════
+// KEYBOARD TASK OPERATIONS
+// ══════════════════════════════════════════
+function taskIndent(id, shiftKey){
+  const p=pj();if(!p)return;
+  const t=p.tasks.find(x=>x.id===id);if(!t)return;
+  pushUndo();
+  if(shiftKey){
+    // Shift+Tab: 子タスク→親タスクに昇格
+    if(!t.parentId)return;
+    t.parentId=null;
+    save();{const _cur=S.cur;sbSaveTask(t,_cur);}renderAll();
+  } else {
+    // Tab: すぐ上の表示行が親タスク（parentId=null）なら子タスクに
+    const rows=getRows();
+    const idx=rows.findIndex(r=>r.type==='t'&&r.data.id===id);
+    if(idx<=0)return;
+    const prev=rows[idx-1];
+    if(prev.type!=='t'||prev.data.parentId!==null)return; // 直上が親タスクでなければ不可
+    if(t.parentId===prev.data.id)return; // すでに子
+    t.parentId=prev.data.id;
+    t.phaseId=prev.data.phaseId;
+    S.exp.add('c_'+prev.data.id);
+    save();{const _cur=S.cur;sbSaveTask(t,_cur);}renderAll();
+  }
+}
+function taskMoveUpDown(id, dir){
+  const p=pj();if(!p)return;
+  const rows=getRows().filter(r=>r.type==='t');
+  const idx=rows.findIndex(r=>r.data.id===id);
+  const targetIdx=idx+dir;
+  if(idx<0||targetIdx<0||targetIdx>=rows.length)return;
+  const srcTask=p.tasks.find(x=>x.id===id);
+  const dstTask=p.tasks.find(x=>x.id===rows[targetIdx].data.id);
+  if(!srcTask||!dstTask)return;
+  pushUndo();
+  const si=p.tasks.indexOf(srcTask);
+  const di=p.tasks.indexOf(dstTask);
+  p.tasks.splice(si,1);
+  const ni=p.tasks.indexOf(dstTask);
+  p.tasks.splice(dir>0?ni+1:ni,0,srcTask);
+  // フェーズ・親も移動先に合わせる
+  srcTask.phaseId=dstTask.phaseId;
+  if(dstTask.parentId&&srcTask.parentId)srcTask.parentId=dstTask.parentId;
+  save();{const _cur=S.cur;pj()?.tasks.forEach(t=>sbSaveTask(t,_cur));}renderAll();
+}
+
 // ══════════════════════════════════════════
 // URL SYNC
 // ══════════════════════════════════════════
@@ -2763,6 +2811,13 @@ async function init(){
     if((e.ctrlKey||e.metaKey)&&e.key==='z'&&!e.shiftKey){
       e.preventDefault();
       if(!mMode)undo();
+    }
+    // 1件選択時のキーボード操作
+    if(!mMode&&S.sel.size===1){
+      const selId=[...S.sel][0];
+      if(e.key==='Tab'){e.preventDefault();taskIndent(selId,e.shiftKey);}
+      if(e.key==='ArrowUp'&&!e.ctrlKey&&!e.metaKey){e.preventDefault();taskMoveUpDown(selId,-1);}
+      if(e.key==='ArrowDown'&&!e.ctrlKey&&!e.metaKey){e.preventDefault();taskMoveUpDown(selId,1);}
     }
   });
   document.addEventListener('mousemove',e=>{if(document.getElementById('task-tip').style.display!=='none')posTaskTip(e);});
