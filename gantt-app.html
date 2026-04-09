@@ -319,7 +319,11 @@ const AUTH_DAYS=3;
       <select id="fst" onchange="renderAll()" style="max-width:90px"><option value="">全ステータス</option><option value="todo">未着手</option><option value="inprogress">進行中</option><option value="requested">依頼中</option><option value="done">完了</option><option value="cancelled">不用</option><option value="__active__">完了以外</option><option value="__needs_adjust__">要期間調整</option></select>
       <button class="btn" onclick="navFst(1)" style="padding:3px 7px;font-size:12px">▶</button>
       <select id="fas" onchange="renderAll()"><option value="">全担当者</option></select>
-      <button class="btn" onclick="clearFilters()" title="フィルタをクリア" style="padding:2px 7px;font-size:11px;white-space:nowrap">✕ クリア</button>
+      <button id="filter-clear-btn" onclick="clearFilters()" title="フィルタをクリア" style="display:flex;align-items:center;justify-content:center;width:28px;height:26px;padding:0;background:none;border:1px solid var(--bd2);border-radius:5px;cursor:pointer;transition:all .15s;flex-shrink:0">
+        <svg id="filter-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 4.5h18M7 12h10M11 19.5h2" stroke="var(--tx3)" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+      </button>
     </div>
     <button class="btn" id="toggle-all-btn" onclick="toggleAllPh()" title="フェーズを全て開閉">開閉</button>
     <div style="position:relative;display:inline-block">
@@ -1142,6 +1146,25 @@ function toggleStar(id){pushUndo();
   t.starred=!t.starred;
   save();sbSaveTask(t,S.cur);renderAll();
 }
+function isFilterActive(){
+  const q=(document.getElementById('srch')?.value||'').trim();
+  const fs=document.getElementById('fst')?.value||'';
+  const fa=document.getElementById('fas')?.value||'';
+  return !!(q||fs||fa||S.favFilter);
+}
+function updateFilterIcon(){
+  const btn=document.getElementById('filter-clear-btn');
+  const icon=document.getElementById('filter-icon');
+  if(!btn||!icon)return;
+  const active=isFilterActive();
+  const color=active?'var(--ac)':'var(--tx3)';
+  const bg=active?'var(--ac2)':'none';
+  const border=active?'var(--ac)':'var(--bd2)';
+  btn.style.background=bg;
+  btn.style.borderColor=border;
+  // SVGのpathの色を更新
+  icon.querySelectorAll('path').forEach(p=>p.setAttribute('stroke',active?'var(--ac)':'var(--tx3)'));
+}
 function clearFilters(){
   document.getElementById('srch').value='';
   document.getElementById('fst').value='';
@@ -1151,6 +1174,7 @@ function clearFilters(){
     const btn=document.getElementById('ffav');
     if(btn){btn.style.color='var(--tx3)';btn.style.background='none';btn.textContent='☆';}
   }
+  updateFilterIcon();
   renderAll();
 }
 function toggleFavFilter(){
@@ -1161,6 +1185,7 @@ function toggleFavFilter(){
     btn.style.background=S.favFilter?'rgba(245,158,11,.12)':'none';
     btn.textContent=S.favFilter?'★':'☆';
   }
+  updateFilterIcon();
   renderAll();
 }
 function updateFAs(){
@@ -2257,6 +2282,7 @@ function getBarInfo(t){
 // RENDER ALL
 // ══════════════════════════════════════════
 function renderAll(){
+  updateFilterIcon();
   if(S.view==='gantt'){renderTP();drawChart();}
   else if(S.view==='summary')renderSummary();
   else if(S.view==='allprojects')renderAllProjects();
