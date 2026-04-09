@@ -49,7 +49,7 @@
   --f:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic UI',sans-serif;
   --fm:'SF Mono',Menlo,Consolas,monospace;
   --row:35px;--phrow:35px;--hdr:52px;
-  --gc:14px 18px 28px 1fr 58px 54px 54px 26px 26px;
+  --gc:14px 18px 28px 1fr 58px 54px 54px 1fr;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--f);font-size:13px;overflow:hidden}
@@ -221,7 +221,7 @@ textarea.fc{min-height:60px;resize:vertical}.fg{margin-bottom:11px}.fr{display:g
 .sb-dot.ok{background:var(--gn)}.sb-dot.err{background:var(--rd)}.sb-dot.busy{background:var(--or)}
 /* MOBILE */
 @media(max-width:700px){
-  :root{--gc:14px 18px 28px 1fr 50px 46px 46px 22px 22px;}
+  :root{--gc:14px 18px 28px 1fr 50px 46px 46px 1fr;}
   html,body{height:auto;overflow:auto}
   #main{height:auto;overflow:visible}
   #gw{flex-direction:column;height:auto;overflow:visible}
@@ -364,7 +364,7 @@ const AUTH_DAYS=3;
         <span>タスク名</span>
         <span>ステータス</span>
         <span>開始日</span><span>終了日</span>
-        <span></span><span></span>
+        <span>担当者</span>
       </div>
       <div id="tpb"></div>
     </div>
@@ -415,7 +415,7 @@ const AUTH_DAYS=3;
   <div class="mo">
     <div class="mh"><span class="mt" id="mtitle">タスク追加</span><button class="btn" onclick="closeM()" style="padding:2px 8px;font-size:14px">✕</button></div>
     <div class="mb" id="mbody"></div>
-    <div class="mf"><button class="btn d" id="m-del-btn" onclick="modeDelete()" style="display:none;margin-right:auto">削除</button><button class="btn" onclick="closeM()">キャンセル</button><button class="btn p" onclick="subM()">保存</button></div>
+    <div class="mf"><button class="btn d" id="m-del-btn" onclick="modeDelete()" style="display:none;margin-right:auto">削除</button><button class="btn" id="m-dup-btn" onclick="modeDup()" style="display:none">複製</button><button class="btn" onclick="closeM()">キャンセル</button><button class="btn p" onclick="subM()">保存</button></div>
   </div>
 </div>
 <!-- DELETE CONFIRM MODAL -->
@@ -1133,8 +1133,7 @@ function renderTR(t,ch=false,idx=0){
     <span style="overflow:hidden"><span class="stbdg ${t.status}" onclick="event.stopPropagation();openStPopup(event,'${t.id}')">${SL[t.status]}</span></span>
     <span class="td dt-cell${isDelayed?' start-dt':''}" onclick="event.stopPropagation();openDatePicker(event,'${t.id}','start')" title="クリックで開始日編集">${fmt(sd)}</span>
     <span class="td dt-cell${isOverdue?' end-dt':''}" onclick="event.stopPropagation();openDatePicker(event,'${t.id}','end')" title="クリックで終了日編集">${fmt(ed)}</span>
-    <button class="ic-btn" onclick="event.stopPropagation();editTask('${t.id}')" title="詳細編集">✏</button>
-    <button class="ic-btn" onclick="event.stopPropagation();dupTask('${t.id}')" title="複製">⧉</button>
+    <span class="td" style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:10px;color:var(--tx3)">${esc(t.assignee||'')}</span>
   </div>`;
 }
 
@@ -2033,6 +2032,13 @@ function applyURL(){
 // ══════════════════════════════════════════
 function showDelBtn(show){
   document.getElementById('m-del-btn').style.display=show?'':'none';
+  const dupBtn=document.getElementById('m-dup-btn');
+  if(dupBtn)dupBtn.style.display=(show&&mMode==='editTask')?'':'none';
+}
+function modeDup(){
+  if(mMode!=='editTask'||!mId)return;
+  dupTask(mId);
+  closeM();
 }
 function modeDelete(){
   if(mMode==='editTask')deleteTask(mId);
