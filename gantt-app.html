@@ -2702,8 +2702,10 @@ function tForm(t,pid=''){
   const pt=tasks().filter(x=>!x.parentId&&x.id!==d.id);
   const ptOpts=pt.map(x=>`<option value="${x.id}"${d.parentId===x.id?' selected':''}>${esc(x.name)}</option>`).join('');
   return `<div class="fg"><label class="fl">タスク名 *</label><input class="fc" id="fn" value="${esc(d.name||'')}" placeholder="タスク名を入力"></div>
-<div class="fg"><label class="fl">フェーズ</label><select class="fc" id="fph"><option value="">なし</option>${phs.map(p=>`<option value="${p.id}"${d.phaseId===p.id?' selected':''}>${esc(p.name)}</option>`).join('')}</select></div>
-<div class="fg"><label class="fl">親タスク（設定すると子タスクになります）</label><select class="fc" id="fpar2"><option value="">なし（親タスク）</option>${ptOpts}</select></div>
+<div style="display:flex;flex-direction:row;gap:10px;margin-bottom:11px;width:100%">
+  <div style="width:calc(50% - 5px)"><label class="fl">フェーズ</label><select class="fc" id="fph"><option value="">なし</option>${phs.map(p=>`<option value="${p.id}"${d.phaseId===p.id?' selected':''}>${esc(p.name)}</option>`).join('')}</select></div>
+  <div style="width:calc(50% - 5px)"><label class="fl">親タスク</label><select class="fc" id="fpar2"><option value="">なし（親タスク）</option>${ptOpts}</select></div>
+</div>
 <div style="display:flex;flex-direction:row;gap:10px;margin-bottom:11px;width:100%">
   <div style="width:calc(50% - 5px)"><label class="fl">開始日 *</label><input class="fc" type="date" id="fsd" value="${d.startDate}"></div>
   <div style="width:calc(50% - 5px)"><label class="fl">終了予定日 *</label><input class="fc" type="date" id="fed" value="${d.endDate}"></div>
