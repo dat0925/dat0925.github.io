@@ -244,7 +244,8 @@ textarea.fc{min-height:60px;resize:vertical}.fg{margin-bottom:11px}.fr{display:g
   </div>
 </div>
 <script>
-const PW='2759'; // ← 共通パスワード
+const PW='2759'; // ← ログイン共通パスワード
+const DEL_PJ_PW='86215'; // ← プロジェクト削除専用パスワード
 const AUTH_KEY='gantt_auth_exp';
 const AUTH_DAYS=3;
 (function(){
@@ -291,6 +292,7 @@ const AUTH_DAYS=3;
   <div class="logo">📋 商品企画部</div>
   <div class="pjs">
     <select id="pjsel" onchange="switchPJ(this.value)"><option value="">プロジェクト選択...</option></select>
+    <button class="btn" id="pj-rename-btn" onclick="startRenamePJ()" title="プロジェクト名を変更" style="display:none;padding:3px 7px;font-size:12px">✏</button>
     <input type="text" id="pjname" placeholder="新規プロジェクト名" maxlength="40">
     <button class="btn p" onclick="addPJ()">+ 作成</button>
   </div>
@@ -697,6 +699,15 @@ function phases(){return pj()?.phases||[]}
 // ══════════════════════════════════════════
 // PROJECT
 // ══════════════════════════════════════════
+function startRenamePJ(){
+  if(!S.cur)return;
+  const name=prompt('新しいプロジェクト名を入力してください',pj().name);
+  if(name===null)return; // キャンセル
+  const n=name.trim();
+  if(!n)return alert('プロジェクト名を入力してください');
+  pj().name=n;
+  save();sbSavePJ(S.cur);renderPJS();
+}
 function addPJ(){
   const n=document.getElementById('pjname').value.trim();
   if(!n)return alert('プロジェクト名を入力してください');
@@ -778,7 +789,8 @@ function toggleDelPw(){
 }
 async function delConfirm(){
   const pw=document.getElementById('del-pw').value;
-  if(pw!==PW){
+  const requiredPW=delTarget?.type==='project'?DEL_PJ_PW:PW;
+  if(pw!==requiredPW){
     const e=document.getElementById('del-err');
     e.textContent='暗証番号が違います';
     document.getElementById('del-pw').value='';
@@ -862,6 +874,8 @@ function renderPJS(){
     const o=document.createElement('option');o.value=id;o.textContent=p.name;
     if(id===S.cur)o.selected=true;sel.appendChild(o);
   });
+  const btn=document.getElementById('pj-rename-btn');
+  if(btn)btn.style.display=S.cur?'':'none';
 }
 
 // ══════════════════════════════════════════
