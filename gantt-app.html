@@ -1428,9 +1428,16 @@ function updateBulk(){
 }
 function bulkDelete(){
   if(!S.sel.size)return alert('削除するタスクを選択してください');
-  const names=[...S.sel].map(id=>tasks().find(t=>t.id===id)?.name||id).slice(0,3).join('、');
-  const suffix=S.sel.size>3?` 他${S.sel.size-3}件`:'';
-  openDelModal('bulk', null, names+suffix);
+  if(S.sel.size===1){
+    // 1件だけ選択→単体削除の挙動
+    const id=[...S.sel][0];
+    const t=tasks().find(x=>x.id===id);if(!t)return;
+    openDelModal('task', id, t.name);
+  } else {
+    const names=[...S.sel].map(id=>tasks().find(t=>t.id===id)?.name||id).slice(0,3).join('、');
+    const suffix=S.sel.size>3?` 他${S.sel.size-3}件`:'';
+    openDelModal('bulk', null, names+suffix);
+  }
 }
 function applyBulk(){
   const st=document.getElementById('bst').value;if(!st)return;
