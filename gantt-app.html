@@ -165,8 +165,8 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--f);
 #ov.ani{background:rgba(0,0,0,.6)}
 .mo{background:var(--s1);border:1px solid var(--bd2);border-radius:10px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.4);transform:translateY(40px);opacity:0;transition:transform .45s cubic-bezier(0.22,1,0.36,1),opacity .35s ease}
 .mo.ani{transform:translateY(0);opacity:1}
-.mh{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--bd)}
-.mt{font-size:13px;font-weight:600}.mb{padding:14px 16px}.mf{display:flex;justify-content:flex-end;gap:8px;padding:12px 16px;border-top:1px solid var(--bd)}
+.mh{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--bd);position:sticky;top:0;background:var(--s1);z-index:10}
+.mt{font-size:13px;font-weight:600}.mb{padding:14px 16px}.mf{display:flex;justify-content:flex-end;gap:8px;padding:12px 16px;border-top:1px solid var(--bd);position:sticky;bottom:0;background:var(--s1);z-index:10}
 .fl{display:block;font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
 .fc{width:100%;background:var(--s3);border:1px solid var(--bd2);color:var(--tx);padding:6px 9px;border-radius:5px;font-family:var(--f);font-size:12px;outline:none;transition:border-color .1s}
 .fc:focus{border-color:var(--ac)}.fc option{background:var(--s3)}
@@ -323,6 +323,7 @@ const AUTH_DAYS=3;
     <select id="bst" style="background:var(--s3);border:1px solid var(--bd2);color:var(--tx);padding:3px 6px;border-radius:4px;font-family:var(--f);font-size:11px;outline:none"><option value="">ステータス変更</option><option value="todo">未着手</option><option value="inprogress">進行中</option><option value="requested">依頼中</option><option value="done">完了</option><option value="cancelled">不用</option></select>
     <button class="btn p" style="padding:3px 8px;font-size:11px" onclick="applyBulk()">適用</button>
     <button class="btn" style="padding:3px 8px;font-size:11px" onclick="clearSel()">解除</button>
+    <button class="btn d" style="padding:3px 8px;font-size:11px" onclick="bulkDelete()" title="選択したタスクを削除">🗑削除</button>
   </div>
   <div class="sp"></div>
   <div class="rc">
@@ -392,7 +393,7 @@ const AUTH_DAYS=3;
 </div>
 <div id="ov">
   <div class="mo">
-    <div class="mh"><span class="mt" id="mtitle">タスク追加</span><button class="btn" onclick="closeM()" style="padding:2px 8px;font-size:14px">✕</button></div>
+    <div class="mh"><span class="mt" id="mtitle">タスク追加</span><div style="display:flex;align-items:center;gap:6px"><button class="btn d" id="m-del-btn" onclick="modeDelete()" style="padding:2px 8px;font-size:11px;display:none">🗑 削除</button><button class="btn" onclick="closeM()" style="padding:2px 8px;font-size:14px">✕</button></div></div>
     <div class="mb" id="mbody"></div>
     <div class="mf"><button class="btn" onclick="closeM()">キャンセル</button><button class="btn p" onclick="subM()">保存</button></div>
   </div>
@@ -693,7 +694,7 @@ function switchPJ(id){
 }
 function openDelModal(type, id, label){
   delTarget={type, id};
-  const titles={task:'タスクを削除', phase:'フェーズを削除', project:'プロジェクトを削除'};
+  const titles={task:'タスクを削除', phase:'フェーズを削除', project:'プロジェクトを削除', bulk:'選択タスクを一括削除'};
   document.getElementById('del-title').textContent='🗑 '+titles[type];
   document.getElementById('del-msg').textContent='「'+label+'」を削除します。この操作は元に戻せません。';
   document.getElementById('del-pw').value='';
@@ -752,6 +753,22 @@ function delConfirm(){
     p.tasks=p.tasks.filter(t=>t.id!==id&&t.parentId!==id);
     save();
     [id,...children].forEach(tid=>{
+      if(window.sbClient)sbClient.from('gp6_tasks').delete().eq('id',tid).then(()=>{});
+    });
+    renderAll();
+  } else if(type==='bulk'){
+    const p=pj();if(!p)return;
+    const ids=new Set(S.sel);
+    // 子タスクも含めて削除
+    const toDelete=new Set();
+    ids.forEach(id=>{
+      toDelete.add(id);
+      p.tasks.filter(t=>t.parentId===id).forEach(c=>toDelete.add(c.id));
+    });
+    p.tasks=p.tasks.filter(t=>!toDelete.has(t.id));
+    S.sel.clear();updateBulk();
+    save();
+    toDelete.forEach(tid=>{
       if(window.sbClient)sbClient.from('gp6_tasks').delete().eq('id',tid).then(()=>{});
     });
     renderAll();
@@ -884,6 +901,12 @@ function renderInlineAddRow(){
   </div>`;
 }
 
+function addSibling(childId, rowIdx){
+  // 同じ親の子として同レベルで追加
+  const p=pj();if(!p)return;
+  const child=p.tasks.find(t=>t.id===childId);if(!child||!child.parentId)return;
+  startInlineAdd(child.parentId, rowIdx);
+}
 function startInlineAdd(parentId, rowIdx){
   inlineAddParent=parentId||'__root__';
   inlineAddAfterIdx=parseInt(rowIdx)||0;
@@ -956,7 +979,6 @@ function renderPHR(ph,idx){
     <span class="td">${fmt(sd)}</span>
     <span class="td">${fmt(ed)}</span>
     <span></span>
-    <span><button class="ic-btn del-ic" onclick="event.stopPropagation();deletePhase('${ph.id}')" title="フェーズを削除">🗑</button></span>
   </div>`;
 }
 
@@ -974,9 +996,12 @@ function renderTR(t,ch=false,idx=0){
     if(ends.length)ed=ends[ends.length-1];
   }
   // ▸/▾=開閉(子ありのとき) / +=サブタスク追加(子なしのとき)
+  // 子タスク(ch=true)の+は同レベル追加、親タスクの+はサブタスク追加
   const col3 = hasC
     ? `<span class="tog" onclick="event.stopPropagation();togC('${t.id}')" title="${exp?'折りたたむ':'展開'}">${exp?'▾':'▸'}</span>`
-    : `<span class="tog" onclick="event.stopPropagation();startInlineAdd('${t.id}','${idx}')" title="サブタスク追加" style="color:var(--tx3)">+</span>`;
+    : ch
+      ? `<span class="tog" onclick="event.stopPropagation();addSibling('${t.id}','${idx}')" title="同レベルで追加" style="color:var(--tx3)">+</span>`
+      : `<span class="tog" onclick="event.stopPropagation();startInlineAdd('${t.id}','${idx}')" title="サブタスク追加" style="color:var(--tx3)">+</span>`;
   return `<div class="t-r${ch?' ch':''}${sel?' sel':''}" data-idx="${idx}" data-type="t" data-id="${t.id}" id="tr_${t.id}">
     <span class="drag-handle" data-drag-id="${t.id}">⠿</span>
     <span><input type="checkbox"${sel?' checked':''} style="accent-color:var(--ac);width:15.6px;height:15.6px" onclick="event.stopPropagation();togSel('${t.id}',this.checked)"></span>
@@ -989,7 +1014,6 @@ function renderTR(t,ch=false,idx=0){
     <span class="td dt-cell" onclick="event.stopPropagation();openDatePicker(event,'${t.id}','end')" title="クリックで終了日編集">${fmt(ed)}</span>
     <button class="ic-btn" onclick="event.stopPropagation();editTask('${t.id}')" title="詳細編集">✏</button>
     <button class="ic-btn" onclick="event.stopPropagation();dupTask('${t.id}')" title="複製">⧉</button>
-    <button class="ic-btn del-ic" onclick="event.stopPropagation();deleteTask('${t.id}')" title="削除">🗑</button>
   </div>`;
 }
 
@@ -1333,6 +1357,12 @@ function toggleAll(cb){filtered().forEach(t=>cb.checked?S.sel.add(t.id):S.sel.de
 function updateBulk(){
   const n=S.sel.size;
   document.getElementById('bcc').textContent=n>0?`${n}件選択中`:'0件選択';
+}
+function bulkDelete(){
+  if(!S.sel.size)return alert('削除するタスクを選択してください');
+  const names=[...S.sel].map(id=>tasks().find(t=>t.id===id)?.name||id).slice(0,3).join('、');
+  const suffix=S.sel.size>3?` 他${S.sel.size-3}件`:'';
+  openDelModal('bulk', null, names+suffix);
 }
 function applyBulk(){
   const st=document.getElementById('bst').value;if(!st)return;
@@ -1796,11 +1826,20 @@ function setView(v){
 // ══════════════════════════════════════════
 // TASK CRUD
 // ══════════════════════════════════════════
+function showDelBtn(show){
+  document.getElementById('m-del-btn').style.display=show?'':'none';
+}
+function modeDelete(){
+  if(mMode==='editTask')deleteTask(mId);
+  else if(mMode==='editPh')deletePhase(mId);
+  closeM();
+}
 function showAddTask(pid=''){
   if(!S.cur)return alert('プロジェクトを選択してください');
   mMode='addTask';mId=null;
   document.getElementById('mtitle').textContent=pid?'サブタスク追加':'タスク追加';
   document.getElementById('mbody').innerHTML=tForm(null,pid);
+  showDelBtn(false);
   openOv();
   updateAsgDatalist();
 }
@@ -1809,6 +1848,7 @@ function showAddPhase(){
   mMode='addPh';mId=null;
   document.getElementById('mtitle').textContent='フェーズ追加';
   document.getElementById('mbody').innerHTML=phForm(null);
+  showDelBtn(false);
   openOv();
 }
 function editTask(id){
@@ -1816,6 +1856,7 @@ function editTask(id){
   mMode='editTask';mId=id;
   document.getElementById('mtitle').textContent='タスク編集';
   document.getElementById('mbody').innerHTML=tForm(t,t.parentId||'');
+  showDelBtn(true);
   openOv();
   updateAsgDatalist();
 }
@@ -1824,6 +1865,7 @@ function editPh(id){
   mMode='editPh';mId=id;
   document.getElementById('mtitle').textContent='フェーズ編集';
   document.getElementById('mbody').innerHTML=phForm(ph);
+  showDelBtn(true);
   openOv();
 }
 function openOv(){
