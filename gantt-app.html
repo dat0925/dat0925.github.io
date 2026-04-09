@@ -1033,7 +1033,7 @@ function navSmooth(d){
     if(min){const limit=addD(min,-7);if(next<limit)next=limit;}
   }
   // スライドアニメーション
-  const slideDir=d>0?'-60px':'60px';
+  const slideDir=d>0?'60px':'-60px';
   const canvas=document.getElementById('cbc');
   const hdrCanvas=document.getElementById('chc');
   canvas.style.transition='transform 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.25s';
@@ -1046,7 +1046,7 @@ function navSmooth(d){
     S.sd=next;drawChart();
     canvas.style.transition='none';
     hdrCanvas.style.transition='none';
-    const fromDir=d>0?'60px':'-60px';
+    const fromDir=d>0?'-60px':'60px';
     canvas.style.transform=`translateX(${fromDir})`;
     hdrCanvas.style.transform=`translateX(${fromDir})`;
     canvas.style.opacity='0';
