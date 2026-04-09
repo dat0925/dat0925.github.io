@@ -326,6 +326,7 @@ const AUTH_DAYS=3;
     <button class="btn" onclick="exportCSV()">↓CSV</button>
     <button class="btn d" onclick="deletePJ()">🗑</button>
     <button class="btn" onclick="openMemberSettings()" title="担当者管理">👥</button>
+    <button class="btn" onclick="openBK()" title="バックアップ管理">💾</button>
   </div>
 </div>
 <div id="tabs">
@@ -427,6 +428,23 @@ const AUTH_DAYS=3;
     <div class="mh"><span class="mt" id="mtitle">タスク追加</span><button class="btn" onclick="closeM()" style="padding:2px 8px;font-size:14px">✕</button></div>
     <div class="mb" id="mbody"></div>
     <div class="mf"><button class="btn d" id="m-del-btn" onclick="modeDelete()" style="display:none;margin-right:auto">削除</button><button class="btn" id="m-dup-btn" onclick="modeDup()" style="display:none">複製</button><button class="btn" onclick="closeM()">キャンセル</button><button class="btn p" onclick="subM()">保存</button></div>
+  </div>
+</div>
+<!-- BACKUP MODAL -->
+<div id="bk-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:7000;align-items:center;justify-content:center;padding:12px">
+  <div style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;width:100%;max-width:480px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,.15)">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #e2e8f0">
+      <span style="font-size:13px;font-weight:700;color:#111827">💾 バックアップ管理</span>
+      <button onclick="closeBK()" style="background:none;border:none;cursor:pointer;font-size:16px;color:#6b7280">✕</button>
+    </div>
+    <div style="padding:14px 18px;border-bottom:1px solid #e2e8f0;display:flex;gap:8px;align-items:center">
+      <input id="bk-label" type="text" placeholder="バックアップ名（任意）" maxlength="40"
+        style="flex:1;padding:6px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;outline:none;color:#111827;background:#f9fafb">
+      <button onclick="createBK()" class="btn p" style="white-space:nowrap;padding:5px 12px;font-size:12px">今すぐ保存</button>
+    </div>
+    <div id="bk-list" style="overflow-y:auto;flex:1;padding:10px 18px;display:flex;flex-direction:column;gap:8px">
+      <div style="font-size:12px;color:#9ca3af;text-align:center;padding:20px">読み込み中...</div>
+    </div>
   </div>
 </div>
 <!-- DELETE CONFIRM MODAL -->
@@ -2071,6 +2089,75 @@ function clearTaskTipTimer(){
   setTimeout(()=>document.getElementById('task-tip').style.display='none',2000);
 }
 
+
+// ══════════════════════════════════════════
+// BACKUP
+// ══════════════════════════════════════════
+const BK_KEY='gp6_backups';
+const BK_MAX=20;
+function getBKList(){try{const d=localStorage.getItem(BK_KEY);return d?JSON.parse(d):[]}catch(e){return[]}}
+function saveBKList(list){try{localStorage.setItem(BK_KEY,JSON.stringify(list))}catch(e){alert('バックアップ保存失敗：ストレージ不足の可能性があります')}}
+function createBK(){
+  const label=document.getElementById('bk-label').value.trim();
+  const now=new Date();
+  const ts=now.toISOString();
+  const disp=`${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const bk={ts,disp,label:label||'手動バックアップ',pjs:JSON.parse(JSON.stringify(S.pjs)),members:JSON.parse(JSON.stringify(S.members||[]))};
+  const list=getBKList();
+  list.unshift(bk);
+  if(list.length>BK_MAX)list.splice(BK_MAX);
+  saveBKList(list);
+  document.getElementById('bk-label').value='';
+  renderBKList();
+}
+function autoCreateBK(label){
+  const now=new Date();
+  const ts=now.toISOString();
+  const disp=`${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const bk={ts,disp,label,pjs:JSON.parse(JSON.stringify(S.pjs)),members:JSON.parse(JSON.stringify(S.members||[]))};
+  const list=getBKList();
+  list.unshift(bk);
+  if(list.length>BK_MAX)list.splice(BK_MAX);
+  saveBKList(list);
+}
+function restoreBK(ts){
+  const list=getBKList();
+  const bk=list.find(b=>b.ts===ts);
+  if(!bk)return;
+  if(!confirm(`「${bk.label} (${bk.disp})」の状態に戻します。現在のデータは上書きされます。よいですか？`))return;
+  // 現在の状態を自動バックアップ
+  autoCreateBK('復元前の自動バックアップ');
+  S.pjs=JSON.parse(JSON.stringify(bk.pjs));
+  S.members=JSON.parse(JSON.stringify(bk.members||[]));
+  S.cur=null;S.sel.clear();S.exp.clear();
+  save();renderPJS();updateFAs();renderAll();
+  closeBK();
+  alert('復元しました。');
+}
+function deleteBK(ts){
+  const list=getBKList().filter(b=>b.ts!==ts);
+  saveBKList(list);renderBKList();
+}
+function renderBKList(){
+  const list=getBKList();
+  const el=document.getElementById('bk-list');
+  if(!list.length){el.innerHTML='<div style="font-size:12px;color:#9ca3af;text-align:center;padding:20px">バックアップがありません</div>';return;}
+  el.innerHTML=list.map(b=>{
+    const pjCount=Object.keys(b.pjs||{}).length;
+    const taskCount=Object.values(b.pjs||{}).reduce((s,p)=>s+(p.tasks||[]).length,0);
+    return `<div style="border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:8px;background:#f9fafb">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:600;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(b.label)}</div>
+        <div style="font-size:10px;color:#6b7280;margin-top:2px">${b.disp} · PJ${pjCount}件 · タスク${taskCount}件</div>
+      </div>
+      <button onclick="restoreBK('${b.ts}')" style="padding:4px 10px;border-radius:6px;border:1px solid #2563eb;background:#fff;color:#2563eb;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap">復元</button>
+      <button onclick="deleteBK('${b.ts}')" style="padding:4px 8px;border-radius:6px;border:1px solid #e2e8f0;background:#fff;color:#9ca3af;font-size:11px;cursor:pointer">✕</button>
+    </div>`;
+  }).join('');
+}
+function openBK(){renderBKList();document.getElementById('bk-modal').style.display='flex';}
+function closeBK(){document.getElementById('bk-modal').style.display='none';}
+
 // ══════════════════════════════════════════
 // URL SYNC
 // ══════════════════════════════════════════
@@ -2519,6 +2606,7 @@ async function init(){
   document.addEventListener('mousemove',e=>{if(document.getElementById('task-tip').style.display!=='none')posTaskTip(e);});
   document.getElementById('ov').addEventListener('click',function(e){if(e.target===this)closeM();});
   document.getElementById('sb-modal').addEventListener('click',function(e){if(e.target===this)closeSBSettings();});
+  document.getElementById('bk-modal').addEventListener('click',function(e){if(e.target===this)closeBK();});
   // URLパラメータから状態を復元
   if(location.search)applyURL();
 }
