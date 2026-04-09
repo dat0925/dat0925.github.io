@@ -401,7 +401,6 @@ const AUTH_DAYS=3;
     </div>
   </div>
 </div>
-<datalist id="asg-list"></datalist>
 <div class="st-popup" id="dtpop" style="display:none;padding:8px;min-width:160px">
   <div style="font-size:10px;color:var(--tx3);margin-bottom:4px" id="dtpop-label"></div>
   <input type="date" id="dtpop-input" style="width:100%;padding:4px;border:1px solid var(--bd2);border-radius:4px;background:var(--s2);color:var(--tx);font-size:12px;outline:none"
@@ -733,9 +732,9 @@ function addPJ(){
   const n=document.getElementById('pjname').value.trim();
   if(!n)return alert('プロジェクト名を入力してください');
   const id='pj_'+Date.now();
-  S.pjs[id]={name:n,tasks:[],phases:[]};
+  S.pjs[id]={name:n,tasks:[],phases:[],members:[]};
   document.getElementById('pjname').value='';
-  save();sbSavePJ(id);renderPJS();switchPJ(id);
+  save();sbSavePJ(id);renderPJS();switchPJ(id);pushURL();
 }
 function switchPJ(id){
   S.cur=id||null;S.sel.clear();S.exp.clear();
@@ -2431,7 +2430,13 @@ async function init(){
   renderPJS();updateFAs();renderAll();
   initSync();
   initChartDrag();
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeM();cancelInlineAdd();}});
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape'){closeM();cancelInlineAdd();}
+    if((e.ctrlKey||e.metaKey)&&e.key==='s'){
+      e.preventDefault();
+      if(mMode==='editTask'||mMode==='addTask'||mMode==='editPh'||mMode==='addPh')subM();
+    }
+  });
   document.addEventListener('mousemove',e=>{if(document.getElementById('task-tip').style.display!=='none')posTaskTip(e);});
   document.getElementById('ov').addEventListener('click',function(e){if(e.target===this)closeM();});
   document.getElementById('sb-modal').addEventListener('click',function(e){if(e.target===this)closeSBSettings();});
@@ -2440,5 +2445,6 @@ async function init(){
 }
 init();
 </script>
+<datalist id="asg-list"></datalist>
 </body>
 </html>
