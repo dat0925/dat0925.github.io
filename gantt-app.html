@@ -535,6 +535,8 @@ function td(){return ds(new Date())}
 function ds(d){return d.toISOString().split('T')[0]}
 function pd(s){return s?new Date(s+'T00:00:00'):null}
 function fmt(s){if(!s)return'';const d=pd(s);return`${d.getMonth()+1}/${d.getDate()}`}
+const WD=['日','月','火','水','木','金','土'];
+function fmtLong(s){if(!s)return'';const d=pd(s);return`${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}（${WD[d.getDay()]}）`}
 function addD(s,n){const d=pd(s);d.setDate(d.getDate()+n);return ds(d)}
 function diffD(a,b){return Math.round((pd(b)-pd(a))/86400000)}
 
@@ -2146,6 +2148,7 @@ function renderAllProjects(){
         ${ov2?`<div class="aps-meta-item" style="color:var(--rd)">⚠ 期限切れ <strong>${ov2}</strong></div>`:''}
         ${rk2?`<div class="aps-meta-item" style="color:var(--or)">⚡ 期限近 <strong>${rk2}</strong></div>`:''}
       </div>
+      ${(()=>{const ends=ts.map(t=>t.endDate).filter(Boolean).sort();const ed=ends[ends.length-1];return ed?`<div style="font-size:10px;color:var(--tx3);margin-bottom:6px">終了日 <strong style="color:var(--tx2)">${fmtLong(ed)}</strong></div>`:''})()}
       <div class="aps-bar-wrap"><div class="aps-bar-fill" style="width:${pct}%;background:${barCol}"></div></div>
       <div class="aps-status-row">
         ${cnt2.inprogress?`<span class="aps-st-chip" style="background:rgba(37,99,235,.12);color:#2563eb">進行中 ${cnt2.inprogress}</span>`:''}
