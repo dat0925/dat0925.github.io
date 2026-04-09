@@ -59,7 +59,7 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--f);
 .pjs{display:flex;gap:6px;align-items:center;flex:1;min-width:0;flex-wrap:wrap}
 .pjs select,.pjs input[type=text]{background:var(--s3);border:1px solid var(--bd2);color:var(--tx);padding:4px 8px;border-radius:5px;font-family:var(--f);font-size:12px;outline:none}
 .pjs select{max-width:170px}.pjs input[type=text]{width:120px}
-.tbr{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.tbr{display:flex;gap:5px;align-items:center;flex:1;min-width:0}
 .btn{padding:4px 10px;border-radius:5px;border:1px solid var(--bd2);background:var(--s3);color:var(--tx2);font-family:var(--f);font-size:11px;cursor:pointer;white-space:nowrap;transition:background .1s,color .1s}
 .btn:hover{background:var(--bd);color:var(--tx)}.btn.p{background:var(--ac);border-color:var(--ac);color:#fff}.btn.p:hover{opacity:.85}.btn.d{color:var(--rd)}
 /* TABS */
@@ -312,7 +312,7 @@ const AUTH_DAYS=3;
     <button class="btn p" onclick="addPJ()">+ 作成</button>
   </div>
   <div class="tbr">
-    <div class="fb">
+    <div class="fb" style="flex:1;min-width:0">
       <input type="text" id="srch" placeholder="🔍 検索" oninput="renderAll()">
       <button id="ffav" onclick="toggleFavFilter()" title="お気に入りのみ表示" style="background:none;border:1px solid var(--bd2);border-radius:5px;cursor:pointer;font-size:14px;padding:2px 6px;color:var(--tx3);transition:all .1s">☆</button>
       <button class="btn" onclick="navFst(-1)" style="padding:3px 7px;font-size:12px">◀</button>
@@ -324,15 +324,18 @@ const AUTH_DAYS=3;
           <path d="M3 4.5h18M7 12h10M11 19.5h2" stroke="var(--tx3)" stroke-width="2.2" stroke-linecap="round"/>
         </svg>
       </button>
+      <!-- 右側に統合: 開閉・CSV・操作ボタン -->
+      <div style="display:flex;gap:5px;align-items:center;margin-left:auto;flex-shrink:0">
+        <button class="btn" id="toggle-all-btn" onclick="toggleAllPh()" title="フェーズを全て開閉">開閉</button>
+        <div style="position:relative;display:inline-block">
+          <button class="btn" onclick="openCSVMenu(event)" id="csv-btn">CSV ▾</button>
+          <input type="file" id="csi" accept=".csv" style="display:none" onchange="importCSV(event)">
+        </div>
+        <button class="btn d" onclick="deletePJ()">🗑</button>
+        <button class="btn" onclick="openMemberSettings()" title="担当者管理">👥</button>
+        <button class="btn" onclick="openBK()" title="バックアップ管理">💾</button>
+      </div>
     </div>
-    <button class="btn" id="toggle-all-btn" onclick="toggleAllPh()" title="フェーズを全て開閉">開閉</button>
-    <div style="position:relative;display:inline-block">
-      <button class="btn" onclick="openCSVMenu(event)" id="csv-btn">CSV ▾</button>
-      <input type="file" id="csi" accept=".csv" style="display:none" onchange="importCSV(event)">
-    </div>
-    <button class="btn d" onclick="deletePJ()">🗑</button>
-    <button class="btn" onclick="openMemberSettings()" title="担当者管理">👥</button>
-    <button class="btn" onclick="openBK()" title="バックアップ管理">💾</button>
   </div>
 </div>
 <div id="tabs">
