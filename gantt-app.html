@@ -49,7 +49,7 @@
   --f:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic UI',sans-serif;
   --fm:'SF Mono',Menlo,Consolas,monospace;
   --row:35px;--phrow:35px;--hdr:52px;
-  --gc:14px 18px 28px 2fr 58px 54px 54px 70px;
+  --gc:14px 18px 28px 2fr 58px 54px 54px 70px 24px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--f);font-size:13px;overflow:hidden}
@@ -221,7 +221,7 @@ textarea.fc{min-height:60px;resize:vertical}.fg{margin-bottom:11px}.fr{display:g
 .sb-dot.ok{background:var(--gn)}.sb-dot.err{background:var(--rd)}.sb-dot.busy{background:var(--or)}
 /* MOBILE */
 @media(max-width:700px){
-  :root{--gc:14px 18px 28px 2fr 50px 46px 46px 60px;}
+  :root{--gc:14px 18px 28px 2fr 50px 46px 46px 60px 20px;}
   html,body{height:auto;overflow:auto}
   #main{height:auto;overflow:visible}
   #gw{flex-direction:column;height:auto;overflow:visible}
@@ -314,7 +314,8 @@ const AUTH_DAYS=3;
   <div class="tbr">
     <div class="fb">
       <input type="text" id="srch" placeholder="🔍 検索" oninput="renderAll()">
-      <select id="fst" onchange="renderAll()"><option value="">全ステータス</option><option value="todo">未着手</option><option value="inprogress">進行中</option><option value="requested">依頼中</option><option value="done">完了</option><option value="cancelled">不用</option></select>
+      <button id="ffav" onclick="toggleFavFilter()" title="お気に入りのみ表示" style="background:none;border:1px solid var(--bd2);border-radius:5px;cursor:pointer;font-size:14px;padding:2px 6px;color:var(--tx3);transition:all .1s">☆</button>
+      <select id="fst" onchange="renderAll()"><option value="">全ステータス</option><option value="todo">未着手</option><option value="inprogress">進行中</option><option value="requested">依頼中</option><option value="done">完了</option><option value="cancelled">不用</option><option value="__active__">完了以外</option><option value="__needs_adjust__">要期間調整</option></select>
       <select id="fas" onchange="renderAll()"><option value="">全担当者</option></select>
     </div>
     <button class="btn" onclick="showAddTask()">+ タスク</button>
@@ -367,7 +368,7 @@ const AUTH_DAYS=3;
         <span>タスク名</span>
         <span>ステータス</span>
         <span>開始日</span><span>終了日</span>
-        <span>担当者</span>
+        <span>担当者</span><span style="text-align:center">☆</span>
       </div>
       <div id="tpb"></div>
     </div>
@@ -425,7 +426,7 @@ const AUTH_DAYS=3;
 </div>
 <div id="ov">
   <div class="mo">
-    <div class="mh"><span class="mt" id="mtitle">タスク追加</span><button class="btn" onclick="closeM()" style="padding:2px 8px;font-size:14px">✕</button></div>
+    <div class="mh"><span class="mt" id="mtitle">タスク追加</span><div style="display:flex;align-items:center;gap:6px"><button id="m-star-btn" onclick="toggleModalStar()" style="display:none;background:none;border:none;cursor:pointer;font-size:18px;color:#d1d5db;padding:2px 4px;line-height:1" title="お気に入り">☆</button><button class="btn" onclick="closeM()" style="padding:2px 8px;font-size:14px">✕</button></div></div>
     <div class="mb" id="mbody"></div>
     <div class="mf"><button class="btn d" id="m-del-btn" onclick="modeDelete()" style="display:none;margin-right:auto">削除</button><button class="btn" id="m-dup-btn" onclick="modeDup()" style="display:none">複製</button><button class="btn" onclick="closeM()">キャンセル</button><button class="btn p" onclick="subM()">保存</button></div>
   </div>
@@ -566,7 +567,7 @@ const ROW=35,PHROW=35,HDR=52;
 // ══════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════
-let S={pjs:{},cur:null,view:'gantt',scale:'day',sd:null,sel:new Set(),exp:new Set(),members:[]};
+let S={pjs:{},cur:null,view:'gantt',scale:'day',sd:null,sel:new Set(),exp:new Set(),members:[],favFilter:false};
 let mMode=null,mId=null;
 let stPopTarget=null; // task id for status popup
 let delTarget=null; // {type:'task'|'phase'|'project', id}
@@ -996,12 +997,37 @@ function filtered(){
   const q=(document.getElementById('srch')?.value||'').toLowerCase();
   const fs=document.getElementById('fst')?.value||'';
   const fa=document.getElementById('fas')?.value||'';
+  const favOn=S.favFilter||false;
+  const today=td();
   return ts.filter(t=>{
     if(q&&!t.name.toLowerCase().includes(q))return false;
-    if(fs&&t.status!==fs)return false;
     if(fa&&t.assignee!==fa)return false;
+    if(favOn&&!t.starred)return false;
+    if(fs==='__active__'){
+      if(t.status==='done'||t.status==='cancelled')return false;
+    } else if(fs==='__needs_adjust__'){
+      const overdue=t.endDate&&t.endDate<today&&t.status!=='done'&&t.status!=='cancelled';
+      const delayed=!overdue&&t.startDate&&t.startDate<today&&t.status==='todo';
+      if(!overdue&&!delayed)return false;
+    } else if(fs&&t.status!==fs)return false;
     return true;
   });
+}
+function toggleStar(id){
+  const p=pj();if(!p)return;
+  const t=p.tasks.find(x=>x.id===id);if(!t)return;
+  t.starred=!t.starred;
+  save();sbSaveTask(t,S.cur);renderAll();
+}
+function toggleFavFilter(){
+  S.favFilter=!S.favFilter;
+  const btn=document.getElementById('ffav');
+  if(btn){
+    btn.style.color=S.favFilter?'#f59e0b':'var(--tx3)';
+    btn.style.background=S.favFilter?'rgba(245,158,11,.12)':'none';
+    btn.textContent=S.favFilter?'★':'☆';
+  }
+  renderAll();
 }
 function updateFAs(){
   const as=[...new Set(tasks().map(t=>t.assignee).filter(Boolean))];
@@ -1137,6 +1163,7 @@ function renderPHR(ph,idx){
     <span class="td">${fmt(sd)}</span>
     <span class="td">${fmt(ed)}</span>
     <span class="td asg-cell" onclick="event.stopPropagation();openAsgPickerPh(event,'${ph.id}')" title="クリックで担当者編集" style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:10px;color:var(--tx3);cursor:pointer">${esc(ph.assignee||'—')}</span>
+    <span></span>
   </div>`;
 }
 
@@ -1178,6 +1205,7 @@ function renderTR(t,ch=false,idx=0){
     <span class="td dt-cell${isDelayed?' start-dt':''}" onclick="event.stopPropagation();openDatePicker(event,'${t.id}','start')" title="クリックで開始日編集">${fmt(sd)}</span>
     <span class="td dt-cell${isOverdue?' end-dt':''}" onclick="event.stopPropagation();openDatePicker(event,'${t.id}','end')" title="クリックで終了日編集">${fmt(ed)}</span>
     <span class="td asg-cell" onclick="event.stopPropagation();openAsgPicker(event,'${t.id}')" title="クリックで担当者編集" style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:10px;color:var(--tx3);cursor:pointer">${esc(t.assignee||'—')}</span>
+    <span onclick="event.stopPropagation();toggleStar('${t.id}')" style="display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;color:${t.starred?'#f59e0b':'#d1d5db'};flex-shrink:0" title="お気に入り">${t.starred?'★':'☆'}</span>
   </div>`;
 }
 
@@ -2222,6 +2250,28 @@ function showDelBtn(show){
   document.getElementById('m-del-btn').style.display=show?'':'none';
   const dupBtn=document.getElementById('m-dup-btn');
   if(dupBtn)dupBtn.style.display=(show&&mMode==='editTask')?'':'none';
+  const starBtn=document.getElementById('m-star-btn');
+  if(starBtn){
+    starBtn.style.display=(show&&mMode==='editTask')?'':'none';
+    if(show&&mMode==='editTask'){
+      const t=tasks().find(x=>x.id===mId);
+      updateStarBtn(t?.starred||false);
+    }
+  }
+}
+function updateStarBtn(starred){
+  const btn=document.getElementById('m-star-btn');
+  if(!btn)return;
+  btn.textContent=starred?'★':'☆';
+  btn.style.color=starred?'#f59e0b':'#d1d5db';
+}
+function toggleModalStar(){
+  if(mMode!=='editTask'||!mId)return;
+  const p=pj();if(!p)return;
+  const t=p.tasks.find(x=>x.id===mId);if(!t)return;
+  t.starred=!t.starred;
+  updateStarBtn(t.starred);
+  save();sbSaveTask(t,S.cur);renderAll();
 }
 function modeDup(){
   if(mMode!=='editTask'||!mId)return;
