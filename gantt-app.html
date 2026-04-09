@@ -2180,40 +2180,56 @@ function clearTaskTipTimer(){
 // ══════════════════════════════════════════
 // BACKUP
 // ══════════════════════════════════════════
-const BK_KEY='gp6_backups';
 const BK_MAX=20;
-function getBKList(){try{const d=localStorage.getItem(BK_KEY);return d?JSON.parse(d):[]}catch(e){return[]}}
-function saveBKList(list){try{localStorage.setItem(BK_KEY,JSON.stringify(list))}catch(e){alert('バックアップ保存失敗：ストレージ不足の可能性があります')}}
-function createBK(){
+function bkDisp(ts){const now=new Date(ts);return`${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;}
+async function sbGetBKList(){
+  if(!sbClient)return[];
+  const{data,error}=await sbClient.from('gp6_backups').select('id,label,created_at').order('created_at',{ascending:false}).limit(BK_MAX);
+  if(error){console.error(error);return[];}
+  return(data||[]).map(r=>({ts:r.id,disp:bkDisp(r.created_at),label:r.label}));
+}
+async function sbSaveBK(bk){
+  if(!sbClient)return;
+  const{error}=await sbClient.from('gp6_backups').upsert({id:bk.ts,label:bk.label,created_at:bk.ts,data:{pjs:bk.pjs,members:bk.members}},{onConflict:'id'});
+  if(error)console.error('BK save error:',error);
+}
+async function sbDeleteBK(ts){
+  if(!sbClient)return;
+  await sbClient.from('gp6_backups').delete().eq('id',ts);
+}
+async function sbGetBKData(ts){
+  if(!sbClient)return null;
+  const{data,error}=await sbClient.from('gp6_backups').select('data,label,created_at').eq('id',ts).single();
+  if(error||!data)return null;
+  return{...data.data,label:data.label,disp:bkDisp(data.created_at),ts};
+}
+async function createBK(){
+  if(!sbClient)return alert('DB未接続です');
   const label=document.getElementById('bk-label').value.trim();
-  const now=new Date();
-  const ts=now.toISOString();
-  const disp=`${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-  const bk={ts,disp,label:label||'手動バックアップ',pjs:JSON.parse(JSON.stringify(S.pjs)),members:JSON.parse(JSON.stringify(S.members||[]))};
-  const list=getBKList();
-  list.unshift(bk);
-  if(list.length>BK_MAX)list.splice(BK_MAX);
-  saveBKList(list);
+  const ts=new Date().toISOString();
+  const bk={ts,label:label||'手動バックアップ',pjs:JSON.parse(JSON.stringify(S.pjs)),members:JSON.parse(JSON.stringify(S.members||[]))};
   document.getElementById('bk-label').value='';
-  renderBKList();
+  await sbSaveBK(bk);
+  await renderBKList();
 }
-function autoCreateBK(label){
-  const now=new Date();
-  const ts=now.toISOString();
-  const disp=`${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-  const bk={ts,disp,label,pjs:JSON.parse(JSON.stringify(S.pjs)),members:JSON.parse(JSON.stringify(S.members||[]))};
-  const list=getBKList();
-  list.unshift(bk);
-  if(list.length>BK_MAX)list.splice(BK_MAX);
-  saveBKList(list);
+async function autoCreateBK(label){
+  if(!sbClient)return;
+  const ts=new Date().toISOString();
+  const bk={ts,label,pjs:JSON.parse(JSON.stringify(S.pjs)),members:JSON.parse(JSON.stringify(S.members||[]))};
+  await sbSaveBK(bk);
+  // 古いものを削除
+  const list=await sbGetBKList();
+  if(list.length>BK_MAX){
+    const old=list.slice(BK_MAX);
+    await Promise.all(old.map(b=>sbDeleteBK(b.ts)));
+  }
 }
-function restoreBK(ts){
-  const list=getBKList();
-  const bk=list.find(b=>b.ts===ts);
-  if(!bk)return;
+async function restoreBK(ts){
+  if(!sbClient)return alert('DB未接続です');
+  const bk=await sbGetBKData(ts);
+  if(!bk)return alert('データの取得に失敗しました');
   if(!confirm(`「${bk.label} (${bk.disp})」の状態に戻します。現在のデータは上書きされます。よいですか？`))return;
-  // 現在の状態を自動バックアップ
-  autoCreateBK('復元前の自動バックアップ');
+  await autoCreateBK('復元前の自動バックアップ');
   S.pjs=JSON.parse(JSON.stringify(bk.pjs));
   S.members=JSON.parse(JSON.stringify(bk.members||[]));
   S.cur=null;S.sel.clear();S.exp.clear();
@@ -2221,28 +2237,25 @@ function restoreBK(ts){
   closeBK();
   alert('復元しました。');
 }
-function deleteBK(ts){
-  const list=getBKList().filter(b=>b.ts!==ts);
-  saveBKList(list);renderBKList();
+async function deleteBK(ts){
+  await sbDeleteBK(ts);
+  renderBKList();
 }
-function renderBKList(){
-  const list=getBKList();
+async function renderBKList(){
   const el=document.getElementById('bk-list');
+  el.innerHTML='<div style="font-size:12px;color:#9ca3af;text-align:center;padding:20px">読み込み中...</div>';
+  const list=await sbGetBKList();
   if(!list.length){el.innerHTML='<div style="font-size:12px;color:#9ca3af;text-align:center;padding:20px">バックアップがありません</div>';return;}
-  el.innerHTML=list.map(b=>{
-    const pjCount=Object.keys(b.pjs||{}).length;
-    const taskCount=Object.values(b.pjs||{}).reduce((s,p)=>s+(p.tasks||[]).length,0);
-    return `<div style="border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:8px;background:#f9fafb">
-      <div style="flex:1;min-width:0">
-        <div style="font-size:12px;font-weight:600;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(b.label)}</div>
-        <div style="font-size:10px;color:#6b7280;margin-top:2px">${b.disp} · PJ${pjCount}件 · タスク${taskCount}件</div>
-      </div>
-      <button onclick="restoreBK('${b.ts}')" style="padding:4px 10px;border-radius:6px;border:1px solid #2563eb;background:#fff;color:#2563eb;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap">復元</button>
-      <button onclick="deleteBK('${b.ts}')" style="padding:4px 8px;border-radius:6px;border:1px solid #e2e8f0;background:#fff;color:#9ca3af;font-size:11px;cursor:pointer">✕</button>
-    </div>`;
-  }).join('');
+  el.innerHTML=list.map(b=>`<div style="border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:8px;background:#f9fafb">
+    <div style="flex:1;min-width:0">
+      <div style="font-size:12px;font-weight:600;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(b.label)}</div>
+      <div style="font-size:10px;color:#6b7280;margin-top:2px">${b.disp}</div>
+    </div>
+    <button onclick="restoreBK('${b.ts}')" style="padding:4px 10px;border-radius:6px;border:1px solid #2563eb;background:#fff;color:#2563eb;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap">復元</button>
+    <button onclick="deleteBK('${b.ts}')" style="padding:4px 8px;border-radius:6px;border:1px solid #e2e8f0;background:#fff;color:#9ca3af;font-size:11px;cursor:pointer">✕</button>
+  </div>`).join('');
 }
-function openBK(){renderBKList();document.getElementById('bk-modal').style.display='flex';}
+async function openBK(){document.getElementById('bk-modal').style.display='flex';await renderBKList();}
 function closeBK(){document.getElementById('bk-modal').style.display='none';}
 
 // ══════════════════════════════════════════
