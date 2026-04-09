@@ -1902,6 +1902,20 @@ function initSync(){
 function initChartDrag(){
   const canvas=document.getElementById('cbc');
   const wrap=document.getElementById('cbw');
+  // ダブルクリックで編集画面
+  canvas.addEventListener('dblclick',e=>{
+    const rect=canvas.getBoundingClientRect();
+    const x=e.clientX-rect.left+wrap.scrollLeft;
+    const y=e.clientY-rect.top+wrap.scrollTop;
+    const row=getRowAtCanvasY(y);
+    if(!row)return;
+    if(row.type==='t'){
+      const info=getBarInfo(row.data);
+      if(info&&x>=info.bx&&x<=info.bx+info.bw)editTask(row.data.id);
+    } else if(row.type==='ph'){
+      editPh(row.data.id);
+    }
+  });
   canvas.addEventListener('mousemove',e=>{
     if(cdrag.active){
       const dx=e.clientX-cdrag.startX;
