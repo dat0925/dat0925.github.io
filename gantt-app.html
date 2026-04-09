@@ -406,7 +406,7 @@ const AUTH_DAYS=3;
     <div class="del-pw-label">暗証番号を入力して確認してください</div>
     <div class="del-pw-wrap">
       <input type="password" id="del-pw" placeholder="" maxlength="20"
-        onkeydown="if(event.key='Enter')delConfirm()">
+        onkeydown="if(event.key==='Enter')delConfirm()">
       <button class="del-pw-toggle" type="button" onclick="toggleDelPw()" id="del-pw-eye">表示</button>
     </div>
     <div class="del-err" id="del-err"></div>
