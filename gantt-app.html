@@ -623,7 +623,7 @@ async function sbLoad(){
     if(e1||e2||e3){sbDot('err');return false;}
     S.pjs={};
     (pjRows||[]).forEach(r=>{S.pjs[r.id]={name:r.name,tasks:[],phases:[],members:r.members||[]};});
-    (phRows||[]).forEach(r=>{if(S.pjs[r.project_id])S.pjs[r.project_id].phases.push({id:r.id,name:r.name,startDate:r.start_date,endDate:r.end_date});});
+    (phRows||[]).forEach(r=>{if(S.pjs[r.project_id])S.pjs[r.project_id].phases.push({id:r.id,name:r.name,startDate:r.start_date,endDate:r.end_date,assignee:r.assignee||''});});
     (tkRows||[]).forEach(r=>{if(S.pjs[r.project_id])S.pjs[r.project_id].tasks.push({id:r.id,phaseId:r.phase_id,parentId:r.parent_id,name:r.name,startDate:r.start_date,endDate:r.end_date,completedDate:r.completed_date,status:r.status,assignee:r.assignee,effort:r.effort,memo:r.memo,updatedAt:r.updated_at});});
     sbDot('ok');
     sbSubscribe();
@@ -665,7 +665,7 @@ async function sbSavePH(ph,projectId){
   if(!sbClient)return;
   sbDot('busy');
   const p=S.pjs[projectId];if(!p)return;
-  const{error}=await sbClient.from('gp6_phases').upsert({id:ph.id,project_id:projectId,name:ph.name,start_date:ph.startDate||null,end_date:ph.endDate||null,sort_order:p.phases.findIndex(x=>x.id===ph.id)},{onConflict:'id'});
+  const{error}=await sbClient.from('gp6_phases').upsert({id:ph.id,project_id:projectId,name:ph.name,start_date:ph.startDate||null,end_date:ph.endDate||null,assignee:ph.assignee||'',sort_order:p.phases.findIndex(x=>x.id===ph.id)},{onConflict:'id'});
   sbDot(error?'err':'ok');
 }
 async function sbDeletePH(id){
@@ -1136,7 +1136,7 @@ function renderPHR(ph,idx){
     <span style="overflow:hidden">${phStBadge}</span>
     <span class="td">${fmt(sd)}</span>
     <span class="td">${fmt(ed)}</span>
-    <span></span>
+    <span class="td asg-cell" onclick="event.stopPropagation();openAsgPickerPh(event,'${ph.id}')" title="クリックで担当者編集" style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:10px;color:var(--tx3);cursor:pointer">${esc(ph.assignee||'—')}</span>
   </div>`;
 }
 
@@ -1318,12 +1318,40 @@ function setAsg(name){
   save();sbSaveTask(t,S.cur);renderAll();
 }
 function submitAsgPicker(){
-  setAsg(document.getElementById('asgpop-input').value.trim());
+  const val=document.getElementById('asgpop-input').value.trim();
+  if(asgTarget&&asgTarget.startsWith('ph:'))setAsgPh(val);
+  else setAsg(val);
   closeAsgPicker();
 }
 function closeAsgPicker(){
   document.getElementById('asgpop').style.display='none';
   asgTarget=null;
+}
+function openAsgPickerPh(e,phId){
+  closeAsgPicker();closeDatePicker();
+  const ph=phases().find(x=>x.id===phId);if(!ph)return;
+  asgTarget='ph:'+phId;
+  const pop=document.getElementById('asgpop');
+  const inp=document.getElementById('asgpop-input');
+  inp.value=ph.assignee||'';
+  const candidates=getMemberCandidates();
+  const list=document.getElementById('asgpop-list');
+  list.innerHTML=`<div onclick="setAsgPh('');closeAsgPicker()" style="padding:3px 5px;font-size:11px;cursor:pointer;color:var(--tx3);border-radius:3px" onmouseenter="this.style.background='var(--bd)'" onmouseleave="this.style.background=''">— なし</div>`
+    +candidates.map(n=>`<div onclick="setAsgPh('${esc(n)}');closeAsgPicker()" style="padding:3px 5px;font-size:11px;cursor:pointer;border-radius:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" onmouseenter="this.style.background='var(--bd)'" onmouseleave="this.style.background=''">${esc(n)}</div>`).join('');
+  pop.style.display='block';
+  const r=e.target.getBoundingClientRect();
+  pop.style.left=Math.min(r.left,window.innerWidth-160)+'px';
+  pop.style.top=(r.bottom+2)+'px';
+  setTimeout(()=>inp.focus(),50);
+  e.stopPropagation();
+}
+function setAsgPh(name){
+  if(!asgTarget||!asgTarget.startsWith('ph:'))return;
+  const phId=asgTarget.slice(3);
+  const p=pj();if(!p)return;
+  const ph=p.phases.find(x=>x.id===phId);if(!ph)return;
+  ph.assignee=name;
+  save();sbSavePH(ph,S.cur);renderAll();
 }
 function submitDatePicker(){
   const val=document.getElementById('dtpop-input').value;
@@ -2281,9 +2309,10 @@ function tForm(t,pid=''){
 <input type="hidden" id="fpar" value="${pid}">`;
 }
 function phForm(ph){
-  const d=ph||{name:'',startDate:td(),endDate:addD(td(),13)};
+  const d=ph||{name:'',startDate:td(),endDate:addD(td(),13),assignee:''};
   return `<div class="fg"><label class="fl">フェーズ名 *</label><input class="fc" id="fn" value="${esc(d.name||'')}" placeholder="フェーズ名を入力"></div>
-<div class="fr"><div class="fg"><label class="fl">開始日 *</label><input class="fc" type="date" id="fsd" value="${d.startDate}"></div><div class="fg"><label class="fl">終了日 *</label><input class="fc" type="date" id="fed" value="${d.endDate}"></div></div>`;
+<div class="fr"><div class="fg"><label class="fl">開始日 *</label><input class="fc" type="date" id="fsd" value="${d.startDate}"></div><div class="fg"><label class="fl">終了日 *</label><input class="fc" type="date" id="fed" value="${d.endDate}"></div></div>
+<div class="fg"><label class="fl">担当者</label><input class="fc" id="fasg-ph" value="${esc(d.assignee||'')}" placeholder="担当者名" list="asg-list" autocomplete="off"></div>`;
 }
 function subM(){if(mMode==='addTask'||mMode==='editTask')subTask();else subPh();}
 function subTask(){
@@ -2305,7 +2334,8 @@ function subPh(){
   const name=document.getElementById('fn').value.trim();if(!name)return alert('フェーズ名を入力してください');
   const s=document.getElementById('fsd').value,e=document.getElementById('fed').value;
   if(!s||!e)return alert('日付を入力してください');
-  const ph={id:mId||('ph_'+Date.now()),name,startDate:s,endDate:e};
+  const phAsg=(document.getElementById('fasg-ph')?.value||'').trim();
+  const ph={id:mId||('ph_'+Date.now()),name,startDate:s,endDate:e,assignee:phAsg};
   const p=pj();
   if(mMode==='addPh'){p.phases.push(ph);S.exp.add(ph.id);}
   else{const i=p.phases.findIndex(x=>x.id===mId);if(i>=0)p.phases[i]=ph;}
