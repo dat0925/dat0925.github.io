@@ -10,20 +10,20 @@
 /* DELETE CONFIRM MODAL */
 #del-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:8000;align-items:center;justify-content:center}
 #del-modal.on{display:flex}
-#del-box{background:#1a2236;border:1px solid #2a3550;border-radius:14px;padding:36px 32px 28px;min-width:320px;max-width:380px;display:flex;flex-direction:column;align-items:center;gap:16px;box-shadow:0 8px 40px rgba(0,0,0,.5)}
-#del-box .del-title{font-size:15px;font-weight:700;color:#ef4444;letter-spacing:.5px}
-#del-box .del-msg{font-size:12px;color:#7a8fae;text-align:center;line-height:1.8}
-#del-box .del-pw-label{font-size:11px;color:#5a6f9a}
-#del-box .del-pw-wrap{position:relative;width:100%}
-#del-box .del-pw-wrap input{width:100%;padding:10px 42px 10px 14px;border-radius:8px;border:1px solid #2a3550;background:#0f1623;color:#e2e8f0;font-size:14px;text-align:center;outline:none;transition:border-color .2s;font-family:inherit}
-#del-box .del-pw-wrap input:focus{border-color:#ef4444}
-#del-box .del-pw-toggle{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#5a6f9a;font-size:10px;padding:2px 5px;letter-spacing:.3px;border-radius:3px;transition:color .15s}
-#del-box .del-pw-toggle:hover{color:#e2e8f0}
-#del-box .del-err{font-size:11px;color:#ef4444;min-height:15px;text-align:center}
+#del-box{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:36px 32px 28px;min-width:320px;max-width:380px;display:flex;flex-direction:column;align-items:center;gap:16px;box-shadow:0 8px 40px rgba(0,0,0,.15)}
+#del-box .del-title{font-size:15px;font-weight:700;color:#dc2626;letter-spacing:.5px}
+#del-box .del-msg{font-size:12px;color:#4b5563;text-align:center;line-height:1.8}
+#del-box .del-pw-label{font-size:11px;color:#6b7280}
+#del-box .del-pw-wrap{position:relative;width:66%}
+#del-box .del-pw-wrap input{width:100%;padding:10px 42px 10px 14px;border-radius:8px;border:1px solid #d1d5db;background:#f9fafb;color:#111827;font-size:14px;text-align:center;outline:none;transition:border-color .2s;font-family:inherit}
+#del-box .del-pw-wrap input:focus{border-color:#dc2626}
+#del-box .del-pw-toggle{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#9ca3af;font-size:10px;padding:2px 5px;letter-spacing:.3px;border-radius:3px;transition:color .15s}
+#del-box .del-pw-toggle:hover{color:#374151}
+#del-box .del-err{font-size:11px;color:#dc2626;min-height:15px;text-align:center}
 #del-box .del-btns{display:flex;gap:10px;width:100%}
-#del-box .del-btns button{flex:1;padding:10px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid #2a3550;transition:opacity .15s;letter-spacing:.3px}
-#del-box .del-btns .del-cancel{background:#1a2236;color:#7a8fae}
-#del-box .del-btns .del-cancel:hover{background:#243050;color:#e2e8f0}
+#del-box .del-btns button{flex:1;padding:10px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid #e2e8f0;transition:opacity .15s;letter-spacing:.3px}
+#del-box .del-btns .del-cancel{background:#f3f4f6;color:#6b7280}
+#del-box .del-btns .del-cancel:hover{background:#e5e7eb;color:#374151}
 #del-box .del-btns .del-exec{background:#dc2626;color:#fff;border-color:#dc2626}
 #del-box .del-btns .del-exec:hover{opacity:.85}
 /* AUTH OVERLAY */
@@ -416,9 +416,9 @@ const AUTH_DAYS=3;
     </div>
   </div>
   <!-- 削除完了画面 -->
-  <div id="del-done" style="display:none;flex-direction:column;align-items:center;gap:18px;padding:32px 28px;background:#1a2236;border:1px solid #2a3550;border-radius:14px;min-width:300px;max-width:360px;box-shadow:0 8px 40px rgba(0,0,0,.5)">
+  <div id="del-done" style="display:none;flex-direction:column;align-items:center;gap:18px;padding:32px 28px;background:#fff;border:1px solid #e2e8f0;border-radius:14px;min-width:300px;max-width:360px;box-shadow:0 8px 40px rgba(0,0,0,.15)">
     <div style="font-size:28px">✅</div>
-    <div id="del-done-msg" style="font-size:13px;color:#e2e8f0;text-align:center;line-height:1.6"></div>
+    <div id="del-done-msg" style="font-size:13px;color:#111827;text-align:center;line-height:1.6"></div>
     <button onclick="delDoneClose()" style="width:100%;padding:10px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;letter-spacing:.5px">OK</button>
   </div>
 </div>
@@ -702,11 +702,18 @@ function openDelModal(type, id, label){
   delTarget={type, id};
   const titles={task:'タスクを削除', phase:'フェーズを削除', project:'プロジェクトを削除', bulk:'選択タスクを一括削除'};
   document.getElementById('del-title').textContent='🗑 '+titles[type];
-  document.getElementById('del-msg').textContent='「'+label+'」を削除します。この操作は元に戻せません。';
+  // task単体は暗証番号不要：確認メッセージのみ
+  const noPw = type==='task';
+  document.getElementById('del-msg').textContent=noPw
+    ? `「${label}」を削除します。この操作は元に戻せません。本当によいですか？`
+    : `「${label}」を削除します。この操作は元に戻せません。`;
   document.getElementById('del-pw').value='';
   document.getElementById('del-err').textContent='';
+  // 暗証番号欄・ラベルの表示切替
+  document.querySelector('#del-box .del-pw-label').style.display=noPw?'none':'';
+  document.querySelector('#del-box .del-pw-wrap').style.display=noPw?'none':'';
   document.getElementById('del-modal').classList.add('on');
-  setTimeout(()=>document.getElementById('del-pw').focus(),80);
+  if(!noPw) setTimeout(()=>document.getElementById('del-pw').focus(),80);
 }
 function deletePJ(){
   if(!S.cur)return;
@@ -746,14 +753,17 @@ function toggleDelPw(){
   else{inp.type='password';eye.textContent='表示';}
 }
 function delConfirm(){
-  const pw=document.getElementById('del-pw').value;
-  if(pw!==PW){
-    const e=document.getElementById('del-err');
-    e.textContent='暗証番号が違います';
-    document.getElementById('del-pw').value='';
-    document.getElementById('del-pw').focus();
-    setTimeout(()=>e.textContent='',2000);
-    return;
+  const noPw=delTarget?.type==='task';
+  if(!noPw){
+    const pw=document.getElementById('del-pw').value;
+    if(pw!==PW){
+      const e=document.getElementById('del-err');
+      e.textContent='暗証番号が違います';
+      document.getElementById('del-pw').value='';
+      document.getElementById('del-pw').focus();
+      setTimeout(()=>e.textContent='',2000);
+      return;
+    }
   }
   const inp2=document.getElementById('del-pw');
   const eye2=document.getElementById('del-pw-eye');
