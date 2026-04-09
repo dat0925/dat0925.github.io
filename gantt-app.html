@@ -322,9 +322,10 @@ const AUTH_DAYS=3;
       <button class="btn" onclick="clearFilters()" title="フィルタをクリア" style="padding:2px 7px;font-size:11px;white-space:nowrap">✕ クリア</button>
     </div>
     <button class="btn" id="toggle-all-btn" onclick="toggleAllPh()" title="フェーズを全て開閉">開閉</button>
-    <button class="btn" onclick="document.getElementById('csi').click()">↑CSV</button>
-    <input type="file" id="csi" accept=".csv" style="display:none" onchange="importCSV(event)">
-    <button class="btn" onclick="exportCSV()">↓CSV</button>
+    <div style="position:relative;display:inline-block">
+      <button class="btn" onclick="openCSVMenu(event)" id="csv-btn">CSV ▾</button>
+      <input type="file" id="csi" accept=".csv" style="display:none" onchange="importCSV(event)">
+    </div>
     <button class="btn d" onclick="deletePJ()">🗑</button>
     <button class="btn" onclick="openMemberSettings()" title="担当者管理">👥</button>
     <button class="btn" onclick="openBK()" title="バックアップ管理">💾</button>
@@ -387,6 +388,24 @@ const AUTH_DAYS=3;
   </div>
   <div id="sv"></div>
   <div id="apsv"></div>
+</div>
+<!-- CSV MENU POPUP -->
+<div id="csv-menu" style="display:none;position:fixed;z-index:2000;background:var(--s1);border:1px solid var(--bd2);border-radius:8px;box-shadow:0 6px 24px rgba(0,0,0,.18);min-width:180px;overflow:hidden;transform-origin:top left;transform:scale(0.92);opacity:0;transition:transform 0.15s cubic-bezier(0.22,1,0.36,1),opacity 0.12s">
+  <div onclick="exportCSV();closeCSVMenu()" style="display:flex;align-items:center;gap:8px;padding:10px 14px;cursor:pointer;font-size:12px;color:var(--tx);transition:background .1s" onmouseenter="this.style.background='var(--s2)'" onmouseleave="this.style.background=''">
+    <span style="font-size:14px">⬇️</span><div><div style="font-weight:600">エクスポート</div><div style="font-size:10px;color:var(--tx3)">現在のプロジェクトをCSV保存</div></div>
+  </div>
+  <div style="height:1px;background:var(--bd);margin:0 10px"></div>
+  <div onclick="document.getElementById('csi').click();closeCSVMenu()" style="display:flex;align-items:center;gap:8px;padding:10px 14px;cursor:pointer;font-size:12px;color:var(--tx);transition:background .1s" onmouseenter="this.style.background='var(--s2)'" onmouseleave="this.style.background=''">
+    <span style="font-size:14px">⬆️</span><div><div style="font-weight:600">インポート</div><div style="font-size:10px;color:var(--tx3)">CSVファイルからタスクを読み込み</div></div>
+  </div>
+  <div style="height:1px;background:var(--bd);margin:0 10px"></div>
+  <div onclick="downloadCSVTemplate();closeCSVMenu()" style="display:flex;align-items:center;gap:8px;padding:10px 14px;cursor:pointer;font-size:12px;color:var(--tx);transition:background .1s" onmouseenter="this.style.background='var(--s2)'" onmouseleave="this.style.background=''">
+    <span style="font-size:14px">📄</span><div><div style="font-weight:600">雛形ダウンロード</div><div style="font-size:10px;color:var(--tx3)">インポート用のサンプルCSVを取得</div></div>
+  </div>
+  <div style="height:1px;background:var(--bd);margin:0 10px"></div>
+  <div onclick="closeCSVMenu()" style="display:flex;align-items:center;gap:8px;padding:9px 14px;cursor:pointer;font-size:12px;color:var(--tx3);transition:background .1s" onmouseenter="this.style.background='var(--s2)'" onmouseleave="this.style.background=''">
+    <span style="font-size:13px">✕</span><span>キャンセル</span>
+  </div>
 </div>
 <!-- STATUS POPUP -->
 <div class="st-popup" id="stpop" style="display:none">
@@ -2818,6 +2837,67 @@ function renderAllProjects(){
   });
   h+='</div>';
   el.innerHTML=h;
+}
+
+// ══════════════════════════════════════════
+// CSV MENU
+// ══════════════════════════════════════════
+function openCSVMenu(e){
+  const menu=document.getElementById('csv-menu');
+  const btn=document.getElementById('csv-btn');
+  const r=btn.getBoundingClientRect();
+  menu.style.display='block';
+  // 位置計算（画面端はみ出し防止）
+  let left=r.left;
+  let top=r.bottom+4;
+  if(left+200>window.innerWidth)left=window.innerWidth-200;
+  menu.style.left=left+'px';
+  menu.style.top=top+'px';
+  requestAnimationFrame(()=>{
+    menu.style.transform='scale(1)';
+    menu.style.opacity='1';
+  });
+  e.stopPropagation();
+}
+function closeCSVMenu(){
+  const menu=document.getElementById('csv-menu');
+  menu.style.transform='scale(0.92)';
+  menu.style.opacity='0';
+  setTimeout(()=>menu.style.display='none',130);
+}
+document.addEventListener('click',e=>{
+  const menu=document.getElementById('csv-menu');
+  if(menu.style.display!=='none'&&!e.target.closest('#csv-menu')&&!e.target.closest('#csv-btn'))closeCSVMenu();
+});
+
+function downloadCSVTemplate(){
+  const header='id,phaseId,parentId,name,startDate,endDate,completedDate,status,assignee,effort,memo,updatedAt';
+  const rows=[
+    header,
+    '"t_001","ph_001","","企画・要件定義","2026-05-01","2026-05-10","","todo","田中","8","プロジェクト全体の要件をまとめる","2026-05-01"',
+    '"t_002","ph_001","","競合調査","2026-05-03","2026-05-08","","inprogress","佐藤","4","","2026-05-01"',
+    '"t_003","ph_001","t_001","ヒアリングシート作成","2026-05-01","2026-05-05","","todo","田中","2","t_001の子タスク例","2026-05-01"',
+    '"t_004","ph_002","","デザイン制作","2026-05-11","2026-05-20","","todo","鈴木","16","","2026-05-01"',
+    '"t_005","ph_002","","コーディング","2026-05-15","2026-05-25","","todo","","8","","2026-05-01"',
+    '"t_006","ph_003","","テスト・QA","2026-05-26","2026-05-31","","todo","","4","","2026-05-01"',
+    '"t_007","ph_003","","リリース","2026-06-01","2026-06-01","","todo","","1","","2026-05-01"',
+    '',
+    '## PHASES ##',
+    'id,name,startDate,endDate',
+    '"ph_001","企画フェーズ","2026-05-01","2026-05-10"',
+    '"ph_002","開発フェーズ","2026-05-11","2026-05-25"',
+    '"ph_003","リリースフェーズ","2026-05-26","2026-06-01"',
+  ];
+  const csv=rows.join('\n');
+  // BOM付きUTF-8でDL（Excel対応）
+  const bom=new Uint8Array([0xEF,0xBB,0xBF]);
+  const body=new TextEncoder().encode(csv);
+  const merged=new Uint8Array(bom.length+body.length);
+  merged.set(bom);merged.set(body,bom.length);
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([merged],{type:'text/csv;charset=utf-8'}));
+  a.download='gantt_import_template.csv';
+  a.click();
 }
 
 // ══════════════════════════════════════════
