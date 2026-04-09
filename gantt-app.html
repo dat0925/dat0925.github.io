@@ -2332,22 +2332,67 @@ function taskIndent(id, shiftKey){
 }
 function taskMoveUpDown(id, dir){
   const p=pj();if(!p)return;
-  const rows=getRows().filter(r=>r.type==='t');
-  const idx=rows.findIndex(r=>r.data.id===id);
-  const targetIdx=idx+dir;
-  if(idx<0||targetIdx<0||targetIdx>=rows.length)return;
+  const allRows=getRows();
+  const taskRows=allRows.filter(r=>r.type==='t');
+  const idx=taskRows.findIndex(r=>r.data.id===id);
+  if(idx<0)return;
   const srcTask=p.tasks.find(x=>x.id===id);
-  const dstTask=p.tasks.find(x=>x.id===rows[targetIdx].data.id);
-  if(!srcTask||!dstTask)return;
+  if(!srcTask)return;
+
+  if(dir===-1){
+    // ↑の挙動
+    if(idx===0)return;
+    const prevRow=taskRows[idx-1];
+    const prevTask=prevRow.data;
+    const srcIsParent=!srcTask.parentId;
+    const prevIsParent=!prevTask.parentId;
+
+    if(srcIsParent&&prevIsParent){
+      // 自分が親、直上も親 → その親タスクの上に移動
+      // 自分の子タスクも含めてブロックごと移動
+      const myChildren=p.tasks.filter(t=>t.parentId===srcTask.id);
+      // prevTaskより前の位置に移動
+      const prevIdx=p.tasks.indexOf(prevTask);
+      // srcTaskと子をまとめて抜く
+      const block=[srcTask,...myChildren];
+      block.forEach(t=>p.tasks.splice(p.tasks.indexOf(t),1));
+      const insertAt=p.tasks.indexOf(prevTask);
+      p.tasks.splice(insertAt,0,...block);
+    } else if(!srcIsParent&&!prevIsParent){
+      // 自分が子、直上も子 → その子タスクの上に移動
+      if(srcTask.parentId!==prevTask.parentId)return; // 別の親なら何もしない
+      const si=p.tasks.indexOf(srcTask);
+      const di=p.tasks.indexOf(prevTask);
+      p.tasks.splice(si,1);
+      p.tasks.splice(p.tasks.indexOf(prevTask),0,srcTask);
+    } else if(srcIsParent&&!prevIsParent){
+      // 自分が親、直上が子 → その子タスクの親タスクの上に移動
+      const prevParent=p.tasks.find(t=>t.id===prevTask.parentId);
+      if(!prevParent)return;
+      const myChildren=p.tasks.filter(t=>t.parentId===srcTask.id);
+      const block=[srcTask,...myChildren];
+      block.forEach(t=>p.tasks.splice(p.tasks.indexOf(t),1));
+      const insertAt=p.tasks.indexOf(prevParent);
+      p.tasks.splice(insertAt,0,...block);
+    } else {
+      // 自分が子、直上が親 → 何もしない
+      return;
+    }
+  } else {
+    // ↓の挙動（シンプルに1つ下と交換）
+    const targetIdx=idx+1;
+    if(targetIdx>=taskRows.length)return;
+    const dstTask=p.tasks.find(x=>x.id===taskRows[targetIdx].data.id);
+    if(!dstTask)return;
+    const si=p.tasks.indexOf(srcTask);
+    p.tasks.splice(si,1);
+    const ni=p.tasks.indexOf(dstTask);
+    p.tasks.splice(ni+1,0,srcTask);
+    srcTask.phaseId=dstTask.phaseId;
+    if(dstTask.parentId&&srcTask.parentId)srcTask.parentId=dstTask.parentId;
+  }
+
   pushUndo();
-  const si=p.tasks.indexOf(srcTask);
-  const di=p.tasks.indexOf(dstTask);
-  p.tasks.splice(si,1);
-  const ni=p.tasks.indexOf(dstTask);
-  p.tasks.splice(dir>0?ni+1:ni,0,srcTask);
-  // フェーズ・親も移動先に合わせる
-  srcTask.phaseId=dstTask.phaseId;
-  if(dstTask.parentId&&srcTask.parentId)srcTask.parentId=dstTask.parentId;
   save();{const _cur=S.cur;pj()?.tasks.forEach(t=>sbSaveTask(t,_cur));}renderAll();
 }
 
