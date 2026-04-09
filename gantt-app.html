@@ -2305,16 +2305,28 @@ function taskIndent(id, shiftKey){
     t.parentId=null;
     save();{const _cur=S.cur;sbSaveTask(t,_cur);}renderAll();
   } else {
-    // Tab: すぐ上の表示行が親タスク（parentId=null）なら子タスクに
+    // Tab: 直上が親タスク→その子に、直上が子タスク→同じ親の子に
     const rows=getRows();
     const idx=rows.findIndex(r=>r.type==='t'&&r.data.id===id);
     if(idx<=0)return;
     const prev=rows[idx-1];
-    if(prev.type!=='t'||prev.data.parentId!==null)return; // 直上が親タスクでなければ不可
-    if(t.parentId===prev.data.id)return; // すでに子
-    t.parentId=prev.data.id;
-    t.phaseId=prev.data.phaseId;
-    S.exp.add('c_'+prev.data.id);
+    if(prev.type!=='t')return;
+    let newParentId=null, newPhaseId=null;
+    if(!prev.data.parentId){
+      // 直上が親タスク → その子に
+      if(t.parentId===prev.data.id)return; // すでに子
+      newParentId=prev.data.id;
+      newPhaseId=prev.data.phaseId;
+      S.exp.add('c_'+prev.data.id);
+    } else {
+      // 直上が子タスク → 同じ親の子に
+      if(t.parentId===prev.data.parentId)return; // すでに同じ親
+      newParentId=prev.data.parentId;
+      newPhaseId=prev.data.phaseId;
+      S.exp.add('c_'+prev.data.parentId);
+    }
+    t.parentId=newParentId;
+    t.phaseId=newPhaseId;
     save();{const _cur=S.cur;sbSaveTask(t,_cur);}renderAll();
   }
 }
