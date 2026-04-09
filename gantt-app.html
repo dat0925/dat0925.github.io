@@ -569,6 +569,22 @@ const ROW=35,PHROW=35,HDR=52;
 // STATE
 // ══════════════════════════════════════════
 let S={pjs:{},cur:null,view:'gantt',scale:'day',sd:null,sel:new Set(),exp:new Set(),members:[],favFilter:false};
+const UNDO_MAX=30;
+let undoStack=[];
+function pushUndo(){
+  undoStack.push({pjs:JSON.parse(JSON.stringify(S.pjs)),members:JSON.parse(JSON.stringify(S.members||[]))});
+  if(undoStack.length>UNDO_MAX)undoStack.shift();
+}
+function undo(){
+  if(!undoStack.length)return;
+  const snap=undoStack.pop();
+  S.pjs=snap.pjs;
+  S.members=snap.members;
+  if(S.cur&&!S.pjs[S.cur])S.cur=null;
+  applyStarred();
+  save();
+  renderPJS();updateFAs();renderAll();
+}
 let mMode=null,mId=null;
 let stPopTarget=null; // task id for status popup
 let delTarget=null; // {type:'task'|'phase'|'project', id}
@@ -909,7 +925,7 @@ async function delConfirm(){
   document.getElementById('del-confirm2-msg').textContent=`「${lbl}」を削除します。この操作は元に戻せません。本当によいですか？`;
   document.getElementById('del-confirm2').style.display='flex';
 }
-async function delExec(){
+async function delExec(){pushUndo();
   document.getElementById('del-confirm2').style.display='none';
   if(!delTarget)return;
   const {type, id}=delTarget; delTarget=null;
@@ -1041,7 +1057,7 @@ function filtered(){
     return true;
   });
 }
-function toggleStar(id){
+function toggleStar(id){pushUndo();
   const p=pj();if(!p)return;
   const t=p.tasks.find(x=>x.id===id);if(!t)return;
   t.starred=!t.starred;
@@ -1377,7 +1393,7 @@ function openAsgPicker(e,taskId){
   setTimeout(()=>inp.focus(),50);
   e.stopPropagation();
 }
-function setAsg(name){
+function setAsg(name){pushUndo();
   if(!asgTarget)return;
   const p=pj();if(!p)return;
   const t=p.tasks.find(x=>x.id===asgTarget);if(!t)return;
@@ -1412,7 +1428,7 @@ function openAsgPickerPh(e,phId){
   setTimeout(()=>inp.focus(),50);
   e.stopPropagation();
 }
-function setAsgPh(name){
+function setAsgPh(name){pushUndo();
   if(!asgTarget||!asgTarget.startsWith('ph:'))return;
   const phId=asgTarget.slice(3);
   const p=pj();if(!p)return;
@@ -1420,7 +1436,7 @@ function setAsgPh(name){
   ph.assignee=name;
   save();sbSavePH(ph,S.cur);renderAll();
 }
-function submitDatePicker(){
+function submitDatePicker(){pushUndo();
   const val=document.getElementById('dtpop-input').value;
   if(!val||!dtTarget.taskId)return;
   const p=pj();if(!p)return;
@@ -1549,7 +1565,7 @@ function rowDragEnd(){
         });
       }
     }
-    save();{const _cur=S.cur;pj()?.tasks.forEach(t=>sbSaveTask(t,_cur));}
+    pushUndo();save();{const _cur=S.cur;pj()?.tasks.forEach(t=>sbSaveTask(t,_cur));}
   }
   rdrag.active=false;rdrag.taskId=null;rdrag.dropEl=null;
   renderAll();
@@ -1672,7 +1688,7 @@ function bulkDelete(){
     openDelModal('bulk', null, names+suffix);
   }
 }
-function applyBulk(){
+function applyBulk(){pushUndo();
   const st=document.getElementById('bst').value;if(!st)return;
   const p=pj();if(!p)return;
   p.tasks.forEach(t=>{if(S.sel.has(t.id)){t.status=st;if(st==='done'&&!t.completedDate)t.completedDate=td();if(st!=='done')t.completedDate=null;t.updatedAt=td();}});
@@ -2426,7 +2442,7 @@ function phForm(ph){
 <div class="fg"><label class="fl">担当者</label><input class="fc" id="fasg-ph" value="${esc(d.assignee||'')}" placeholder="担当者名" list="asg-list" autocomplete="off"></div>`;
 }
 function subM(){if(mMode==='addTask'||mMode==='editTask')subTask();else subPh();}
-function subTask(){
+function subTask(){pushUndo();
   const name=document.getElementById('fn').value.trim();if(!name)return alert('タスク名を入力してください');
   const s=document.getElementById('fsd').value,e=document.getElementById('fed').value;
   if(!s||!e)return alert('日付を入力してください');
@@ -2442,7 +2458,7 @@ function subTask(){
   else{const i=p.tasks.findIndex(x=>x.id===mId);if(i>=0)p.tasks[i]=t;}
   save();sbSaveTask(t,S.cur);closeM();updateFAs();renderAll();
 }
-function subPh(){
+function subPh(){pushUndo();
   const name=document.getElementById('fn').value.trim();if(!name)return alert('フェーズ名を入力してください');
   const s=document.getElementById('fsd').value,e=document.getElementById('fed').value;
   if(!s||!e)return alert('日付を入力してください');
@@ -2743,6 +2759,10 @@ async function init(){
     if((e.ctrlKey||e.metaKey)&&e.key==='s'){
       e.preventDefault();
       if(mMode==='editTask'||mMode==='addTask'||mMode==='editPh'||mMode==='addPh')subM();
+    }
+    if((e.ctrlKey||e.metaKey)&&e.key==='z'&&!e.shiftKey){
+      e.preventDefault();
+      if(!mMode)undo();
     }
   });
   document.addEventListener('mousemove',e=>{if(document.getElementById('task-tip').style.display!=='none')posTaskTip(e);});
