@@ -2775,8 +2775,10 @@ function renderSummary(){
 }
 
 // ══════════════════════════════════════════
-// ALL PROJECTS SUMMARY
+// ALL PROJECTS GANTT
 // ══════════════════════════════════════════
+let apgState={scale:'month', sd:null}; // 全プロジェクトガントの独自スケール・開始日
+
 function renderAllProjects(){
   const el=document.getElementById('apsv');
   const pjIds=Object.keys(S.pjs);
@@ -2784,59 +2786,294 @@ function renderAllProjects(){
     el.innerHTML='<div class="emp"><div class="ic">🗂</div><div class="et">プロジェクトがありません</div><div class="ed">「+ 作成」からプロジェクトを追加してください</div></div>';
     return;
   }
-  const today=td();
+
   // 集計
+  const today=td();
   let allTotal=0,allDone=0,allInprogress=0,allOv=0;
   pjIds.forEach(id=>{
-    const p=S.pjs[id];const ts=p.tasks||[];
+    const ts=S.pjs[id].tasks||[];
     allTotal+=ts.length;
     allDone+=ts.filter(t=>t.status==='done').length;
     allInprogress+=ts.filter(t=>t.status==='inprogress').length;
-    allOv+=ts.filter(t=>t.endDate<today&&t.status!=='done'&&t.status!=='cancelled').length;
+    allOv+=ts.filter(t=>t.endDate&&t.endDate<today&&t.status!=='done'&&t.status!=='cancelled').length;
   });
   const allRate=allTotal?Math.round(allDone/allTotal*100):0;
-  let h=`<div class="aps-head"><h2>全プロジェクト サマリー</h2><span style="font-size:11px;color:var(--tx3)">${pjIds.length}件のプロジェクト</span></div>
-  <div class="aps-stat-row">
-    <div class="aps-stat-card"><div class="aps-stat-label">総タスク</div><div class="aps-stat-val" style="color:var(--ac)">${allTotal}</div></div>
-    <div class="aps-stat-card"><div class="aps-stat-label">完了率</div><div class="aps-stat-val" style="color:var(--gn)">${allRate}%</div></div>
-    <div class="aps-stat-card"><div class="aps-stat-label">進行中</div><div class="aps-stat-val" style="color:var(--ac)">${allInprogress}</div></div>
-    <div class="aps-stat-card"><div class="aps-stat-label">期限切れ</div><div class="aps-stat-val" style="color:var(--rd)">${allOv}</div></div>
+
+  el.innerHTML=`
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:14px;font-weight:700">全プロジェクト ガント</span>
+      <span style="font-size:11px;color:var(--tx3)">${pjIds.length}件</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px">
+      <div class="tg" style="border:1px solid var(--bd2);padding:2px;gap:1px">
+        <div class="tab${apgState.scale==='week'?' on':''}" onclick="apgSetScale('week')" style="font-size:10px;padding:2px 8px">週</div>
+        <div class="tab${apgState.scale==='month'?' on':''}" onclick="apgSetScale('month')" style="font-size:10px;padding:2px 8px;border-left:1px solid var(--bd2);border-right:1px solid var(--bd2)">月</div>
+        <div class="tab${apgState.scale==='quarter'?' on':''}" onclick="apgSetScale('quarter')" style="font-size:10px;padding:2px 8px">四半期</div>
+      </div>
+      <button class="btn" onclick="apgGoToday()" style="font-size:11px;padding:3px 8px">今日</button>
+      <button class="btn" onclick="apgNav(-1)" style="padding:3px 8px;font-size:12px">◀</button>
+      <button class="btn" onclick="apgNav(1)" style="padding:3px 8px;font-size:12px">▶</button>
+    </div>
   </div>
-  <div class="aps-grid">`;
-  pjIds.forEach(id=>{
-    const p=S.pjs[id];const ts=p.tasks||[];
-    const cnt2={todo:0,inprogress:0,requested:0,done:0,cancelled:0};
-    ts.forEach(t=>cnt2[t.status]=(cnt2[t.status]||0)+1);
-    const tot=ts.length,dn=cnt2.done;
-    const pct=tot?Math.round(dn/tot*100):0;
-    const ov2=ts.filter(t=>t.endDate<today&&t.status!=='done'&&t.status!=='cancelled').length;
-    const barCol=pct>=80?'#16a34a':pct>=50?'#2563eb':'#d97706';
-    const pctCls=pct>=60?'':'pct<30?\'low\':\'mid\'';
-    const pctClass=pct>=60?'':'pct<30?"low":"mid"';
-    const pClass=pct<30?'low':pct<60?'mid':'';
-    let rk2=ts.filter(t=>{if(t.status==='done'||t.status==='cancelled')return false;const d=diffD(today,t.endDate);return d>=0&&d<=3;}).length;
-    h+=`<div class="aps-card" onclick="setView('gantt');switchPJ('${id}')">
-      <div class="aps-pct ${pClass}">${pct}%</div>
-      <div class="aps-card-name" title="${esc(p.name)}">${esc(p.name)}</div>
-      <div class="aps-meta">
-        <div class="aps-meta-item">タスク <strong>${tot}</strong></div>
-        <div class="aps-meta-item">完了 <strong>${dn}</strong></div>
-        ${ov2?`<div class="aps-meta-item" style="color:var(--rd)">⚠ 期限切れ <strong>${ov2}</strong></div>`:''}
-        ${rk2?`<div class="aps-meta-item" style="color:var(--or)">⚡ 期限近 <strong>${rk2}</strong></div>`:''}
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px">
+    <div style="background:var(--s1);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;text-align:center"><div style="font-size:9px;color:var(--tx3);margin-bottom:2px">総タスク</div><div style="font-size:18px;font-weight:700;color:var(--ac)">${allTotal}</div></div>
+    <div style="background:var(--s1);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;text-align:center"><div style="font-size:9px;color:var(--tx3);margin-bottom:2px">完了率</div><div style="font-size:18px;font-weight:700;color:var(--gn)">${allRate}%</div></div>
+    <div style="background:var(--s1);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;text-align:center"><div style="font-size:9px;color:var(--tx3);margin-bottom:2px">進行中</div><div style="font-size:18px;font-weight:700;color:var(--ac)">${allInprogress}</div></div>
+    <div style="background:var(--s1);border:1px solid var(--bd);border-radius:7px;padding:8px 10px;text-align:center"><div style="font-size:9px;color:var(--tx3);margin-bottom:2px">期限切れ</div><div style="font-size:18px;font-weight:700;color:var(--rd)">${allOv}</div></div>
+  </div>
+  <div style="background:var(--s1);border:1px solid var(--bd);border-radius:8px;overflow:hidden">
+    <div style="display:flex">
+      <div id="apg-left" style="width:180px;min-width:180px;flex-shrink:0;border-right:2px solid var(--bd2)">
+        <div style="height:44px;background:var(--s2);border-bottom:2px solid var(--bd2);display:flex;align-items:center;padding:0 12px;font-size:10px;font-weight:700;color:var(--tx3);letter-spacing:.5px">プロジェクト</div>
+        <div id="apg-names"></div>
       </div>
-      ${(()=>{const ends=ts.map(t=>t.endDate).filter(Boolean).sort();const ed=ends[ends.length-1];return ed?`<div style="font-size:10px;color:var(--tx3);margin-bottom:6px">終了日 <strong style="color:var(--tx2)">${fmtLong(ed)}</strong></div>`:''})()}
-      <div class="aps-bar-wrap"><div class="aps-bar-fill" style="width:${pct}%;background:${barCol}"></div></div>
-      <div class="aps-status-row">
-        ${cnt2.inprogress?`<span class="aps-st-chip" style="background:rgba(37,99,235,.12);color:#2563eb">進行中 ${cnt2.inprogress}</span>`:''}
-        ${cnt2.todo?`<span class="aps-st-chip" style="background:rgba(90,100,120,.15);color:#5a6478">未着手 ${cnt2.todo}</span>`:''}
-        ${cnt2.requested?`<span class="aps-st-chip" style="background:rgba(217,119,6,.12);color:#d97706">依頼中 ${cnt2.requested}</span>`:''}
-        ${cnt2.done?`<span class="aps-st-chip" style="background:rgba(22,163,74,.12);color:#16a34a">完了 ${cnt2.done}</span>`:''}
-        ${cnt2.cancelled?`<span class="aps-st-chip" style="background:rgba(220,38,38,.12);color:#dc2626">不用 ${cnt2.cancelled}</span>`:''}
+      <div style="flex:1;overflow-x:auto;overflow-y:hidden" id="apg-chart-wrap">
+        <canvas id="apg-canvas" style="display:block"></canvas>
       </div>
+    </div>
+  </div>`;
+
+  drawApgChart();
+}
+
+function apgGetDays(){
+  const scale=apgState.scale;
+  const n=scale==='week'?84:scale==='month'?180:365;
+  const start=apgState.sd||apgGetDefaultStart();
+  const days=[];for(let i=0;i<n;i++)days.push(addD(start,i));
+  return{days,start};
+}
+function apgGetDefaultStart(){
+  // 全プロジェクトの最古開始日 or 今日の1ヶ月前
+  const all=[];
+  Object.values(S.pjs).forEach(p=>(p.tasks||[]).forEach(t=>{if(t.startDate)all.push(t.startDate);}));
+  const min=all.length?all.sort()[0]:null;
+  return min&&min<addD(td(),-30)?addD(min,-7):addD(td(),-30);
+}
+function apgCw(){return apgState.scale==='week'?20:apgState.scale==='month'?9:5;}
+function apgSetScale(s){apgState.scale=s;renderAllProjects();}
+function apgGoToday(){apgState.sd=addD(td(),-30);renderAllProjects();}
+function apgNav(d){
+  const n=apgState.scale==='week'?56:apgState.scale==='month'?90:180;
+  apgState.sd=addD(apgState.sd||apgGetDefaultStart(),d*n);
+  renderAllProjects();
+}
+
+function drawApgChart(){
+  const pjIds=Object.keys(S.pjs);
+  if(!pjIds.length)return;
+  const {days}=apgGetDays();
+  const cw=apgCw();
+  const W=days.length*cw;
+  const ROW_H=36, HDR_H=44;
+  const today=td();
+  const scale=apgState.scale;
+
+  // 左パネルにプロジェクト名行を生成
+  const namesEl=document.getElementById('apg-names');
+  if(!namesEl)return;
+  namesEl.innerHTML=pjIds.map((id,i)=>{
+    const p=S.pjs[id];
+    const ts=p.tasks||[];
+    const done=ts.filter(t=>t.status==='done').length;
+    const pct=ts.length?Math.round(done/ts.length*100):0;
+    const ov=ts.some(t=>t.endDate&&t.endDate<today&&t.status!=='done'&&t.status!=='cancelled');
+    const pClass=pct>=80?'var(--gn)':pct>=50?'var(--ac)':'var(--or)';
+    const bg=i%2===0?'var(--s1)':'var(--s2)';
+    return `<div onclick="setView('gantt');switchPJ('${id}')" title="${esc(p.name)}" style="height:${ROW_H}px;display:flex;align-items:center;padding:0 10px;gap:6px;background:${bg};border-bottom:1px solid var(--bd);cursor:pointer;transition:background .1s" onmouseenter="this.style.background='var(--ac2)'" onmouseleave="this.style.background='${bg}'">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:11px;font-weight:600;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(p.name)}</div>
+        <div style="font-size:9px;color:var(--tx3);margin-top:1px">${ts.length}タスク${ov?' ⚠':''}</div>
+      </div>
+      <div style="font-size:11px;font-weight:700;color:${pClass};flex-shrink:0">${pct}%</div>
     </div>`;
+  }).join('');
+
+  // Canvas描画
+  const canvas=document.getElementById('apg-canvas');
+  if(!canvas)return;
+  const dpr=window.devicePixelRatio||1;
+  const H=HDR_H+pjIds.length*ROW_H;
+  canvas.width=W*dpr; canvas.height=H*dpr;
+  canvas.style.width=W+'px'; canvas.style.height=H+'px';
+  const ctx=canvas.getContext('2d');
+  ctx.scale(dpr,dpr);
+  ctx.clearRect(0,0,W,H);
+
+  const di={};days.forEach((d,i)=>di[d]=i);
+
+  // ── ヘッダー背景 ──
+  ctx.fillStyle='#f0f2f5';
+  ctx.fillRect(0,0,W,HDR_H);
+
+  // ── 月ラベル（上段） ──
+  const M_H=20, W_H=24;
+  let cm=null,ms=0;
+  days.forEach((d,i)=>{
+    const dt=pd(d);
+    const m=`${dt.getFullYear()}年${dt.getMonth()+1}月`;
+    if(m!==cm){
+      if(cm){
+        // 前の月ラベルを描画
+        ctx.strokeStyle='#b0b8c8';ctx.lineWidth=1;
+        ctx.beginPath();ctx.moveTo(ms*cw,0);ctx.lineTo(ms*cw,M_H);ctx.stroke();
+        ctx.font='700 10px -apple-system,sans-serif';ctx.fillStyle='#374151';ctx.textAlign='left';
+        ctx.fillText(cm,ms*cw+5,M_H-5);
+      }
+      cm=m;ms=i;
+    }
   });
-  h+='</div>';
-  el.innerHTML=h;
+  if(cm){ctx.font='700 10px -apple-system,sans-serif';ctx.fillStyle='#374151';ctx.textAlign='left';ctx.fillText(cm,ms*cw+5,M_H-5);}
+
+  // ── 週/月ラベル（下段） ──
+  if(scale==='week'){
+    // 月曜ごとに週番号
+    days.forEach((d,i)=>{
+      const dt=pd(d);
+      if(dt.getDay()===1||i===0){
+        const x=i*cw;
+        if(i>0){ctx.strokeStyle='#c8cdd8';ctx.lineWidth=.7;ctx.beginPath();ctx.moveTo(x,M_H);ctx.lineTo(x,HDR_H);ctx.stroke();}
+        if(cw>=14){
+          ctx.font='500 9px -apple-system,sans-serif';ctx.fillStyle='#6b7280';ctx.textAlign='left';
+          ctx.fillText(`${dt.getMonth()+1}/${dt.getDate()}`,x+2,HDR_H-5);
+        }
+      }
+    });
+  } else {
+    // 月区切り（1日ごとに月変わりを検出）
+    days.forEach((d,i)=>{
+      const dt=pd(d);
+      if(dt.getDate()===1||i===0){
+        const x=i*cw;
+        if(i>0){ctx.strokeStyle='rgba(37,99,235,.4)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+        if(cw>=5){
+          ctx.font='500 9px -apple-system,sans-serif';ctx.fillStyle='#6b7280';ctx.textAlign='left';
+          ctx.fillText(`${dt.getMonth()+1}月`,x+2,HDR_H-5);
+        }
+      }
+    });
+  }
+
+  // ヘッダー下線
+  ctx.strokeStyle='#b0b8c8';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(0,HDR_H-.75);ctx.lineTo(W,HDR_H-.75);ctx.stroke();
+  ctx.strokeStyle='#d0d5dd';ctx.lineWidth=.5;
+  ctx.beginPath();ctx.moveTo(0,M_H);ctx.lineTo(W,M_H);ctx.stroke();
+
+  // ── 各プロジェクト行 ──
+  const COLORS=['#2563eb','#16a34a','#d97706','#7c3aed','#dc2626','#0891b2','#be185d','#65a30d'];
+  pjIds.forEach((id,ri)=>{
+    const p=S.pjs[id];
+    const ts=p.tasks||[];
+    const y=HDR_H+ri*ROW_H;
+    const bg=ri%2===0?'#ffffff':'#f8f9fb';
+
+    // 行背景
+    ctx.fillStyle=bg;
+    ctx.fillRect(0,y,W,ROW_H);
+
+    // 行下線
+    ctx.strokeStyle='#dde1e8';ctx.lineWidth=.7;
+    ctx.beginPath();ctx.moveTo(0,y+ROW_H);ctx.lineTo(W,y+ROW_H);ctx.stroke();
+
+    // today列ハイライト
+    const ti=di[today];
+    if(ti!==undefined){ctx.fillStyle='rgba(220,38,38,.04)';ctx.fillRect(ti*cw,y,cw,ROW_H);}
+
+    // タスクのガントバー
+    const col=COLORS[ri%COLORS.length];
+    const colBg=col+'28'; // 透明度
+    const starts=ts.map(t=>t.startDate).filter(Boolean).sort();
+    const ends=ts.map(t=>t.endDate).filter(Boolean).sort();
+    if(!starts.length||!ends.length)return;
+
+    // フェーズごとにバーを描画（フェーズがなければ全体を1本）
+    const phs=p.phases||[];
+    if(phs.length){
+      phs.forEach((ph,pi)=>{
+        const phTasks=ts.filter(t=>t.phaseId===ph.id);
+        const phStarts=phTasks.map(t=>t.startDate).filter(Boolean).sort();
+        const phEnds=phTasks.map(t=>t.endDate).filter(Boolean).sort();
+        if(!phStarts.length||!phEnds.length)return;
+        const s=phStarts[0], e=phEnds[phEnds.length-1];
+        const si=di[s]!==undefined?di[s]:(s<days[0]?0:days.length);
+        const ei=di[e]!==undefined?di[e]:(e>days[days.length-1]?days.length-1:-1);
+        if(ei<0||si>=days.length)return;
+        const bx=si*cw, bw=Math.max(cw,(ei-si+1)*cw);
+        const bh=14, by=y+(ROW_H-bh)/2;
+        const phCol=COLORS[(ri*3+pi)%COLORS.length];
+
+        // バー背景
+        ctx.fillStyle=phCol+'22';
+        rr(ctx,bx,by,bw,bh,3);ctx.fill();
+        // バー枠
+        ctx.strokeStyle=phCol+'88';ctx.lineWidth=1;
+        rr(ctx,bx,by,bw,bh,3);ctx.stroke();
+        // 左端アクセント
+        ctx.fillStyle=phCol;
+        rr(ctx,bx,by,Math.min(4,bw),bh,2);ctx.fill();
+
+        // 完了率で塗り
+        const done=phTasks.filter(t=>t.status==='done').length;
+        const pct2=phTasks.length?done/phTasks.length:0;
+        if(pct2>0){
+          ctx.fillStyle=phCol+'55';
+          rr(ctx,bx,by,Math.max(4,bw*pct2),bh,3);ctx.fill();
+        }
+
+        // フェーズ名
+        if(bw>30){
+          ctx.save();ctx.beginPath();ctx.rect(bx+6,by,bw-8,bh);ctx.clip();
+          ctx.font='500 9px -apple-system,sans-serif';ctx.fillStyle='rgba(26,32,48,.85)';ctx.textAlign='left';
+          ctx.fillText(ph.name,bx+6,by+bh/2+3.5);
+          ctx.restore();
+        }
+      });
+    } else {
+      // フェーズなし: 全タスクを1本のバーに
+      const s=starts[0], e=ends[ends.length-1];
+      const si=di[s]!==undefined?di[s]:(s<days[0]?0:days.length);
+      const ei=di[e]!==undefined?di[e]:(e>days[days.length-1]?days.length-1:-1);
+      if(ei<0||si>=days.length)return;
+      const bx=si*cw, bw=Math.max(cw,(ei-si+1)*cw);
+      const bh=16, by=y+(ROW_H-bh)/2;
+      ctx.fillStyle=colBg;rr(ctx,bx,by,bw,bh,3);ctx.fill();
+      ctx.strokeStyle=col+'88';ctx.lineWidth=1;rr(ctx,bx,by,bw,bh,3);ctx.stroke();
+      ctx.fillStyle=col;rr(ctx,bx,by,4,bh,2);ctx.fill();
+      const done=ts.filter(t=>t.status==='done').length;
+      const pct2=ts.length?done/ts.length:0;
+      if(pct2>0){ctx.fillStyle=col+'55';rr(ctx,bx,by,Math.max(4,bw*pct2),bh,3);ctx.fill();}
+    }
+  });
+
+  // today縦線
+  const ti2=di[today];
+  if(ti2!==undefined){
+    const tx2=ti2*cw+cw/2;
+    ctx.strokeStyle='rgba(220,38,38,.75)';ctx.lineWidth=1.5;
+    ctx.setLineDash([4,3]);
+    ctx.beginPath();ctx.moveTo(tx2,HDR_H);ctx.lineTo(tx2,H);ctx.stroke();
+    ctx.setLineDash([]);
+    // 「今日」ラベル
+    ctx.fillStyle='rgba(220,38,38,.9)';
+    const tw=24;
+    rr(ctx,tx2-tw/2,HDR_H-14,tw,13,3);ctx.fill();
+    ctx.font='700 9px -apple-system,sans-serif';ctx.fillStyle='#fff';ctx.textAlign='center';
+    ctx.fillText('今日',tx2,HDR_H-4);
+  }
+
+  // クリックイベント（プロジェクトに遷移）
+  canvas.onclick=e2=>{
+    const rect=canvas.getBoundingClientRect();
+    const y2=e2.clientY-rect.top;
+    if(y2<HDR_H)return;
+    const ri2=Math.floor((y2-HDR_H)/ROW_H);
+    if(ri2>=0&&ri2<pjIds.length){
+      setView('gantt');switchPJ(pjIds[ri2]);
+    }
+  };
+  canvas.style.cursor='pointer';
 }
 
 // ══════════════════════════════════════════
