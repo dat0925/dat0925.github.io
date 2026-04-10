@@ -348,6 +348,11 @@ const AUTH_DAYS=3;
       <path d="M7 5L3 9l4 4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
   </button>
+  <!-- 管理者モードバッジ・退出ボタン -->
+  <div id="admin-mode-badge" style="display:none;align-items:center;gap:6px;margin-left:6px;padding:2px 10px;background:rgba(124,58,237,.12);border:1px solid rgba(124,58,237,.35);border-radius:12px">
+    <span style="font-size:10px;color:#7c3aed;font-weight:700">🔒 管理者モード</span>
+  </div>
+  <button id="admin-exit-btn" onclick="exitAdminMode()" style="display:none;align-items:center;gap:4px;padding:3px 8px;border:1px solid var(--bd2);border-radius:5px;background:var(--s3);color:var(--tx3);font-size:11px;cursor:pointer" title="管理者モードを終了">✕ 退出</button>
   <!-- iPad用タスク移動ボタン -->
   <div id="move-btns" style="display:flex;align-items:center;gap:4px;margin-left:4px">
     <span style="font-size:10px;color:var(--tx3);white-space:nowrap">選択タスク:</span>
@@ -398,6 +403,21 @@ const AUTH_DAYS=3;
   </div>
   <div id="sv"></div>
   <div id="apsv"></div>
+</div>
+<!-- 管理者モード認証モーダル -->
+<div id="admin-auth-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;align-items:center;justify-content:center">
+  <div style="background:var(--s1);border:1px solid var(--bd2);border-radius:12px;padding:28px 24px;width:280px;max-width:90vw;display:flex;flex-direction:column;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.25)">
+    <div style="font-size:13px;font-weight:700;color:var(--tx);text-align:center">🔒 管理者モード</div>
+    <div style="font-size:11px;color:var(--tx3);text-align:center">暗証番号を入力してください</div>
+    <input id="admin-auth-pw" type="password" placeholder="••••"
+      style="width:100%;padding:8px 12px;border:1px solid var(--bd2);border-radius:6px;background:var(--s3);color:var(--tx);font-size:16px;text-align:center;outline:none;letter-spacing:4px"
+      onkeydown="if(event.key==='Enter')submitAdminAuth();if(event.key==='Escape')closeAdminAuth()">
+    <div id="admin-auth-err" style="font-size:11px;color:var(--rd);text-align:center;min-height:16px"></div>
+    <div style="display:flex;gap:8px">
+      <button onclick="closeAdminAuth()" style="flex:1;padding:8px;border-radius:6px;border:1px solid var(--bd2);background:var(--s3);color:var(--tx2);font-size:12px;cursor:pointer">キャンセル</button>
+      <button onclick="submitAdminAuth()" style="flex:1;padding:8px;border-radius:6px;border:none;background:var(--ac);color:#fff;font-size:12px;font-weight:600;cursor:pointer">入室</button>
+    </div>
+  </div>
 </div>
 <!-- CSV MENU POPUP -->
 <div id="csv-menu" style="display:none;position:fixed;z-index:2000;background:var(--s1);border:1px solid var(--bd2);border-radius:8px;box-shadow:0 6px 24px rgba(0,0,0,.18);min-width:180px;overflow:hidden;transform-origin:top left;transform:scale(0.92);opacity:0;transition:transform 0.15s cubic-bezier(0.22,1,0.36,1),opacity 0.12s">
@@ -580,7 +600,17 @@ alter table gp6_tasks disable row level security;
 -- ④ Realtime有効化
 alter publication supabase_realtime add table gp6_projects;
 alter publication supabase_realtime add table gp6_phases;
-alter publication supabase_realtime add table gp6_tasks;</div>
+alter publication supabase_realtime add table gp6_tasks;
+
+-- ⑤ 管理者モード用テーブル（gp6a_*）
+create table if not exists gp6a_projects (id text primary key, name text not null, sort_order int default 0, members jsonb default '[]'::jsonb, created_at timestamptz default now());
+alter table gp6a_projects disable row level security;
+create table if not exists gp6a_phases (id text primary key, project_id text references gp6a_projects(id) on delete cascade, name text not null, start_date date, end_date date, assignee text default '', sort_order int default 0);
+alter table gp6a_phases disable row level security;
+create table if not exists gp6a_tasks (id text primary key, project_id text references gp6a_projects(id) on delete cascade, phase_id text references gp6a_phases(id) on delete set null, parent_id text references gp6a_tasks(id) on delete set null, name text not null, start_date date, end_date date, completed_date date, status text default 'todo', assignee text default '', effort numeric default 1, memo text default '', starred boolean default false, sort_order int default 0, updated_at timestamptz default now());
+alter table gp6a_tasks disable row level security;
+create table if not exists gp6a_backups (id text primary key, label text, created_at timestamptz default now(), data jsonb);
+alter table gp6a_backups disable row level security;</div>
     </details>
     <div id="sb-msg" style="font-size:11px;min-height:16px;margin-bottom:10px"></div>
     <div style="display:flex;gap:8px;justify-content:flex-end">
@@ -605,8 +635,17 @@ const ROW=35,PHROW=35,HDR=52;
 // ══════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════
-let S={pjs:{},cur:null,view:'gantt',scale:'day',sd:null,sel:new Set(),exp:new Set(),members:[],favFilter:false};
-const UNDO_MAX=30;
+let _Snormal={pjs:{},cur:null,view:'gantt',scale:'day',sd:null,sel:new Set(),exp:new Set(),members:[],favFilter:false};
+let _Sadmin={pjs:{},cur:null,view:'gantt',scale:'day',sd:null,sel:new Set(),exp:new Set(),members:[],favFilter:false};
+let adminMode=false;
+let S=_Snormal; // Sは常に現在のモードを指す
+// SA は管理者ステートへの直接参照（load時に使用）
+let SA=_Sadmin;
+
+function _S(){return S;} // 後方互換
+function pj(){return S.cur?S.pjs[S.cur]:null}
+function tasks(){return pj()?.tasks||[]}
+function phases(){return pj()?.phases||[]}const UNDO_MAX=30;
 let undoStack=[];
 function pushUndo(){
   undoStack.push({pjs:JSON.parse(JSON.stringify(S.pjs)),members:JSON.parse(JSON.stringify(S.members||[]))});
@@ -668,15 +707,16 @@ function initSB(){
   try{sbClient=supabase.createClient(_SB_URL,_SB_KEY,{realtime:{params:{eventsPerSecond:10}}});return true;}catch(e){sbClient=null;return false;}
 }
 
-// ── 全データ読み込み（起動時） ──
+// ── 全データ読み込み（起動時・モード対応） ──
 async function sbLoad(){
   if(!sbClient)return false;
   try{
     sbDot('busy');
+    // s=S (pointer)
     const[{data:pjRows,error:e1},{data:phRows,error:e2},{data:tkRows,error:e3}]=await Promise.all([
-      sbClient.from('gp6_projects').select('*').order('sort_order'),
-      sbClient.from('gp6_phases').select('*').order('sort_order'),
-      sbClient.from('gp6_tasks').select('*').order('sort_order'),
+      sbClient.from(tbl('projects')).select('*').order('sort_order'),
+      sbClient.from(tbl('phases')).select('*').order('sort_order'),
+      sbClient.from(tbl('tasks')).select('*').order('sort_order'),
     ]);
     if(e1||e2||e3){sbDot('err');return false;}
     S.pjs={};
@@ -684,88 +724,91 @@ async function sbLoad(){
     (phRows||[]).forEach(r=>{if(S.pjs[r.project_id])S.pjs[r.project_id].phases.push({id:r.id,name:r.name,startDate:r.start_date,endDate:r.end_date,assignee:r.assignee||''});});
     (tkRows||[]).forEach(r=>{if(S.pjs[r.project_id])S.pjs[r.project_id].tasks.push({id:r.id,phaseId:r.phase_id,parentId:r.parent_id,name:r.name,startDate:r.start_date,endDate:r.end_date,completedDate:r.completed_date,status:r.status,assignee:r.assignee,effort:r.effort,memo:r.memo,starred:r.starred||false,updatedAt:r.updated_at});});
     sbDot('ok');
-    applyStarred(); // Supabase再読み込み後にstarredを復元
+    applyStarred();
     sbSubscribe();
     return true;
   }catch(e){sbDot('err');return false;}
 }
 
-// ── Realtime購読（他PCの変更を自動反映） ──
+// ── Realtime購読 ──
 function sbSubscribe(){
   if(sbRealtime)sbClient.removeChannel(sbRealtime);
-  sbRealtime=sbClient.channel('gp6-realtime')
-    .on('postgres_changes',{event:'*',schema:'public',table:'gp6_projects'},()=>sbReload())
-    .on('postgres_changes',{event:'*',schema:'public',table:'gp6_phases'},()=>sbReload())
-    .on('postgres_changes',{event:'*',schema:'public',table:'gp6_tasks'},()=>sbReload())
+  const ch=adminMode?'gp6a-realtime':'gp6-realtime';
+  sbRealtime=sbClient.channel(ch)
+    .on('postgres_changes',{event:'*',schema:'public',table:tbl('projects')},()=>sbReload())
+    .on('postgres_changes',{event:'*',schema:'public',table:tbl('phases')},()=>sbReload())
+    .on('postgres_changes',{event:'*',schema:'public',table:tbl('tasks')},()=>sbReload())
     .subscribe(status=>{sbDot(status==='SUBSCRIBED'?'ok':status==='CLOSED'?'':'busy');});
 }
 let _reloadTimer=null;
-let _pendingSave=false; // 自分の保存中はreloadを抑制
+let _pendingSave=false;
 async function sbReload(){
-  if(_pendingSave)return; // 自分の保存中はスキップ
+  if(_pendingSave)return;
   clearTimeout(_reloadTimer);
   _reloadTimer=setTimeout(async()=>{
     const ok=await sbLoad();
     if(ok){renderPJS();updateFAs();renderAll();}
-  },600); // 保存完了を待つため少し長めに
+  },600);
 }
 
-// ── 行単位の保存関数群 ──
+// ── テーブルプレフィックス ──
+function tbl(name){return adminMode?`gp6a_${name}`:`gp6_${name}`;}
+
 async function sbSavePJ(id){
   if(!sbClient)return;
-  _pendingSave=true;
-  sbDot('busy');
-  const p=S.pjs[id];if(!p)return;
-  const{error}=await sbClient.from('gp6_projects').upsert({id,name:p.name,sort_order:Object.keys(S.pjs).indexOf(id),members:p.members||[]},{onConflict:'id'});
-  sbDot(error?'err':'ok');
-  setTimeout(()=>{_pendingSave=false;},800);
+  _pendingSave=true;sbDot('busy');
+  // s=S (pointer)const p=S.pjs[id];if(!p)return;
+  const{error}=await sbClient.from(tbl('projects')).upsert({id,name:p.name,sort_order:Object.keys(S.pjs).indexOf(id),members:p.members||[]},{onConflict:'id'});
+  sbDot(error?'err':'ok');setTimeout(()=>{_pendingSave=false;},800);
 }
 async function sbDeletePJ(id){
   if(!sbClient)return;
-  await sbClient.from('gp6_projects').delete().eq('id',id);
+  await sbClient.from(tbl('projects')).delete().eq('id',id);
 }
 async function sbSavePH(ph,projectId){
   if(!sbClient)return;
-  _pendingSave=true;
-  sbDot('busy');
-  const p=S.pjs[projectId];if(!p)return;
-  const{error}=await sbClient.from('gp6_phases').upsert({id:ph.id,project_id:projectId,name:ph.name,start_date:ph.startDate||null,end_date:ph.endDate||null,assignee:ph.assignee||'',sort_order:p.phases.findIndex(x=>x.id===ph.id)},{onConflict:'id'});
-  sbDot(error?'err':'ok');
-  setTimeout(()=>{_pendingSave=false;},800);
+  _pendingSave=true;sbDot('busy');
+  // s=S (pointer)const p=S.pjs[projectId];if(!p)return;
+  const{error}=await sbClient.from(tbl('phases')).upsert({id:ph.id,project_id:projectId,name:ph.name,start_date:ph.startDate||null,end_date:ph.endDate||null,assignee:ph.assignee||'',sort_order:p.phases.findIndex(x=>x.id===ph.id)},{onConflict:'id'});
+  sbDot(error?'err':'ok');setTimeout(()=>{_pendingSave=false;},800);
 }
 async function sbDeletePH(id){
   if(!sbClient)return;
-  await sbClient.from('gp6_phases').delete().eq('id',id);
+  await sbClient.from(tbl('phases')).delete().eq('id',id);
 }
 async function sbSaveTask(t,projectId){
   if(!sbClient)return;
-  _pendingSave=true;
-  sbDot('busy');
-  const p=S.pjs[projectId];if(!p)return;
-  const{error}=await sbClient.from('gp6_tasks').upsert({id:t.id,project_id:projectId,phase_id:t.phaseId||null,parent_id:t.parentId||null,name:t.name,start_date:t.startDate||null,end_date:t.endDate||null,completed_date:t.completedDate||null,status:t.status,assignee:t.assignee||'',effort:t.effort||1,memo:t.memo||'',starred:t.starred||false,sort_order:p.tasks.findIndex(x=>x.id===t.id),updated_at:new Date().toISOString()},{onConflict:'id'});
-  sbDot(error?'err':'ok');
-  setTimeout(()=>{_pendingSave=false;},800);
+  _pendingSave=true;sbDot('busy');
+  // s=S (pointer)const p=S.pjs[projectId];if(!p)return;
+  const{error}=await sbClient.from(tbl('tasks')).upsert({id:t.id,project_id:projectId,phase_id:t.phaseId||null,parent_id:t.parentId||null,name:t.name,start_date:t.startDate||null,end_date:t.endDate||null,completed_date:t.completedDate||null,status:t.status,assignee:t.assignee||'',effort:t.effort||1,memo:t.memo||'',starred:t.starred||false,sort_order:p.tasks.findIndex(x=>x.id===t.id),updated_at:new Date().toISOString()},{onConflict:'id'});
+  sbDot(error?'err':'ok');setTimeout(()=>{_pendingSave=false;},800);
 }
 async function sbDeleteTask(id){
   if(!sbClient)return;
-  const {error}=await sbClient.from('gp6_tasks').delete().eq('id',id);
-  if(error)console.error('sbDeleteTask error:',error);
+  await sbClient.from(tbl('tasks')).delete().eq('id',id);
 }
 async function sbDeletePhase(id){
   if(!sbClient)return;
-  const {error}=await sbClient.from('gp6_phases').delete().eq('id',id);
-  if(error)console.error('sbDeletePhase error:',error);
+  await sbClient.from(tbl('phases')).delete().eq('id',id);
 }
 
 function save(){
   try{
-    localStorage.setItem('gp6',JSON.stringify(S.pjs));
-    localStorage.setItem('gp6c',S.cur||'');
-    localStorage.setItem('gp6m',JSON.stringify(S.members||[]));
-    // starredを別途保存（Supabase再読み込み後も維持するため）
-    const starred={};
-    Object.values(S.pjs).forEach(p=>(p.tasks||[]).forEach(t=>{if(t.starred)starred[t.id]=true;}));
-    localStorage.setItem('gp6s',JSON.stringify(starred));
+    if(adminMode){
+      localStorage.setItem('gp6a',JSON.stringify(SA.pjs));
+      localStorage.setItem('gp6ac',SA.cur||'');
+      localStorage.setItem('gp6am',JSON.stringify(SA.members||[]));
+      const starred={};
+      Object.values(SA.pjs).forEach(p=>(p.tasks||[]).forEach(t=>{if(t.starred)starred[t.id]=true;}));
+      localStorage.setItem('gp6as',JSON.stringify(starred));
+    }else{
+      localStorage.setItem('gp6',JSON.stringify(S.pjs));
+      localStorage.setItem('gp6c',S.cur||'');
+      localStorage.setItem('gp6m',JSON.stringify(S.members||[]));
+      const starred={};
+      Object.values(S.pjs).forEach(p=>(p.tasks||[]).forEach(t=>{if(t.starred)starred[t.id]=true;}));
+      localStorage.setItem('gp6s',JSON.stringify(starred));
+    }
   }catch(e){}
 }
 
@@ -810,33 +853,39 @@ function disconnectSB(){
 }
 
 function load(){
+  // 通常モード読み込み
   try{
     const d=localStorage.getItem('gp6');if(d)S.pjs=JSON.parse(d);
     S.cur=localStorage.getItem('gp6c')||null;
     if(S.cur&&!S.pjs[S.cur])S.cur=null;
     const m=localStorage.getItem('gp6m');if(m)S.members=JSON.parse(m);
-    // 既存プロジェクトのmembersを共通リストにマイグレーション
     Object.values(S.pjs).forEach(p=>{
       if(p.members&&p.members.length){
         p.members.forEach(n=>{if(!S.members.includes(n))S.members.push(n);});
         p.members=[];
       }
     });
-    // starredを復元
-    applyStarred();
   }catch(e){S.pjs={};}
+  // 管理者モード読み込み
+  try{
+    const da=localStorage.getItem('gp6a');if(da)SA.pjs=JSON.parse(da);
+    SA.cur=localStorage.getItem('gp6ac')||null;
+    if(SA.cur&&!SA.pjs[SA.cur])SA.cur=null;
+    const ma=localStorage.getItem('gp6am');if(ma)SA.members=JSON.parse(ma);
+  }catch(e){SA.pjs={};}
+  applyStarred();
 }
 function applyStarred(){
   try{
-    const d=localStorage.getItem('gp6s');
+    const key=adminMode?'gp6as':'gp6s';
+    const d=localStorage.getItem(key);
     if(!d)return;
     const starred=JSON.parse(d);
+    // s=S (pointer)
     Object.values(S.pjs).forEach(p=>(p.tasks||[]).forEach(t=>{t.starred=!!starred[t.id];}));
   }catch(e){}
 }
-function pj(){return S.cur?S.pjs[S.cur]:null}
-function tasks(){return pj()?.tasks||[]}
-function phases(){return pj()?.phases||[]}
+
 
 // ══════════════════════════════════════════
 // PROJECT
@@ -2353,22 +2402,22 @@ const BK_MAX=20;
 function bkDisp(ts){const now=new Date(ts);return`${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;}
 async function sbGetBKList(){
   if(!sbClient)return[];
-  const{data,error}=await sbClient.from('gp6_backups').select('id,label,created_at').order('created_at',{ascending:false}).limit(BK_MAX);
+  const{data,error}=await sbClient.from(bkTable()).select('id,label,created_at').order('created_at',{ascending:false}).limit(BK_MAX);
   if(error){console.error(error);return[];}
   return(data||[]).map(r=>({ts:r.id,disp:bkDisp(r.created_at),label:r.label}));
 }
 async function sbSaveBK(bk){
   if(!sbClient)return;
-  const{error}=await sbClient.from('gp6_backups').upsert({id:bk.ts,label:bk.label,created_at:bk.ts,data:{pjs:bk.pjs,members:bk.members}},{onConflict:'id'});
+  const{error}=await sbClient.from(bkTable()).upsert({id:bk.ts,label:bk.label,created_at:bk.ts,data:{pjs:bk.pjs,members:bk.members}},{onConflict:'id'});
   if(error)console.error('BK save error:',error);
 }
 async function sbDeleteBK(ts){
   if(!sbClient)return;
-  await sbClient.from('gp6_backups').delete().eq('id',ts);
+  await sbClient.from(bkTable()).delete().eq('id',ts);
 }
 async function sbGetBKData(ts){
   if(!sbClient)return null;
-  const{data,error}=await sbClient.from('gp6_backups').select('data,label,created_at').eq('id',ts).single();
+  const{data,error}=await sbClient.from(bkTable()).select('data,label,created_at').eq('id',ts).single();
   if(error||!data)return null;
   return{...data.data,label:data.label,disp:bkDisp(data.created_at),ts};
 }
@@ -2429,7 +2478,81 @@ function closeBK(){document.getElementById('bk-modal').style.display='none';}
 
 
 // ══════════════════════════════════════════
-// KEYBOARD TASK OPERATIONS
+// 管理者モード
+// ══════════════════════════════════════════
+const ADMIN_PW='1006';
+const ADMIN_AUTH_KEY='gantt_admin_exp';
+const ADMIN_AUTH_DAYS=7;
+
+function isAdminAuthed(){
+  const exp=localStorage.getItem(ADMIN_AUTH_KEY);
+  if(!exp)return false;
+  return Date.now()<Number(exp);
+}
+function setAdminAuthed(){
+  localStorage.setItem(ADMIN_AUTH_KEY,String(Date.now()+ADMIN_AUTH_DAYS*86400000));
+}
+
+function openAdminAuth(){
+  document.getElementById('admin-auth-modal').style.display='flex';
+  document.getElementById('admin-auth-err').textContent='';
+  setTimeout(()=>document.getElementById('admin-auth-pw').focus(),80);
+}
+function closeAdminAuth(){
+  document.getElementById('admin-auth-modal').style.display='none';
+  document.getElementById('admin-auth-pw').value='';
+}
+function submitAdminAuth(){
+  const v=document.getElementById('admin-auth-pw').value;
+  if(v===ADMIN_PW){
+    setAdminAuthed();
+    closeAdminAuth();
+    enterAdminMode();
+  }else{
+    const e=document.getElementById('admin-auth-err');
+    e.textContent='暗証番号が違います';
+    document.getElementById('admin-auth-pw').value='';
+    setTimeout(()=>e.textContent='',2000);
+  }
+}
+async function enterAdminMode(){
+  adminMode=true;
+  S=_Sadmin; // Sを管理者ステートに切り替え
+  S.sel=new Set();S.exp=new Set();
+  updateAdminUI();
+  if(initSB()||sbClient){
+    const ok=await sbLoad();
+    if(!ok&&!Object.keys(S.pjs).length){}
+  }
+  if(S.cur){if(!loadExp())phases().forEach(p=>S.exp.add(p.id));}
+  renderPJS();updateFAs();renderAll();
+  sbSubscribe();
+}
+function exitAdminMode(){
+  adminMode=false;
+  S=_Snormal; // Sを通常ステートに切り替え
+  updateAdminUI();
+  renderPJS();updateFAs();renderAll();
+  sbSubscribe();
+}
+function updateAdminUI(){
+  // ロゴ表示切り替え
+  const logo=document.querySelector('.logo');
+  if(logo)logo.textContent=adminMode?'🔒 管理者':'📋 商品企画部';
+  // タブバーの管理者バッジ
+  const badge=document.getElementById('admin-mode-badge');
+  if(badge)badge.style.display=adminMode?'flex':'none';
+  const exitBtn=document.getElementById('admin-exit-btn');
+  if(exitBtn)exitBtn.style.display=adminMode?'flex':'none';
+}
+function tryOpenAdmin(){
+  if(isAdminAuthed()){enterAdminMode();}
+  else{openAdminAuth();}
+}
+
+// バックアップ関数もモード対応（テーブル gp6a_backups / gp6_backups）
+function bkTable(){return adminMode?'gp6a_backups':'gp6_backups';}
+
 // ══════════════════════════════════════════
 function taskIndent(id, shiftKey){
   const p=pj();if(!p)return;
@@ -2971,6 +3094,14 @@ function renderAllProjects(){
         <canvas id="apg-canvas" style="display:block"></canvas>
       </div>
     </div>
+  </div>`;
+
+  // 管理者モードボタン（最下部左・薄グレー・目立たない）
+  el.innerHTML += `<div style="margin-top:24px;text-align:left">
+    <button onclick="${adminMode?'exitAdminMode()':'tryOpenAdmin()'}"
+      style="background:none;border:none;color:#c0c8d8;font-size:10px;cursor:pointer;padding:4px 6px;border-radius:4px;opacity:0.5;transition:opacity .2s"
+      onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.5'"
+      title="管理者モード">${adminMode?'← 通常モードに戻る':'管理者'}</button>
   </div>`;
 
   drawApgChart();
