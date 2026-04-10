@@ -2508,7 +2508,6 @@ function isAdminAuthed(){
 function setAdminAuthed(){
   localStorage.setItem(ADMIN_AUTH_KEY,String(Date.now()+ADMIN_AUTH_DAYS*86400000));
 }
-
 function openAdminAuth(){
   document.getElementById('admin-auth-modal').style.display='flex';
   document.getElementById('admin-auth-err').textContent='';
@@ -2531,65 +2530,43 @@ function submitAdminAuth(){
     setTimeout(()=>e.textContent='',2000);
   }
 }
-async function enterAdminMode(){
-  adminMode=true;
-  S=_Sadmin; // Sを管理者ステートに切り替え
-  S.sel=new Set();S.exp=new Set();
-  updateAdminUI();
-  if(initSB()||sbClient){
-    const ok=await sbLoad();
-    if(!ok&&!Object.keys(S.pjs).length){}
-  }
-  if(S.cur){if(!loadExp())phases().forEach(p=>S.exp.add(p.id));}
-  renderPJS();updateFAs();renderAll();
-  sbSubscribe();
+function tryOpenAdmin(){
+  if(isAdminAuthed()){enterAdminMode();}
+  else{openAdminAuth();}
 }
-function exitAdminMode(){
-  adminMode=false;
-  S=_Snormal; // Sを通常ステートに切り替え
-  updateAdminUI();
-  renderPJS();updateFAs();renderAll();
-  sbSubscribe();
-}
+function bkTable(){return adminMode?'gp6a_backups':'gp6_backups';}
+
 function updateAdminUI(){
   const isAdmin=adminMode;
-  // topbarの背景色
   const topbar=document.getElementById('topbar');
   if(topbar){
     topbar.style.background=isAdmin?'linear-gradient(135deg,#1e1240 0%,#2d1a5e 100%)':'';
     topbar.style.borderBottom=isAdmin?'2px solid rgba(124,58,237,.5)':'';
   }
-  // ロゴ
   const logo=document.querySelector('.logo');
   if(logo){
     logo.textContent=isAdmin?'🔒 管理者':'📋 商品企画部';
     logo.style.color=isAdmin?'#a78bfa':'';
   }
-  // 鍵ボタン：管理者モード中は非表示
   const lockBtn=document.getElementById('admin-lock-btn');
   if(lockBtn)lockBtn.style.display=isAdmin?'none':'flex';
-  // 退出ボタン
   const exitBtn=document.getElementById('admin-exit-btn');
   if(exitBtn)exitBtn.style.display=isAdmin?'flex':'none';
 }
-
 async function enterAdminMode(){
   adminMode=true;
   S=_Sadmin;
   S.sel=new Set();S.exp=new Set();
-  // セッション保存
   sessionStorage.setItem('gantt_admin_session','1');
   updateAdminUI();
   if(sbClient||initSB()){
     const ok=await sbLoad();
-    if(!ok&&!Object.keys(S.pjs).length){}
   }
   if(S.cur){if(!loadExp())phases().forEach(p=>S.exp.add(p.id));}
   setView('gantt');
   renderPJS();updateFAs();renderAll();
   sbSubscribe();
 }
-
 function exitAdminMode(){
   adminMode=false;
   S=_Snormal;
