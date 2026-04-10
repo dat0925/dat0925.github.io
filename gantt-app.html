@@ -3603,7 +3603,18 @@ document.addEventListener('click',e=>{
 let _secTimer=null;
 function showSecuritySub(){
   cancelHideSecuritySub();
-  document.getElementById('security-sub').style.display='block';
+  const sub=document.getElementById('security-sub');
+  const trigger=document.getElementById('security-trigger');
+  const tr=trigger.getBoundingClientRect();
+  // 左に160px以上スペースがあれば左表示、なければ右表示
+  if(tr.left>=160+8){
+    sub.style.right='100%';
+    sub.style.left='auto';
+  }else{
+    sub.style.left='100%';
+    sub.style.right='auto';
+  }
+  sub.style.display='block';
 }
 function hideSecuritySub(){
   const s=document.getElementById('security-sub');
