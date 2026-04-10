@@ -3684,7 +3684,10 @@ async function init(){
     if((e.ctrlKey||e.metaKey)&&e.key==='ArrowLeft'&&!e.shiftKey){
       e.preventDefault();if(!mMode)navPJ(-1);
     }
-    // Ctrl+Shift+→/← でステータスフィルタ切替
+    // Ctrl+Shift+X: ☆フィルタON/OFF
+    if((e.ctrlKey||e.metaKey)&&e.shiftKey&&(e.key==='x'||e.key==='X')){
+      e.preventDefault();if(!mMode)toggleFavFilter();
+    }
     if((e.ctrlKey||e.metaKey)&&e.shiftKey&&e.key==='ArrowRight'){
       e.preventDefault();if(!mMode)navFst(1);
     }
