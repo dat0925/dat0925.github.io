@@ -346,6 +346,13 @@ const AUTH_DAYS=3;
     <button class="btn d" onclick="deletePJ()">🗑</button>
     <button class="btn" onclick="openMemberSettings()" title="担当者管理">👥</button>
     <button class="btn" onclick="openBK()" title="バックアップ管理">💾</button>
+    <!-- 管理者モード入口：鍵アイコン -->
+    <button id="admin-lock-btn" onclick="tryOpenAdmin()" title="管理者モード"
+      style="display:flex;align-items:center;justify-content:center;width:26px;height:26px;padding:0;background:none;border:1px solid transparent;border-radius:5px;cursor:pointer;opacity:0.35;transition:opacity .2s,border-color .2s"
+      onmouseenter="this.style.opacity='0.8';this.style.borderColor='var(--bd2)'"
+      onmouseleave="this.style.opacity='0.35';this.style.borderColor='transparent'">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" stroke="var(--tx3)" stroke-width="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="var(--tx3)" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
   </div>
 </div>
 <div id="tabs">
@@ -360,11 +367,8 @@ const AUTH_DAYS=3;
       <path d="M7 5L3 9l4 4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
   </button>
-  <!-- 管理者モードバッジ・退出ボタン -->
-  <div id="admin-mode-badge" style="display:none;align-items:center;gap:6px;margin-left:6px;padding:2px 10px;background:rgba(124,58,237,.12);border:1px solid rgba(124,58,237,.35);border-radius:12px">
-    <span style="font-size:10px;color:#7c3aed;font-weight:700">🔒 管理者モード</span>
-  </div>
-  <button id="admin-exit-btn" onclick="exitAdminMode()" style="display:none;align-items:center;gap:4px;padding:3px 8px;border:1px solid var(--bd2);border-radius:5px;background:var(--s3);color:var(--tx3);font-size:11px;cursor:pointer" title="管理者モードを終了">✕ 退出</button>
+  <!-- 管理者モード退出ボタン -->
+  <button id="admin-exit-btn" onclick="exitAdminMode()" style="display:none;align-items:center;gap:4px;padding:3px 10px;border:1px solid rgba(124,58,237,.4);border-radius:5px;background:rgba(124,58,237,.1);color:#7c3aed;font-size:11px;font-weight:600;cursor:pointer;margin-left:4px" title="管理者モードを終了">🔒 退出</button>
   <!-- iPad用タスク移動ボタン -->
   <div id="move-btns" style="display:flex;align-items:center;gap:4px;margin-left:4px">
     <span style="font-size:10px;color:var(--tx3);white-space:nowrap">選択タスク:</span>
@@ -422,7 +426,7 @@ const AUTH_DAYS=3;
     <div style="font-size:13px;font-weight:700;color:var(--tx);text-align:center">🔒 管理者モード</div>
     <div style="font-size:11px;color:var(--tx3);text-align:center">暗証番号を入力してください</div>
     <input id="admin-auth-pw" type="password" placeholder="••••"
-      style="width:100%;padding:8px 12px;border:1px solid var(--bd2);border-radius:6px;background:var(--s3);color:var(--tx);font-size:16px;text-align:center;outline:none;letter-spacing:4px"
+      style="width:100%;padding:8px 12px;border:1px solid var(--bd2);border-radius:6px;background:var(--s3);color:var(--tx);font-size:16px;text-align:center;outline:none"
       onkeydown="if(event.key==='Enter')submitAdminAuth();if(event.key==='Escape')closeAdminAuth()">
     <div id="admin-auth-err" style="font-size:11px;color:var(--rd);text-align:center;min-height:16px"></div>
     <div style="display:flex;gap:8px">
@@ -2548,22 +2552,53 @@ function exitAdminMode(){
   sbSubscribe();
 }
 function updateAdminUI(){
-  // ロゴ表示切り替え
+  const isAdmin=adminMode;
+  // topbarの背景色
+  const topbar=document.getElementById('topbar');
+  if(topbar){
+    topbar.style.background=isAdmin?'linear-gradient(135deg,#1e1240 0%,#2d1a5e 100%)':'';
+    topbar.style.borderBottom=isAdmin?'2px solid rgba(124,58,237,.5)':'';
+  }
+  // ロゴ
   const logo=document.querySelector('.logo');
-  if(logo)logo.textContent=adminMode?'🔒 管理者':'📋 商品企画部';
-  // タブバーの管理者バッジ
-  const badge=document.getElementById('admin-mode-badge');
-  if(badge)badge.style.display=adminMode?'flex':'none';
+  if(logo){
+    logo.textContent=isAdmin?'🔒 管理者':'📋 商品企画部';
+    logo.style.color=isAdmin?'#a78bfa':'';
+  }
+  // 鍵ボタン：管理者モード中は非表示
+  const lockBtn=document.getElementById('admin-lock-btn');
+  if(lockBtn)lockBtn.style.display=isAdmin?'none':'flex';
+  // 退出ボタン
   const exitBtn=document.getElementById('admin-exit-btn');
-  if(exitBtn)exitBtn.style.display=adminMode?'flex':'none';
-}
-function tryOpenAdmin(){
-  if(isAdminAuthed()){enterAdminMode();}
-  else{openAdminAuth();}
+  if(exitBtn)exitBtn.style.display=isAdmin?'flex':'none';
 }
 
-// バックアップ関数もモード対応（テーブル gp6a_backups / gp6_backups）
-function bkTable(){return adminMode?'gp6a_backups':'gp6_backups';}
+async function enterAdminMode(){
+  adminMode=true;
+  S=_Sadmin;
+  S.sel=new Set();S.exp=new Set();
+  // セッション保存
+  sessionStorage.setItem('gantt_admin_session','1');
+  updateAdminUI();
+  if(sbClient||initSB()){
+    const ok=await sbLoad();
+    if(!ok&&!Object.keys(S.pjs).length){}
+  }
+  if(S.cur){if(!loadExp())phases().forEach(p=>S.exp.add(p.id));}
+  setView('gantt');
+  renderPJS();updateFAs();renderAll();
+  sbSubscribe();
+}
+
+function exitAdminMode(){
+  adminMode=false;
+  S=_Snormal;
+  sessionStorage.removeItem('gantt_admin_session');
+  updateAdminUI();
+  setView('gantt');
+  renderPJS();updateFAs();renderAll();
+  sbSubscribe();
+}
 
 // ══════════════════════════════════════════
 function taskIndent(id, shiftKey){
@@ -3056,14 +3091,8 @@ let apgState={scale:'month', sd:null}; // 全プロジェクトガントの独�
 function renderAllProjects(){
   const el=document.getElementById('apsv');
   const pjIds=Object.keys(S.pjs);
-  const adminBtn=`<div style="margin-top:24px;text-align:left">
-    <button onclick="${adminMode?'exitAdminMode()':'tryOpenAdmin()'}"
-      style="background:none;border:none;color:#c0c8d8;font-size:10px;cursor:pointer;padding:4px 6px;border-radius:4px;opacity:0.5;transition:opacity .2s"
-      onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.5'"
-      title="管理者モード">${adminMode?'← 通常モードに戻る':'管理者'}</button>
-  </div>`;
   if(!pjIds.length){
-    el.innerHTML='<div class="emp"><div class="ic">🗂</div><div class="et">プロジェクトがありません</div><div class="ed">「+ 作成」からプロジェクトを追加してください</div></div>'+adminBtn;
+    el.innerHTML='<div class="emp"><div class="ic">🗂</div><div class="et">プロジェクトがありません</div><div class="ed">「+ 作成」からプロジェクトを追加してください</div></div>';
     return;
   }
 
@@ -3114,7 +3143,6 @@ function renderAllProjects(){
     </div>
   </div>`;
 
-  el.innerHTML += adminBtn;
   drawApgChart();
 }
 
@@ -3556,6 +3584,11 @@ async function migrateFromLegacy(){
 
 async function init(){
   load();
+  // F5後もadminモードを維持（sessionStorageで管理）
+  if(sessionStorage.getItem('gantt_admin_session')==='1'&&isAdminAuthed()){
+    adminMode=true;
+    S=_Sadmin;
+  }
   if(initSB()){
     await migrateFromLegacy();
     const ok=await sbLoad();
@@ -3565,6 +3598,7 @@ async function init(){
   }
   if(S.cur){if(!loadExp())phases().forEach(p=>S.exp.add(p.id));}
   S.sd=addD(td(),-7);
+  updateAdminUI();
   renderPJS();updateFAs();renderAll();
   initSync();
   initChartDrag();
