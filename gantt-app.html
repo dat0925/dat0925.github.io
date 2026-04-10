@@ -3664,19 +3664,31 @@ async function init(){
   initChartDrag();
   document.addEventListener('keydown',e=>{
     if(e.key==='Escape'){closeM();cancelInlineAdd();}
-    if((e.ctrlKey||e.metaKey)&&e.key==='s'){
+    if((e.ctrlKey||e.metaKey)&&e.key==='s'&&!e.shiftKey){
       e.preventDefault();
       if(mMode==='editTask'||mMode==='addTask'||mMode==='editPh'||mMode==='addPh')subM();
+    }
+    // Ctrl+Shift+S: 管理者モード切替
+    if((e.ctrlKey||e.metaKey)&&e.shiftKey&&e.key==='S'){
+      e.preventDefault();
+      if(adminMode){exitAdminMode();}else{tryOpenAdmin();}
     }
     if((e.ctrlKey||e.metaKey)&&e.key==='z'&&!e.shiftKey){
       e.preventDefault();
       if(!mMode)undo();
     }
-    // 1件選択時のキーボード操作
+    // Ctrl+→/← でプロジェクト切替
+    if((e.ctrlKey||e.metaKey)&&e.key==='ArrowRight'&&!e.shiftKey){
+      e.preventDefault();if(!mMode)navPJ(1);
+    }
+    if((e.ctrlKey||e.metaKey)&&e.key==='ArrowLeft'&&!e.shiftKey){
+      e.preventDefault();if(!mMode)navPJ(-1);
+    }
+    // 1件選択時のキーボード操作（Ctrlなし）
     if(!mMode&&S.sel.size===1){
       const selId=[...S.sel][0];
-      if(e.key==='ArrowRight'){e.preventDefault();taskIndent(selId,false);}
-      if(e.key==='ArrowLeft'){e.preventDefault();taskIndent(selId,true);}
+      if(e.key==='ArrowRight'&&!e.ctrlKey&&!e.metaKey){e.preventDefault();taskIndent(selId,false);}
+      if(e.key==='ArrowLeft'&&!e.ctrlKey&&!e.metaKey){e.preventDefault();taskIndent(selId,true);}
       if(e.key==='ArrowUp'&&!e.ctrlKey&&!e.metaKey){e.preventDefault();taskMoveUpDown(selId,-1);}
       if(e.key==='ArrowDown'&&!e.ctrlKey&&!e.metaKey){e.preventDefault();taskMoveUpDown(selId,1);}
     }
