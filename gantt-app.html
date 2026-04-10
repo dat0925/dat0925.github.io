@@ -3142,7 +3142,14 @@ function gotoTaskEdit(taskId){
   },150);
 }
 
-// ビュー循環切替（ガント→サマリー→全プロジェクト→ガント）
+// 全プロジェクト画面からプロジェクト切替→ガント遷移→編集
+function gotoTaskEditFromAllPJ(pjId, taskId){
+  if(S.cur!==pjId){
+    switchPJ(pjId);
+  }
+  gotoTaskEdit(taskId);
+}
+
 function cycleView(){
   const views=['gantt','summary','allprojects'];
   const cur=S.view||'gantt';
@@ -3211,6 +3218,60 @@ function renderAllProjects(){
   </div>`;
 
   drawApgChart();
+
+  // ── ☆タスク一覧（プロジェクト別）──
+  const starredSections=renderApgTaskList(
+    pjIds,'★ お気に入りタスク一覧',
+    t=>t.starred&&t.status!=='done'&&t.status!=='cancelled',
+    '#f59e0b','rgba(245,158,11,.08)','rgba(245,158,11,.2)'
+  );
+  // ── 要期間調整一覧（プロジェクト別）──
+  const adjustSections=renderApgTaskList(
+    pjIds,'⚠ 要期間調整タスク一覧',
+    t=>{
+      const overdue=t.endDate&&t.endDate<today&&t.status!=='done'&&t.status!=='cancelled';
+      const delayed=t.startDate&&t.startDate<today&&t.status==='todo';
+      return !!(overdue||delayed);
+    },
+    '#dc2626','rgba(220,38,38,.06)','rgba(220,38,38,.15)'
+  );
+
+  if(starredSections||adjustSections){
+    el.innerHTML+=starredSections+adjustSections;
+  }
+}
+
+function renderApgTaskList(pjIds, title, filterFn, accentColor, bgColor, headerBg){
+  const today=td();
+  let hasAny=false;
+  let rows='';
+  pjIds.forEach(pjId=>{
+    const p=S.pjs[pjId];
+    const ts=(p.tasks||[]).filter(filterFn);
+    if(!ts.length)return;
+    hasAny=true;
+    rows+=`<div style="margin-bottom:4px">
+      <div style="font-size:10px;font-weight:700;color:var(--tx3);padding:5px 10px;background:${headerBg};border-radius:4px;margin-bottom:2px">${esc(p.name)}</div>`;
+    ts.forEach(t=>{
+      const isOverdue=t.endDate&&t.endDate<today&&t.status!=='done'&&t.status!=='cancelled';
+      const dateStr=t.endDate?`終了: ${fmt(t.endDate)}`:'';
+      const statusBadge=`<span class="bdg ${t.status}">${SL[t.status]}</span>`;
+      rows+=`<div onclick="gotoTaskEditFromAllPJ('${pjId}','${t.id}')"
+        style="display:flex;align-items:center;gap:8px;padding:6px 10px;cursor:pointer;border-radius:4px;transition:background .1s"
+        onmouseenter="this.style.background='var(--bd)'" onmouseleave="this.style.background=''">
+        <span style="flex:1;font-size:11px;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(t.name)}</span>
+        ${statusBadge}
+        <span style="font-size:10px;color:${isOverdue?'#dc2626':'var(--tx3)'};white-space:nowrap;font-family:var(--fm)">${dateStr}</span>
+        <span style="font-size:10px;color:var(--tx3);white-space:nowrap">${esc(t.assignee||'')}</span>
+      </div>`;
+    });
+    rows+='</div>';
+  });
+  if(!hasAny)return '';
+  return `<div style="margin-top:14px;background:${bgColor};border:1px solid ${accentColor}33;border-radius:8px;overflow:hidden">
+    <div style="padding:8px 12px;font-size:12px;font-weight:700;color:${accentColor};border-bottom:1px solid ${accentColor}22">${title}</div>
+    <div style="padding:6px 6px">${rows}</div>
+  </div>`;
 }
 
 function apgGetDays(){
