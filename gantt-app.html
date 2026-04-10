@@ -208,6 +208,8 @@ textarea.fc{min-height:60px;resize:vertical}.fg{margin-bottom:11px}.fr{display:g
 .aps-stat-card{background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:10px;text-align:center}
 .aps-stat-label{font-size:9px;color:var(--tx3);margin-bottom:2px}
 .aps-stat-val{font-size:20px;font-weight:700;font-family:var(--fm)}
+.gmenu-item{display:flex;align-items:center;gap:8px;padding:9px 14px;cursor:pointer;font-size:12px;color:var(--tx);transition:background .1s;position:relative;white-space:nowrap}
+.gmenu-item:hover{background:var(--s2)}
 /* SCROLLBAR */
 ::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:var(--s1)}::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:3px}
 /* SUPABASE MODAL */
@@ -339,19 +341,22 @@ const AUTH_DAYS=3;
       </button>
     </div>
     <button class="btn" id="toggle-all-btn" onclick="toggleAllPh()" title="フェーズを全て開閉">開閉</button>
-    <div style="position:relative;display:inline-block">
-      <button class="btn" onclick="openCSVMenu(event)" id="csv-btn">CSV ▾</button>
+    <!-- 歯車メニュー -->
+    <div style="position:relative;display:inline-block" id="gear-wrap">
+      <button class="btn" onclick="openGearMenu(event)" id="gear-btn" title="設定メニュー" style="display:flex;align-items:center;justify-content:center;width:28px;height:26px;padding:0">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" stroke="currentColor" stroke-width="2"/></svg>
+      </button>
       <input type="file" id="csi" accept=".csv" style="display:none" onchange="importCSV(event)">
     </div>
-    <button class="btn d" onclick="deletePJ()">🗑</button>
-    <button class="btn" onclick="openMemberSettings()" title="担当者管理">👥</button>
-    <button class="btn" onclick="openBK()" title="バックアップ管理">💾</button>
-    <!-- 管理者モード入口：鍵アイコン -->
+    <!-- 鍵アイコン：通常時は施錠アイコン、管理者モード時は退出ボタンに切り替え -->
     <button id="admin-lock-btn" onclick="tryOpenAdmin()" title="管理者モード"
-      style="display:flex;align-items:center;justify-content:center;width:26px;height:26px;padding:0;background:none;border:1px solid transparent;border-radius:5px;cursor:pointer;opacity:0.35;transition:opacity .2s,border-color .2s"
-      onmouseenter="this.style.opacity='0.8';this.style.borderColor='var(--bd2)'"
-      onmouseleave="this.style.opacity='0.35';this.style.borderColor='transparent'">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" stroke="var(--tx3)" stroke-width="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="var(--tx3)" stroke-width="2" stroke-linecap="round"/></svg>
+      style="display:flex;align-items:center;justify-content:center;width:26px;height:26px;padding:0;background:none;border:1px solid var(--bd2);border-radius:5px;cursor:pointer;color:var(--tx2);transition:all .2s"
+      onmouseenter="this.style.background='var(--bd)'" onmouseleave="this.style.background='none'">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" stroke-width="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+    <button id="admin-exit-btn" onclick="exitAdminMode()" style="display:none;align-items:center;gap:4px;padding:3px 10px;border:1px solid rgba(124,58,237,.4);border-radius:5px;background:rgba(124,58,237,.1);color:#a78bfa;font-size:11px;font-weight:600;cursor:pointer" title="管理者モードを終了">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" stroke-width="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      退出
     </button>
   </div>
 </div>
@@ -435,24 +440,49 @@ const AUTH_DAYS=3;
     </div>
   </div>
 </div>
-<!-- CSV MENU POPUP -->
-<div id="csv-menu" style="display:none;position:fixed;z-index:2000;background:var(--s1);border:1px solid var(--bd2);border-radius:8px;box-shadow:0 6px 24px rgba(0,0,0,.18);min-width:180px;overflow:hidden;transform-origin:top left;transform:scale(0.92);opacity:0;transition:transform 0.15s cubic-bezier(0.22,1,0.36,1),opacity 0.12s">
-  <div onclick="exportCSV();closeCSVMenu()" style="display:flex;align-items:center;gap:8px;padding:10px 14px;cursor:pointer;font-size:12px;color:var(--tx);transition:background .1s" onmouseenter="this.style.background='var(--s2)'" onmouseleave="this.style.background=''">
-    <span style="font-size:14px">⬇️</span><div><div style="font-weight:600">エクスポート</div><div style="font-size:10px;color:var(--tx3)">現在のプロジェクトをCSV保存</div></div>
+<!-- 歯車メニューポップアップ -->
+<div id="gear-menu" style="display:none;position:fixed;z-index:2000;background:var(--s1);border:1px solid var(--bd2);border-radius:8px;box-shadow:0 6px 24px rgba(0,0,0,.18);min-width:200px;overflow:visible;transform-origin:top right;transform:scale(0.92);opacity:0;transition:transform 0.15s cubic-bezier(0.22,1,0.36,1),opacity 0.12s">
+  <!-- CSVエクスポート -->
+  <div onclick="exportCSV();closeGearMenu()" class="gmenu-item">
+    <span style="font-size:13px">⬇️</span><div><div style="font-weight:600">CSVエクスポート</div><div style="font-size:10px;color:var(--tx3)">現在のプロジェクトをCSV保存</div></div>
   </div>
-  <div style="height:1px;background:var(--bd);margin:0 10px"></div>
-  <div onclick="document.getElementById('csi').click();closeCSVMenu()" style="display:flex;align-items:center;gap:8px;padding:10px 14px;cursor:pointer;font-size:12px;color:var(--tx);transition:background .1s" onmouseenter="this.style.background='var(--s2)'" onmouseleave="this.style.background=''">
-    <span style="font-size:14px">⬆️</span><div><div style="font-weight:600">インポート</div><div style="font-size:10px;color:var(--tx3)">CSVファイルからタスクを読み込み</div></div>
+  <div onclick="document.getElementById('csi').click();closeGearMenu()" class="gmenu-item">
+    <span style="font-size:13px">⬆️</span><div><div style="font-weight:600">CSVインポート</div><div style="font-size:10px;color:var(--tx3)">CSVファイルからタスクを読み込み</div></div>
   </div>
-  <div style="height:1px;background:var(--bd);margin:0 10px"></div>
-  <div onclick="downloadCSVTemplate();closeCSVMenu()" style="display:flex;align-items:center;gap:8px;padding:10px 14px;cursor:pointer;font-size:12px;color:var(--tx);transition:background .1s" onmouseenter="this.style.background='var(--s2)'" onmouseleave="this.style.background=''">
-    <span style="font-size:14px">📄</span><div><div style="font-weight:600">雛形ダウンロード</div><div style="font-size:10px;color:var(--tx3)">インポート用のサンプルCSVを取得</div></div>
+  <div onclick="downloadCSVTemplate();closeGearMenu()" class="gmenu-item">
+    <span style="font-size:13px">📄</span><div><div style="font-weight:600">CSV雛形ダウンロード</div><div style="font-size:10px;color:var(--tx3)">インポート用サンプルCSVを取得</div></div>
   </div>
-  <div style="height:1px;background:var(--bd);margin:0 10px"></div>
-  <div onclick="closeCSVMenu()" style="display:flex;align-items:center;gap:8px;padding:9px 14px;cursor:pointer;font-size:12px;color:var(--tx3);transition:background .1s" onmouseenter="this.style.background='var(--s2)'" onmouseleave="this.style.background=''">
+  <div style="height:1px;background:var(--bd);margin:2px 10px"></div>
+  <!-- 担当者管理 -->
+  <div onclick="openMemberSettings();closeGearMenu()" class="gmenu-item">
+    <span style="font-size:13px">👥</span><div><div style="font-weight:600">担当者管理</div></div>
+  </div>
+  <!-- バックアップ管理 -->
+  <div onclick="openBK();closeGearMenu()" class="gmenu-item">
+    <span style="font-size:13px">💾</span><div><div style="font-weight:600">バックアップ管理</div></div>
+  </div>
+  <div style="height:1px;background:var(--bd);margin:2px 10px"></div>
+  <!-- セキュリティ（サブメニュー） -->
+  <div class="gmenu-item gmenu-sub-trigger" id="security-trigger"
+    onmouseenter="showSecuritySub()" onmouseleave="scheduleHideSecuritySub()"
+    onclick="showSecuritySub()">
+    <span style="font-size:13px">🔐</span><div style="flex:1"><div style="font-weight:600">セキュリティ</div></div>
+    <span style="font-size:10px;color:var(--tx3)">▶</span>
+    <!-- サブメニュー -->
+    <div id="security-sub" style="display:none;position:absolute;right:100%;top:0;background:var(--s1);border:1px solid var(--bd2);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.15);min-width:160px;overflow:hidden"
+      onmouseenter="cancelHideSecuritySub()" onmouseleave="scheduleHideSecuritySub()">
+      <div onclick="deletePJ();closeGearMenu()" class="gmenu-item" style="color:var(--rd)">
+        <span style="font-size:13px">🗑</span><div style="font-weight:600">プロジェクト削除</div>
+      </div>
+    </div>
+  </div>
+  <!-- キャンセル -->
+  <div onclick="closeGearMenu()" class="gmenu-item" style="color:var(--tx3)">
     <span style="font-size:13px">✕</span><span>キャンセル</span>
   </div>
 </div>
+<!-- CSV MENU POPUP（旧・削除） -->
+<div id="csv-menu" style="display:none"></div>
 <!-- STATUS POPUP -->
 <div class="st-popup" id="stpop" style="display:none">
   <div onclick="setStatus('todo')">⚪ 未着手</div>
@@ -2546,7 +2576,7 @@ function updateAdminUI(){
   const logo=document.querySelector('.logo');
   if(logo){
     logo.textContent=isAdmin?'🔒 管理者':'📋 商品企画部';
-    logo.style.color=isAdmin?'#a78bfa':'';
+    logo.style.color=isAdmin?'#ffffff':'';
   }
   const lockBtn=document.getElementById('admin-lock-btn');
   if(lockBtn)lockBtn.style.display=isAdmin?'none':'flex';
@@ -3361,6 +3391,52 @@ function drawApgChart(){
   };
   canvas.style.cursor='pointer';
 }
+
+// ══════════════════════════════════════════
+// GEAR MENU
+// ══════════════════════════════════════════
+function openGearMenu(e){
+  const menu=document.getElementById('gear-menu');
+  const btn=document.getElementById('gear-btn');
+  const r=btn.getBoundingClientRect();
+  menu.style.display='block';
+  // 右端基準で位置決め
+  let right=window.innerWidth-r.right;
+  let top=r.bottom+4;
+  menu.style.right=right+'px';
+  menu.style.left='auto';
+  menu.style.top=top+'px';
+  requestAnimationFrame(()=>{menu.style.transform='scale(1)';menu.style.opacity='1';});
+  e.stopPropagation();
+}
+function closeGearMenu(){
+  const menu=document.getElementById('gear-menu');
+  menu.style.transform='scale(0.92)';menu.style.opacity='0';
+  setTimeout(()=>{menu.style.display='none';hideSecuritySub();},130);
+}
+document.addEventListener('click',e=>{
+  const menu=document.getElementById('gear-menu');
+  if(menu&&menu.style.display!=='none'&&!e.target.closest('#gear-menu')&&!e.target.closest('#gear-btn'))closeGearMenu();
+});
+let _secTimer=null;
+function showSecuritySub(){
+  cancelHideSecuritySub();
+  document.getElementById('security-sub').style.display='block';
+}
+function hideSecuritySub(){
+  const s=document.getElementById('security-sub');
+  if(s)s.style.display='none';
+}
+function scheduleHideSecuritySub(){
+  _secTimer=setTimeout(hideSecuritySub,200);
+}
+function cancelHideSecuritySub(){
+  if(_secTimer){clearTimeout(_secTimer);_secTimer=null;}
+}
+
+// 旧CSV関数への互換エイリアス
+function openCSVMenu(e){openGearMenu(e);}
+function closeCSVMenu(){closeGearMenu();}
 
 // ══════════════════════════════════════════
 // CSV MENU
