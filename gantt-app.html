@@ -3012,6 +3012,7 @@ function insertDateTime(){
   const el=document.getElementById('fmo');
   if(!el)return;
   const now=new Date();
+  const yy=now.getFullYear();
   const mm=String(now.getMonth()+1).padStart(2,'0');
   const dd=String(now.getDate()).padStart(2,'0');
   const days=['日','月','火','水','木','金','土'];
