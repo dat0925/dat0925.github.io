@@ -1203,19 +1203,23 @@ function setScale(s){S.scale=s;document.querySelectorAll('#sctabs .tab').forEach
 // ══════════════════════════════════════════
 function getRows(){
   const ts=filtered();const phs=phases();const rows=[];
+  const favOn=S.favFilter||false;
   phs.forEach(ph=>{
+    // ☆フィルタON時はそのフェーズに☆タスクがあれば強制展開
+    const hasStarred=favOn&&ts.some(t=>t.phaseId===ph.id);
+    const expanded=S.exp.has(ph.id)||hasStarred;
     rows.push({type:'ph',data:ph});
-    if(S.exp.has(ph.id)){
+    if(expanded){
       ts.filter(t=>t.phaseId===ph.id&&!t.parentId).forEach(t=>{
         rows.push({type:'t',data:t,ch:false});
-        if(S.exp.has('c_'+t.id))
+        if(S.exp.has('c_'+t.id)||favOn)
           ts.filter(c=>c.parentId===t.id).forEach(c=>rows.push({type:'t',data:c,ch:true}));
       });
     }
   });
   ts.filter(t=>!t.phaseId&&!t.parentId).forEach(t=>{
     rows.push({type:'t',data:t,ch:false});
-    if(S.exp.has('c_'+t.id))
+    if(S.exp.has('c_'+t.id)||favOn)
       ts.filter(c=>c.parentId===t.id).forEach(c=>rows.push({type:'t',data:c,ch:true}));
   });
   return rows;
