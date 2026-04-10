@@ -358,6 +358,9 @@ const AUTH_DAYS=3;
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" stroke="#f59e0b" stroke-width="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/></svg>
       退出
     </button>
+    <!-- ヘルプ？ボタン -->
+    <button id="help-btn" onclick="toggleHelp(event)" onmouseenter="showHelp()" onmouseleave="scheduleHideHelp()"
+      style="display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;border:1px solid var(--bd2);background:var(--s3);color:var(--tx3);font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;line-height:1">?</button>
   </div>
 </div>
 <div id="tabs">
@@ -424,6 +427,23 @@ const AUTH_DAYS=3;
   </div>
   <div id="sv"></div>
   <div id="apsv"></div>
+</div>
+<!-- ヘルプポップアップ -->
+<div id="help-popup" style="display:none;position:fixed;z-index:3000;background:var(--s1);border:1px solid var(--bd2);border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.2);padding:14px 16px;min-width:260px;font-size:11px"
+  onmouseenter="cancelHideHelp()" onmouseleave="scheduleHideHelp()">
+  <div style="font-weight:700;color:var(--tx);margin-bottom:8px;font-size:12px">⌨️ キーボードショートカット</div>
+  <table style="border-collapse:collapse;width:100%">
+    <tr><td style="color:var(--tx3);padding:2px 8px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:1px 5px;font-size:10px">Ctrl + Z</kbd></td><td style="color:var(--tx2)">元に戻す</td></tr>
+    <tr><td style="color:var(--tx3);padding:2px 8px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:1px 5px;font-size:10px">Ctrl + S</kbd></td><td style="color:var(--tx2)">編集内容を保存</td></tr>
+    <tr><td style="color:var(--tx3);padding:2px 8px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:1px 5px;font-size:10px">Ctrl + Q</kbd></td><td style="color:var(--tx2)">ビュー切替（ガント→サマリー→全PJ）</td></tr>
+    <tr><td style="color:var(--tx3);padding:2px 8px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:1px 5px;font-size:10px">Ctrl + ← →</kbd></td><td style="color:var(--tx2)">プロジェクト切替</td></tr>
+    <tr><td style="color:var(--tx3);padding:2px 8px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:1px 5px;font-size:10px">Ctrl+Shift + ← →</kbd></td><td style="color:var(--tx2)">ステータスフィルタ切替</td></tr>
+    <tr><td style="color:var(--tx3);padding:2px 8px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:1px 5px;font-size:10px">Ctrl+Shift + X</kbd></td><td style="color:var(--tx2)">☆フィルタ ON/OFF</td></tr>
+    <tr><td style="color:var(--tx3);padding:2px 8px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:1px 5px;font-size:10px">Ctrl+Shift + Z</kbd></td><td style="color:var(--tx2)">管理者モード切替</td></tr>
+    <tr style="border-top:1px solid var(--bd)"><td style="color:var(--tx3);padding:4px 8px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:1px 5px;font-size:10px">↑ ↓</kbd></td><td style="color:var(--tx2)">選択タスクを上下移動</td></tr>
+    <tr><td style="color:var(--tx3);padding:2px 8px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:1px 5px;font-size:10px">← →</kbd></td><td style="color:var(--tx2)">選択タスクの親子切替</td></tr>
+    <tr><td style="color:var(--tx3);padding:2px 8px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:1px 5px;font-size:10px">Esc</kbd></td><td style="color:var(--tx2)">モーダルを閉じる</td></tr>
+  </table>
 </div>
 <!-- 管理者モード認証モーダル -->
 <div id="admin-auth-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;align-items:center;justify-content:center">
@@ -3089,13 +3109,45 @@ function renderSummary(){
   }
   if(ov.length){
     h+=`<div class="sst" style="color:#dc2626">⚠ 期限切れ(${ov.length}件)</div>`;
-    ov.forEach(t=>{h+=`<div class="pi dng" style="cursor:pointer" ondblclick="editTask('${t.id}')"><div><div class="pi-t">${esc(t.name)}</div><div class="pi-m">${t.assignee||'未担当'} · ${t.endDate}</div></div><span class="bdg ${t.status}">${SL[t.status]}</span></div>`;});
+    ov.forEach(t=>{h+=`<div class="pi dng" style="cursor:pointer" onclick="gotoTaskEdit('${t.id}')"><div><div class="pi-t">${esc(t.name)}</div><div class="pi-m">${t.assignee||'未担当'} · ${t.endDate}</div></div><span class="bdg ${t.status}">${SL[t.status]}</span></div>`;});
   }
   if(rk.length){
     h+=`<div class="sst" style="color:#d97706">⚡ 期限3日以内(${rk.length}件)</div>`;
-    rk.forEach(t=>{h+=`<div class="pi wrn" style="cursor:pointer" ondblclick="editTask('${t.id}')"><div><div class="pi-t">${esc(t.name)}</div><div class="pi-m">${t.assignee||'未担当'} · ${t.endDate}</div></div><span class="bdg ${t.status}">${SL[t.status]}</span></div>`;});
+    rk.forEach(t=>{h+=`<div class="pi wrn" style="cursor:pointer" onclick="gotoTaskEdit('${t.id}')"><div><div class="pi-t">${esc(t.name)}</div><div class="pi-m">${t.assignee||'未担当'} · ${t.endDate}</div></div><span class="bdg ${t.status}">${SL[t.status]}</span></div>`;});
   }
   sv.innerHTML=h;
+}
+
+// サマリーからガントに遷移して編集画面を開く
+function gotoTaskEdit(taskId){
+  setView('gantt');
+  // タスク行が見えるようにフェーズを展開してスクロール
+  const t=tasks().find(x=>x.id===taskId);
+  if(t){
+    if(t.phaseId)S.exp.add(t.phaseId);
+    if(t.parentId)S.exp.add('c_'+t.parentId);
+    saveExp();
+  }
+  renderAll();
+  // 少し待ってから行にスクロール
+  setTimeout(()=>{
+    const el=document.getElementById('tr_'+taskId);
+    if(el){
+      el.scrollIntoView({behavior:'smooth',block:'center'});
+      el.style.transition='background .2s';
+      el.style.background='rgba(37,99,235,.12)';
+      setTimeout(()=>el.style.background='',1000);
+    }
+    editTask(taskId);
+  },150);
+}
+
+// ビュー循環切替（ガント→サマリー→全プロジェクト→ガント）
+function cycleView(){
+  const views=['gantt','summary','allprojects'];
+  const cur=S.view||'gantt';
+  const idx=views.indexOf(cur);
+  setView(views[(idx+1)%views.length]);
 }
 
 // ══════════════════════════════════════════
@@ -3401,6 +3453,42 @@ function drawApgChart(){
 }
 
 // ══════════════════════════════════════════
+// HELP POPUP
+// ══════════════════════════════════════════
+let _helpTimer=null;
+function showHelp(){
+  cancelHideHelp();
+  const pop=document.getElementById('help-popup');
+  const btn=document.getElementById('help-btn');
+  const r=btn.getBoundingClientRect();
+  pop.style.display='block';
+  // 右端からはみ出さないよう調整
+  const pw=pop.offsetWidth||270;
+  let left=r.right-pw;
+  if(left<8)left=8;
+  pop.style.left=left+'px';
+  pop.style.top=(r.bottom+6)+'px';
+}
+function hideHelp(){
+  document.getElementById('help-popup').style.display='none';
+}
+function scheduleHideHelp(){
+  _helpTimer=setTimeout(hideHelp,300);
+}
+function cancelHideHelp(){
+  if(_helpTimer){clearTimeout(_helpTimer);_helpTimer=null;}
+}
+function toggleHelp(e){
+  const pop=document.getElementById('help-popup');
+  if(pop.style.display==='none'){showHelp();}else{hideHelp();}
+  e.stopPropagation();
+}
+document.addEventListener('click',e=>{
+  const pop=document.getElementById('help-popup');
+  if(pop&&pop.style.display!=='none'&&!e.target.closest('#help-popup')&&!e.target.closest('#help-btn'))hideHelp();
+});
+
+// ══════════════════════════════════════════
 // GEAR MENU
 // ══════════════════════════════════════════
 function openGearMenu(e){
@@ -3685,7 +3773,10 @@ async function init(){
     if((e.ctrlKey||e.metaKey)&&e.key==='ArrowLeft'&&!e.shiftKey){
       e.preventDefault();if(!mMode)navPJ(-1);
     }
-    // Ctrl+Shift+X: ☆フィルタON/OFF
+    // Ctrl+Q: ビュー循環切替
+    if((e.ctrlKey||e.metaKey)&&(e.key==='q'||e.key==='Q')&&!e.shiftKey){
+      e.preventDefault();cycleView();
+    }
     if((e.ctrlKey||e.metaKey)&&e.shiftKey&&(e.key==='x'||e.key==='X')){
       e.preventDefault();if(!mMode)toggleFavFilter();
     }
