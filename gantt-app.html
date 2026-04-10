@@ -2600,6 +2600,9 @@ async function enterAdminMode(){
 function exitAdminMode(){
   adminMode=false;
   S=_Snormal;
+  S.cur=localStorage.getItem('gp6c')||null;
+  if(S.cur&&!S.pjs[S.cur])S.cur=null;
+  S.sel=new Set();S.exp=new Set();
   sessionStorage.removeItem('gantt_admin_session');
   updateAdminUI();
   setView('gantt');
