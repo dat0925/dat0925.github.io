@@ -3558,18 +3558,21 @@ function openGearMenu(e){
   const menu=document.getElementById('gear-menu');
   const btn=document.getElementById('gear-btn');
   const r=btn.getBoundingClientRect();
-  // リセット
+  // 一旦非表示状態でサイズを計測
   menu.style.maxHeight='';
   menu.style.overflowY='';
+  menu.style.left='-9999px';
+  menu.style.right='auto';
+  menu.style.top='-9999px';
   menu.style.display='block';
-  // 横方向：右端基準（ボタン右端に揃える）
-  let right=window.innerWidth-r.right;
-  if(right<4)right=4;
-  menu.style.right=right+'px';
-  menu.style.left='auto';
-  // 縦方向：下にはみ出す場合はボタン上に表示、それでも入らなければスクロール対応
+  const mw=menu.offsetWidth;
   const mh=menu.offsetHeight;
   const margin=8;
+  // 横方向：ボタン右端に揃え、左端が画面外にはみ出さないよう調整
+  let left=r.right-mw;
+  if(left<margin)left=margin;
+  if(left+mw>window.innerWidth-margin)left=window.innerWidth-mw-margin;
+  // 縦方向：下にはみ出す場合はボタン上に表示、それでも入らなければスクロール対応
   let top=r.bottom+4;
   if(top+mh>window.innerHeight-margin){
     const topAbove=r.top-mh-4;
@@ -3581,7 +3584,10 @@ function openGearMenu(e){
       menu.style.overflowY='auto';
     }
   }
+  menu.style.left=left+'px';
+  menu.style.right='auto';
   menu.style.top=top+'px';
+  menu.style.transformOrigin='top left';
   requestAnimationFrame(()=>{menu.style.transform='scale(1)';menu.style.opacity='1';});
   e.stopPropagation();
 }
