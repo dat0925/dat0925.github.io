@@ -243,6 +243,18 @@ textarea.fc{min-height:60px;resize:vertical}.fg{margin-bottom:11px}.fr{display:g
 </style>
 </head>
 <body>
+<div id="debug-err" style="display:none;position:fixed;top:0;left:0;right:0;background:#dc2626;color:#fff;font-size:11px;padding:8px 12px;z-index:99999;word-break:break-all;white-space:pre-wrap;max-height:40vh;overflow-y:auto"></div>
+<script>
+window.onerror=function(msg,src,line,col,err){
+  const el=document.getElementById('debug-err');
+  if(el){el.style.display='block';el.textContent+=(err?err.stack:msg)+'\n---\n';}
+  return false;
+};
+window.addEventListener('unhandledrejection',function(e){
+  const el=document.getElementById('debug-err');
+  if(el){el.style.display='block';el.textContent+='Promise: '+(e.reason?.stack||e.reason)+'\n---\n';}
+});
+</script>
 <!-- ===== AUTH OVERLAY ===== -->
 <div id="auth-overlay">
   <div class="auth-box">
