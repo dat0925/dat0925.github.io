@@ -3668,8 +3668,8 @@ async function init(){
       e.preventDefault();
       if(mMode==='editTask'||mMode==='addTask'||mMode==='editPh'||mMode==='addPh')subM();
     }
-    // Ctrl+Shift+S: 管理者モード切替
-    if((e.ctrlKey||e.metaKey)&&e.shiftKey&&e.key==='S'){
+    // Ctrl+Shift+Z: 管理者モード切替
+    if((e.ctrlKey||e.metaKey)&&e.shiftKey&&(e.key==='z'||e.key==='Z')){
       e.preventDefault();
       if(adminMode){exitAdminMode();}else{tryOpenAdmin();}
     }
@@ -3683,6 +3683,13 @@ async function init(){
     }
     if((e.ctrlKey||e.metaKey)&&e.key==='ArrowLeft'&&!e.shiftKey){
       e.preventDefault();if(!mMode)navPJ(-1);
+    }
+    // Ctrl+Shift+→/← でステータスフィルタ切替
+    if((e.ctrlKey||e.metaKey)&&e.shiftKey&&e.key==='ArrowRight'){
+      e.preventDefault();if(!mMode)navFst(1);
+    }
+    if((e.ctrlKey||e.metaKey)&&e.shiftKey&&e.key==='ArrowLeft'){
+      e.preventDefault();if(!mMode)navFst(-1);
     }
     // 1件選択時のキーボード操作（Ctrlなし）
     if(!mMode&&S.sel.size===1){
