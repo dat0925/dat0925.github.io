@@ -429,20 +429,21 @@ const AUTH_DAYS=3;
   <div id="apsv"></div>
 </div>
 <!-- ヘルプポップアップ -->
-<div id="help-popup" style="display:none;position:fixed;z-index:3000;background:var(--s1);border:1px solid var(--bd2);border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.2);padding:14px 16px;min-width:260px;font-size:11px"
+<div id="help-popup" style="display:none;position:fixed;z-index:3000;background:var(--s1);border:1px solid var(--bd2);border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.2);padding:16px 18px;min-width:300px;font-size:12.5px"
   onmouseenter="cancelHideHelp()" onmouseleave="scheduleHideHelp()">
-  <div style="font-weight:700;color:var(--tx);margin-bottom:8px;font-size:12px">⌨️ キーボードショートカット</div>
-  <table style="border-collapse:collapse;width:100%">
-    <tr><td style="color:var(--tx3);padding:2px 8px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:1px 5px;font-size:10px">Ctrl + Z</kbd></td><td style="color:var(--tx2)">元に戻す</td></tr>
-    <tr><td style="color:var(--tx3);padding:2px 8px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:1px 5px;font-size:10px">Ctrl + S</kbd></td><td style="color:var(--tx2)">編集内容を保存</td></tr>
-    <tr><td style="color:var(--tx3);padding:2px 8px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:1px 5px;font-size:10px">Ctrl + Q</kbd></td><td style="color:var(--tx2)">ビュー切替（ガント→サマリー→全PJ）</td></tr>
-    <tr><td style="color:var(--tx3);padding:2px 8px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:1px 5px;font-size:10px">Ctrl + ← →</kbd></td><td style="color:var(--tx2)">プロジェクト切替</td></tr>
-    <tr><td style="color:var(--tx3);padding:2px 8px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:1px 5px;font-size:10px">Ctrl+Shift + ← →</kbd></td><td style="color:var(--tx2)">ステータスフィルタ切替</td></tr>
-    <tr><td style="color:var(--tx3);padding:2px 8px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:1px 5px;font-size:10px">Ctrl+Shift + X</kbd></td><td style="color:var(--tx2)">☆フィルタ ON/OFF</td></tr>
-    <tr><td style="color:var(--tx3);padding:2px 8px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:1px 5px;font-size:10px">Ctrl+Shift + Z</kbd></td><td style="color:var(--tx2)">管理者モード切替</td></tr>
-    <tr style="border-top:1px solid var(--bd)"><td style="color:var(--tx3);padding:4px 8px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:1px 5px;font-size:10px">↑ ↓</kbd></td><td style="color:var(--tx2)">選択タスクを上下移動</td></tr>
-    <tr><td style="color:var(--tx3);padding:2px 8px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:1px 5px;font-size:10px">← →</kbd></td><td style="color:var(--tx2)">選択タスクの親子切替</td></tr>
-    <tr><td style="color:var(--tx3);padding:2px 8px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:1px 5px;font-size:10px">Esc</kbd></td><td style="color:var(--tx2)">モーダルを閉じる</td></tr>
+  <div style="font-weight:700;color:var(--tx);margin-bottom:10px;font-size:13.5px">⌨️ キーボードショートカット</div>
+  <table style="border-collapse:collapse;width:100%;line-height:2">
+    <tr><td style="color:var(--tx3);padding:2px 10px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:2px 6px;font-size:11px">Ctrl + Z</kbd></td><td style="color:var(--tx2)">元に戻す</td></tr>
+    <tr><td style="color:var(--tx3);padding:2px 10px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:2px 6px;font-size:11px">Ctrl + S</kbd></td><td style="color:var(--tx2)">編集内容を保存</td></tr>
+    <tr><td style="color:var(--tx3);padding:2px 10px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:2px 6px;font-size:11px">Ctrl + q</kbd></td><td style="color:var(--tx2)">ビュー切替（ガント→サマリー→全PJ）</td></tr>
+    <tr><td style="color:var(--tx3);padding:2px 10px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:2px 6px;font-size:11px">Ctrl + ← →</kbd></td><td style="color:var(--tx2)">プロジェクト切替</td></tr>
+    <tr><td style="color:var(--tx3);padding:2px 10px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:2px 6px;font-size:11px">Ctrl + Shift + ← →</kbd></td><td style="color:var(--tx2)">ステータスフィルタ切替</td></tr>
+    <tr><td style="color:var(--tx3);padding:2px 10px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:2px 6px;font-size:11px">Ctrl + Shift + x</kbd></td><td style="color:var(--tx2)">☆フィルタ ON/OFF</td></tr>
+    <tr><td style="color:var(--tx3);padding:2px 10px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:2px 6px;font-size:11px">Ctrl + Shift + d</kbd></td><td style="color:var(--tx2)">フィルタ全解除</td></tr>
+    <tr><td style="color:var(--tx3);padding:2px 10px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:2px 6px;font-size:11px">Ctrl + Shift + z</kbd></td><td style="color:var(--tx2)">管理者モード切替</td></tr>
+    <tr style="border-top:1px solid var(--bd)"><td style="color:var(--tx3);padding:4px 10px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:2px 6px;font-size:11px">↑ ↓</kbd></td><td style="color:var(--tx2)">選択タスクを上下移動</td></tr>
+    <tr><td style="color:var(--tx3);padding:2px 10px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:2px 6px;font-size:11px">← →</kbd></td><td style="color:var(--tx2)">選択タスクの親子切替</td></tr>
+    <tr><td style="color:var(--tx3);padding:2px 10px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:2px 6px;font-size:11px">Esc</kbd></td><td style="color:var(--tx2)">モーダルを閉じる</td></tr>
   </table>
 </div>
 <!-- 管理者モード認証モーダル -->
@@ -3840,6 +3841,10 @@ async function init(){
     }
     if((e.ctrlKey||e.metaKey)&&e.shiftKey&&(e.key==='x'||e.key==='X')){
       e.preventDefault();if(!mMode)toggleFavFilter();
+    }
+    // Ctrl+Shift+D: フィルタ全解除
+    if((e.ctrlKey||e.metaKey)&&e.shiftKey&&(e.key==='d'||e.key==='D')){
+      e.preventDefault();if(!mMode)clearFilters();
     }
     if((e.ctrlKey||e.metaKey)&&e.shiftKey&&e.key==='ArrowRight'){
       e.preventDefault();if(!mMode)navFst(1);
