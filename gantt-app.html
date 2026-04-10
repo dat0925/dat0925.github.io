@@ -724,7 +724,7 @@ async function sbLoad(){
   if(!sbClient)return false;
   try{
     sbDot('busy');
-    // s=S (pointer)
+    
     const[{data:pjRows,error:e1},{data:phRows,error:e2},{data:tkRows,error:e3}]=await Promise.all([
       sbClient.from(tbl('projects')).select('*').order('sort_order'),
       sbClient.from(tbl('phases')).select('*').order('sort_order'),
@@ -769,7 +769,7 @@ function tbl(name){return adminMode?`gp6a_${name}`:`gp6_${name}`;}
 async function sbSavePJ(id){
   if(!sbClient)return;
   _pendingSave=true;sbDot('busy');
-  // s=S (pointer)const p=S.pjs[id];if(!p)return;
+  const p=S.pjs[id];if(!p)return;
   const{error}=await sbClient.from(tbl('projects')).upsert({id,name:p.name,sort_order:Object.keys(S.pjs).indexOf(id),members:p.members||[]},{onConflict:'id'});
   sbDot(error?'err':'ok');setTimeout(()=>{_pendingSave=false;},800);
 }
@@ -780,7 +780,7 @@ async function sbDeletePJ(id){
 async function sbSavePH(ph,projectId){
   if(!sbClient)return;
   _pendingSave=true;sbDot('busy');
-  // s=S (pointer)const p=S.pjs[projectId];if(!p)return;
+  const p=S.pjs[projectId];if(!p)return;
   const{error}=await sbClient.from(tbl('phases')).upsert({id:ph.id,project_id:projectId,name:ph.name,start_date:ph.startDate||null,end_date:ph.endDate||null,assignee:ph.assignee||'',sort_order:p.phases.findIndex(x=>x.id===ph.id)},{onConflict:'id'});
   sbDot(error?'err':'ok');setTimeout(()=>{_pendingSave=false;},800);
 }
@@ -791,7 +791,7 @@ async function sbDeletePH(id){
 async function sbSaveTask(t,projectId){
   if(!sbClient)return;
   _pendingSave=true;sbDot('busy');
-  // s=S (pointer)const p=S.pjs[projectId];if(!p)return;
+  const p=S.pjs[projectId];if(!p)return;
   const{error}=await sbClient.from(tbl('tasks')).upsert({id:t.id,project_id:projectId,phase_id:t.phaseId||null,parent_id:t.parentId||null,name:t.name,start_date:t.startDate||null,end_date:t.endDate||null,completed_date:t.completedDate||null,status:t.status,assignee:t.assignee||'',effort:t.effort||1,memo:t.memo||'',starred:t.starred||false,sort_order:p.tasks.findIndex(x=>x.id===t.id),updated_at:new Date().toISOString()},{onConflict:'id'});
   sbDot(error?'err':'ok');setTimeout(()=>{_pendingSave=false;},800);
 }
@@ -893,7 +893,7 @@ function applyStarred(){
     const d=localStorage.getItem(key);
     if(!d)return;
     const starred=JSON.parse(d);
-    // s=S (pointer)
+    
     Object.values(S.pjs).forEach(p=>(p.tasks||[]).forEach(t=>{t.starred=!!starred[t.id];}));
   }catch(e){}
 }
