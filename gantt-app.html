@@ -375,6 +375,12 @@ const AUTH_DAYS=3;
       <path d="M7 5L3 9l4 4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
   </button>
+  <button class="btn" onclick="redo()" title="やり直す&#10;ショートカット：Ctrl + Y" id="redo-btn" style="padding:3px 8px;display:flex;align-items:center;justify-content:center;opacity:0.4" disabled>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M21 9H8a5 5 0 0 0 0 10h9" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M17 5l4 4-4 4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
   <!-- 管理者モード退出ボタン -->
   <button id="admin-exit-btn" onclick="exitAdminMode()" style="display:none;align-items:center;gap:4px;padding:3px 10px;border:1px solid rgba(124,58,237,.4);border-radius:5px;background:rgba(124,58,237,.1);color:#7c3aed;font-size:11px;font-weight:600;cursor:pointer;margin-left:4px" title="管理者モードを終了">🔒 退出</button>
   <!-- iPad用タスク移動ボタン -->
@@ -434,6 +440,7 @@ const AUTH_DAYS=3;
   <div style="font-weight:700;color:var(--tx);margin-bottom:10px;font-size:13.5px">⌨️ キーボードショートカット</div>
   <table style="border-collapse:collapse;width:100%;line-height:2">
     <tr><td style="color:var(--tx3);padding:2px 10px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:2px 6px;font-size:11px">Ctrl + Z</kbd></td><td style="color:var(--tx2)">元に戻す</td></tr>
+    <tr><td style="color:var(--tx3);padding:2px 10px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:2px 6px;font-size:11px">Ctrl + Y</kbd></td><td style="color:var(--tx2)">やり直す</td></tr>
     <tr><td style="color:var(--tx3);padding:2px 10px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:2px 6px;font-size:11px">Ctrl + S</kbd></td><td style="color:var(--tx2)">編集内容を保存</td></tr>
     <tr><td style="color:var(--tx3);padding:2px 10px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:2px 6px;font-size:11px">Ctrl + q</kbd></td><td style="color:var(--tx2)">ビュー切替（ガント→サマリー→全PJ）</td></tr>
     <tr><td style="color:var(--tx3);padding:2px 10px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:2px 6px;font-size:11px">Ctrl + ← →</kbd></td><td style="color:var(--tx2)">プロジェクト切替</td></tr>
@@ -714,15 +721,30 @@ function pj(){return S.cur?S.pjs[S.cur]:null}
 function tasks(){return pj()?.tasks||[]}
 function phases(){return pj()?.phases||[]}const UNDO_MAX=30;
 let undoStack=[];
+let redoStack=[];
 function pushUndo(){
   undoStack.push({pjs:JSON.parse(JSON.stringify(S.pjs)),members:JSON.parse(JSON.stringify(S.members||[]))});
   if(undoStack.length>UNDO_MAX)undoStack.shift();
+  redoStack=[];
   // ボタン状態更新（DOMロード後のみ）
   if(document.readyState!=='loading')updateUndoBtn?.();
 }
 function undo(){
   if(!undoStack.length)return;
+  redoStack.push({pjs:JSON.parse(JSON.stringify(S.pjs)),members:JSON.parse(JSON.stringify(S.members||[]))});
   const snap=undoStack.pop();
+  S.pjs=snap.pjs;
+  S.members=snap.members;
+  if(S.cur&&!S.pjs[S.cur])S.cur=null;
+  applyStarred();
+  save();
+  renderPJS();updateFAs();renderAll();
+  updateUndoBtn?.();
+}
+function redo(){
+  if(!redoStack.length)return;
+  undoStack.push({pjs:JSON.parse(JSON.stringify(S.pjs)),members:JSON.parse(JSON.stringify(S.members||[]))});
+  const snap=redoStack.pop();
   S.pjs=snap.pjs;
   S.members=snap.members;
   if(S.cur&&!S.pjs[S.cur])S.cur=null;
@@ -2758,9 +2780,9 @@ function indentSelTask(shiftKey){
 // ── Undoボタンの状態を更新 ──
 function updateUndoBtn(){
   const btn=document.getElementById('undo-btn');
-  if(!btn)return;
-  btn.disabled=undoStack.length===0;
-  btn.style.opacity=undoStack.length===0?'0.4':'1';
+  if(btn){btn.disabled=undoStack.length===0;btn.style.opacity=undoStack.length===0?'0.4':'1';}
+  const rbtn=document.getElementById('redo-btn');
+  if(rbtn){rbtn.disabled=redoStack.length===0;rbtn.style.opacity=redoStack.length===0?'0.4':'1';}
 }
 
 // pushUndoをラップしてボタン状態も更新
@@ -3863,6 +3885,10 @@ async function init(){
     if((e.ctrlKey||e.metaKey)&&e.key==='z'&&!e.shiftKey){
       e.preventDefault();
       if(!mMode)undo();
+    }
+    if((e.ctrlKey||e.metaKey)&&e.key==='y'&&!e.shiftKey){
+      e.preventDefault();
+      if(!mMode)redo();
     }
     // Ctrl+→/← でプロジェクト切替
     if((e.ctrlKey||e.metaKey)&&e.key==='ArrowRight'&&!e.shiftKey){
