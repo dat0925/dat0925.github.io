@@ -3863,8 +3863,38 @@ async function init(){
   }
   if(initSB()){
     await migrateFromLegacy();
+    // sbLoad()前にlocalStorageのスナップショットを保持（未保存フェーズの復元用）
+    const _localPjsSnap=JSON.parse(JSON.stringify(S.pjs));
     const ok=await sbLoad();
     if(!ok&&Object.keys(S.pjs).length===0)createDemo();
+    if(ok){
+      // localStorageにあるがSupabaseにないフェーズを復元・再保存する
+      // （sbSavePHが失敗した場合のフォールバック）
+      let recovered=false;
+      for(const[pjId,lp] of Object.entries(_localPjsSnap)){
+        if(!S.pjs[pjId])continue;
+        const sbPhIds=new Set((S.pjs[pjId].phases||[]).map(p=>p.id));
+        for(const ph of (lp.phases||[])){
+          if(!sbPhIds.has(ph.id)){
+            S.pjs[pjId].phases.push(ph);
+            sbSavePH(ph,pjId);
+            recovered=true;
+          }
+        }
+        // タスクのphaseIdもlocalStorageと一致させる（FK競合で保存失敗した場合の復元）
+        const sbTaskMap=new Map((S.pjs[pjId].tasks||[]).map(t=>[t.id,t]));
+        for(const lt of (lp.tasks||[])){
+          if(!lt.phaseId)continue;
+          const st=sbTaskMap.get(lt.id);
+          if(st&&st.phaseId!==lt.phaseId){
+            st.phaseId=lt.phaseId;
+            sbSaveTask(st,pjId);
+            recovered=true;
+          }
+        }
+      }
+      if(recovered)save();
+    }
   } else {
     if(Object.keys(S.pjs).length===0)createDemo();
   }
