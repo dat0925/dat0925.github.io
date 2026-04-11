@@ -393,9 +393,7 @@ const AUTH_DAYS=3;
   </div>
   <div id="bulk-inline" style="display:flex;align-items:center;gap:5px;margin-left:8px">
     <span class="bc" id="bcc" style="font-size:11px;color:var(--tx3);white-space:nowrap">0件選択</span>
-    <select id="bst" style="background:var(--s3);border:1px solid var(--bd2);color:var(--tx);padding:3px 6px;border-radius:4px;font-family:var(--f);font-size:11px;outline:none"><option value="">ステータス変更</option><option value="todo">未着手</option><option value="inprogress">進行中</option><option value="requested">依頼中</option><option value="done">完了</option><option value="cancelled">不用</option></select>
-    <button class="btn p" style="padding:3px 8px;font-size:11px" onclick="applyBulk()">適用</button>
-    <button class="btn" style="padding:3px 8px;font-size:11px" onclick="openBulkEdit()" title="開始日・終了日・担当者・フェーズ・親タスクを一括変更">一括編集...</button>
+    <button class="btn p" style="padding:3px 8px;font-size:11px" onclick="openBulkEdit()">一括編集</button>
     <button class="btn" style="padding:3px 8px;font-size:11px" onclick="clearSel()">解除</button>
     <button class="btn d" style="padding:3px 8px;font-size:11px" onclick="bulkDelete()" title="選択したタスクを削除">削除</button>
   </div>
@@ -2039,12 +2037,6 @@ function bulkDelete(){
     openDelModal('bulk', null, names+suffix);
   }
 }
-function applyBulk(){pushUndo();
-  const st=document.getElementById('bst').value;if(!st)return;
-  const p=pj();if(!p)return;
-  p.tasks.forEach(t=>{if(S.sel.has(t.id)){t.status=st;if(st==='done'&&!t.completedDate)t.completedDate=td();if(st!=='done')t.completedDate=null;t.updatedAt=td();}});
-  save();{const _cur=S.cur;p.tasks.forEach(t=>{if(S.sel.has(t.id))sbSaveTask(t,_cur);});}renderAll();document.getElementById('bst').value='';
-}
 function openBulkEdit(){
   if(!S.sel.size)return;
   const members=getMemberCandidates();
@@ -2058,6 +2050,7 @@ function openBulkEdit(){
   bePar.innerHTML='<option value="">（変更なし）</option><option value="__none__">なし（親タスク解除）</option>';
   tasks().filter(t=>!t.parentId&&!S.sel.has(t.id)).forEach(t=>{const o=document.createElement('option');o.value=t.id;o.textContent=t.name;bePar.appendChild(o);});
   document.getElementById('bulk-edit-cnt').textContent=`${S.sel.size}件のタスクを編集`;
+  document.getElementById('be-st').value='';
   document.getElementById('be-sd').value='';
   document.getElementById('be-ed').value='';
   document.getElementById('bulk-edit-modal').style.display='flex';
@@ -2066,24 +2059,26 @@ function closeBulkEdit(){
   document.getElementById('bulk-edit-modal').style.display='none';
 }
 function applyBulkEdit(){
+  const st=document.getElementById('be-st').value;
   const sd=document.getElementById('be-sd').value;
   const ed=document.getElementById('be-ed').value;
   const asg=document.getElementById('be-asg').value;
   const phVal=document.getElementById('be-ph').value;
   const parVal=document.getElementById('be-par').value;
-  if(!sd&&!ed&&!asg&&!phVal&&!parVal)return alert('変更するフィールドを選択してください');
+  if(!st&&!sd&&!ed&&!asg&&!phVal&&!parVal)return alert('変更するフィールドを選択してください');
   pushUndo();
   const p=pj();if(!p)return;
   const _cur=S.cur;
   p.tasks.forEach(t=>{
     if(!S.sel.has(t.id))return;
+    if(st){t.status=st;if(st==='done'&&!t.completedDate)t.completedDate=td();if(st!=='done')t.completedDate=null;}
     if(sd)t.startDate=sd;
     if(ed)t.endDate=ed;
     if(asg)t.assignee=asg;
     if(phVal==='__none__')t.phaseId=null;
     else if(phVal)t.phaseId=phVal;
     if(parVal==='__none__')t.parentId=null;
-    else if(parVal){t.parentId=parVal;if(phVal===''&&!phVal){const par=p.tasks.find(x=>x.id===parVal);if(par)t.phaseId=par.phaseId;}}
+    else if(parVal){t.parentId=parVal;if(!phVal){const par=p.tasks.find(x=>x.id===parVal);if(par)t.phaseId=par.phaseId;}}
     t.updatedAt=td();
   });
   save();
@@ -4102,6 +4097,7 @@ init();
       <span id="bulk-edit-cnt" style="font-size:11px;color:var(--tx3)"></span>
     </div>
     <div style="font-size:10px;color:var(--tx3);margin-bottom:12px;padding:6px 9px;background:var(--s2);border-radius:5px">空欄・未選択のフィールドは変更されません</div>
+    <div class="fg"><label class="fl">ステータス</label><select class="fc" id="be-st"><option value="">（変更なし）</option><option value="todo">未着手</option><option value="inprogress">進行中</option><option value="requested">依頼中</option><option value="done">完了</option><option value="cancelled">不用</option></select></div>
     <div class="fg"><label class="fl">開始日</label><input class="fc" type="date" id="be-sd"></div>
     <div class="fg"><label class="fl">終了予定日</label><input class="fc" type="date" id="be-ed"></div>
     <div class="fg"><label class="fl">担当者</label><select class="fc" id="be-asg"><option value="">（変更なし）</option></select></div>
