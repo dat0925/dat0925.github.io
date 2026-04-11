@@ -863,11 +863,25 @@ function sbSubscribe(){
     .subscribe(status=>{sbDot(status==='SUBSCRIBED'?'ok':status==='CLOSED'?'':'busy');});
 }
 let _reloadTimer=null;
-let _pendingSave=false;
+let _pendingSaveCount=0;
+let _saveHadError=false;
+let _pendingSaveTimer=null;
+function _pendingSaveInc(){_pendingSaveCount++;sbDot('busy');}
+function _pendingSaveDec(hasError){
+  if(hasError)_saveHadError=true;
+  _pendingSaveCount=Math.max(0,_pendingSaveCount-1);
+  clearTimeout(_pendingSaveTimer);
+  if(_pendingSaveCount===0){
+    const st=_saveHadError?'err':'ok';
+    _saveHadError=false;
+    sbDot(st);
+    _pendingSaveTimer=setTimeout(()=>{if(_pendingSaveCount===0)sbDot('ok');},3000);
+  }
+}
 async function sbReload(){
   clearTimeout(_reloadTimer);
   _reloadTimer=setTimeout(async()=>{
-    if(_pendingSave){sbReload();return;}  // 保存中なら再スケジュール
+    if(_pendingSaveCount>0){sbReload();return;}  // 保存中なら再スケジュール
     // sbLoad前にS.pjsのスナップショットを保持
     // localStorageが古い場合でも、メモリ上のフェーズ・タスクを確実に復元するため
     const _preSnap=JSON.parse(JSON.stringify(S.pjs));
@@ -897,10 +911,10 @@ function tbl(name){return adminMode?`gp6a_${name}`:`gp6_${name}`;}
 
 async function sbSavePJ(id){
   if(!sbClient)return;
-  _pendingSave=true;sbDot('busy');
   const p=S.pjs[id];if(!p)return;
+  _pendingSaveInc();
   const{error}=await sbClient.from(tbl('projects')).upsert({id,name:p.name,sort_order:Object.keys(S.pjs).indexOf(id),members:p.members||[]},{onConflict:'id'});
-  sbDot(error?'err':'ok');setTimeout(()=>{_pendingSave=false;},800);
+  _pendingSaveDec(!!error);
 }
 async function sbDeletePJ(id){
   if(!sbClient)return;
@@ -908,10 +922,10 @@ async function sbDeletePJ(id){
 }
 async function sbSavePH(ph,projectId){
   if(!sbClient)return;
-  _pendingSave=true;sbDot('busy');
   const p=S.pjs[projectId];if(!p)return;
+  _pendingSaveInc();
   const{error}=await sbClient.from(tbl('phases')).upsert({id:ph.id,project_id:projectId,name:ph.name,start_date:ph.startDate||null,end_date:ph.endDate||null,assignee:ph.assignee||'',sort_order:p.phases.findIndex(x=>x.id===ph.id)},{onConflict:'id'});
-  sbDot(error?'err':'ok');setTimeout(()=>{_pendingSave=false;},800);
+  _pendingSaveDec(!!error);
 }
 async function sbDeletePH(id){
   if(!sbClient)return;
@@ -919,10 +933,10 @@ async function sbDeletePH(id){
 }
 async function sbSaveTask(t,projectId){
   if(!sbClient)return;
-  _pendingSave=true;sbDot('busy');
   const p=S.pjs[projectId];if(!p)return;
+  _pendingSaveInc();
   const{error}=await sbClient.from(tbl('tasks')).upsert({id:t.id,project_id:projectId,phase_id:t.phaseId||null,parent_id:t.parentId||null,name:t.name,start_date:t.startDate||null,end_date:t.endDate||null,completed_date:t.completedDate||null,status:t.status,assignee:t.assignee||'',effort:t.effort||1,memo:t.memo||'',starred:t.starred||false,sort_order:p.tasks.findIndex(x=>x.id===t.id),updated_at:new Date().toISOString()},{onConflict:'id'});
-  sbDot(error?'err':'ok');setTimeout(()=>{_pendingSave=false;},800);
+  _pendingSaveDec(!!error);
 }
 async function sbDeleteTask(id){
   if(!sbClient)return;
