@@ -1947,15 +1947,14 @@ function togC(id){
 }
 function expandAllPh(){
   phases().forEach(p=>S.exp.add(p.id));
-  // 子タスクを持つ親タスクも展開
-  const parentIds=new Set(tasks().filter(t=>t.parentId).map(t=>t.parentId));
-  parentIds.forEach(id=>S.exp.add('c_'+id));
+  // 全タスクの子展開キーを追加（子なしタスクへの付与は無害）
+  tasks().forEach(t=>S.exp.add('c_'+t.id));
   saveExp();renderTP();drawBody();
 }
 function collapseAllPh(){
   phases().forEach(p=>S.exp.delete(p.id));
-  // 親タスクも折りたたむ
-  tasks().filter(t=>!t.parentId).forEach(t=>S.exp.delete('c_'+t.id));
+  // 全タスクの子展開キーを削除
+  tasks().forEach(t=>S.exp.delete('c_'+t.id));
   saveExp();renderTP();drawBody();
 }
 function toggleAllPh(){
@@ -1968,10 +1967,8 @@ function toggleAllPh(){
     setTimeout(()=>{btn.style.transform='scale(1)';},120);
   }
   if(allClosed){
-    // 子タスクを持つ親タスクも一括展開
-    const parentIds=new Set(tasks().filter(t=>t.parentId).map(t=>t.parentId));
-    parentIds.forEach(id=>S.exp.add('c_'+id));
-    // 段階的に開くアニメーション
+    // 全タスクの子展開キーを追加してから段階的に開くアニメーション
+    tasks().forEach(t=>S.exp.add('c_'+t.id));
     phs.forEach((p,i)=>{
       setTimeout(()=>{
         S.exp.add(p.id);
@@ -1981,8 +1978,8 @@ function toggleAllPh(){
       }, i*40);
     });
   } else {
-    // 親タスクも一括折りたたむ
-    tasks().filter(t=>!t.parentId).forEach(t=>S.exp.delete('c_'+t.id));
+    // 全タスクの子展開キーを削除してまとめて閉じる
+    tasks().forEach(t=>S.exp.delete('c_'+t.id));
     phs.forEach(p=>S.exp.delete(p.id));
     saveExp();renderTP();drawBody();
   }
