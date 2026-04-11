@@ -2987,6 +2987,9 @@ function subTask(){pushUndo();
   const p=pj();
   if(mMode==='addTask')p.tasks.push(t);
   else{const i=p.tasks.findIndex(x=>x.id===mId);if(i>=0)p.tasks[i]=t;}
+  // 親タスクのフェーズ変更時に子タスクのphaseIdも連動
+  const _cur=S.cur;
+  p.tasks.filter(c=>c.parentId===t.id).forEach(c=>{c.phaseId=t.phaseId;sbSaveTask(c,_cur);});
   save();sbSaveTask(t,S.cur);closeM();updateFAs();renderAll();
 }
 function subPh(){pushUndo();
