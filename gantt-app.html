@@ -340,7 +340,7 @@ const AUTH_DAYS=3;
         </svg>
       </button>
     </div>
-    <button class="btn" id="toggle-all-btn" onclick="toggleAllPh()" title="フェーズを全て開閉">開閉</button>
+    <button class="btn" id="toggle-all-btn" onclick="toggleAllPh()" title="フェーズを全て開閉&#10;Ctrl + ↑ : すべて閉じる&#10;Ctrl + ↓ : すべて開く">開閉</button>
     <!-- 歯車メニュー -->
     <div style="position:relative;display:inline-block" id="gear-wrap">
       <button class="btn" onclick="openGearMenu(event)" id="gear-btn" title="設定メニュー" style="display:flex;align-items:center;justify-content:center;width:28px;height:26px;padding:0">
@@ -443,6 +443,8 @@ const AUTH_DAYS=3;
     <tr><td style="color:var(--tx3);padding:2px 10px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:2px 6px;font-size:11px">Ctrl + Y</kbd></td><td style="color:var(--tx2)">やり直す</td></tr>
     <tr><td style="color:var(--tx3);padding:2px 10px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:2px 6px;font-size:11px">Ctrl + S</kbd></td><td style="color:var(--tx2)">編集内容を保存</td></tr>
     <tr><td style="color:var(--tx3);padding:2px 10px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:2px 6px;font-size:11px">Ctrl + q</kbd></td><td style="color:var(--tx2)">ビュー切替（ガント→サマリー→全PJ）</td></tr>
+    <tr><td style="color:var(--tx3);padding:2px 10px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:2px 6px;font-size:11px">Ctrl + ↑</kbd></td><td style="color:var(--tx2)">フェーズをすべて閉じる</td></tr>
+    <tr><td style="color:var(--tx3);padding:2px 10px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:2px 6px;font-size:11px">Ctrl + ↓</kbd></td><td style="color:var(--tx2)">フェーズをすべて開く</td></tr>
     <tr><td style="color:var(--tx3);padding:2px 10px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:2px 6px;font-size:11px">Ctrl + ← →</kbd></td><td style="color:var(--tx2)">プロジェクト切替</td></tr>
     <tr><td style="color:var(--tx3);padding:2px 10px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:2px 6px;font-size:11px">Ctrl + Shift + ← →</kbd></td><td style="color:var(--tx2)">ステータスフィルタ切替</td></tr>
     <tr><td style="color:var(--tx3);padding:2px 10px 2px 0;white-space:nowrap"><kbd style="background:var(--s3);border:1px solid var(--bd2);border-radius:3px;padding:2px 6px;font-size:11px">Ctrl + Shift + x</kbd></td><td style="color:var(--tx2)">☆フィルタ ON/OFF</td></tr>
@@ -3954,6 +3956,13 @@ async function init(){
     if((e.ctrlKey||e.metaKey)&&e.key==='y'&&!e.shiftKey){
       e.preventDefault();
       if(!mMode)redo();
+    }
+    // Ctrl+↑/↓ でフェーズ全閉じ・全開き
+    if((e.ctrlKey||e.metaKey)&&e.key==='ArrowUp'&&!e.shiftKey){
+      e.preventDefault();if(!mMode)collapseAllPh();
+    }
+    if((e.ctrlKey||e.metaKey)&&e.key==='ArrowDown'&&!e.shiftKey){
+      e.preventDefault();if(!mMode)expandAllPh();
     }
     // Ctrl+→/← でプロジェクト切替
     if((e.ctrlKey||e.metaKey)&&e.key==='ArrowRight'&&!e.shiftKey){
