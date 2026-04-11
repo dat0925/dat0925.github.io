@@ -1554,6 +1554,15 @@ function renderTR(t,ch=false,idx=0){
     if(starts.length)sd=starts[0];
     if(ends.length)ed=ends[ends.length-1];
   }
+  // 子タスクを持つ親タスクのステータスを自動計算（フェーズと同様）
+  let displayStatus=t.status;
+  let statusEditable=true;
+  if(hasC){
+    const allDone=children.every(c=>c.status==='done'||c.status==='cancelled');
+    const allTodo=children.every(c=>c.status==='todo');
+    displayStatus=allDone?'done':allTodo?'todo':'inprogress';
+    statusEditable=false;
+  }
   // 期限切れ判定（終了日を過ぎていて完了・不用でない）
   const today=td();
   const isOverdue=ed&&ed<today&&t.status!=='done'&&t.status!=='cancelled';
@@ -1576,7 +1585,7 @@ function renderTR(t,ch=false,idx=0){
       ontouchstart="startTaskTipTimer(event,'${t.id}')" ontouchend="clearTaskTipTimer()" ontouchmove="clearTaskTipTimer()">
       <span class="tn${t.status==='done'?' dn':''}" ondblclick="event.stopPropagation();clearTimeout(_parentTogTimer);editTask('${t.id}')" title="${esc(t.name)}">${esc(t.name)}</span>
     </span>
-    <span style="overflow:hidden"><span class="stbdg ${t.status}" onclick="event.stopPropagation();openStPopup(event,'${t.id}')">${SL[t.status]}</span></span>
+    <span style="overflow:hidden">${statusEditable?`<span class="stbdg ${displayStatus}" onclick="event.stopPropagation();openStPopup(event,'${t.id}')">${SL[displayStatus]}</span>`:`<span class="stbdg ${displayStatus}" style="cursor:default" title="子タスクのステータスに応じて自動設定">${SL[displayStatus]}</span>`}</span>
     <span class="td dt-cell${isDelayed?' start-dt':''}" onclick="event.stopPropagation();openDatePicker(event,'${t.id}','start')" title="クリックで開始日編集">${fmt(sd)}</span>
     <span class="td dt-cell${isOverdue?' end-dt':''}" onclick="event.stopPropagation();openDatePicker(event,'${t.id}','end')" title="クリックで終了日編集">${fmt(ed)}</span>
     <span class="td asg-cell" onclick="event.stopPropagation();openAsgPicker(event,'${t.id}')" title="クリックで担当者編集" style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:10px;color:var(--tx3);cursor:pointer">${esc(t.assignee||'—')}</span>
@@ -2085,7 +2094,8 @@ function applyBulkEdit(){
   const _cur=S.cur;
   p.tasks.forEach(t=>{
     if(!S.sel.has(t.id))return;
-    if(st){t.status=st;if(st==='done'&&!t.completedDate)t.completedDate=td();if(st!=='done')t.completedDate=null;}
+    const tHasC=p.tasks.some(c=>c.parentId===t.id);
+    if(st&&!tHasC){t.status=st;if(st==='done'&&!t.completedDate)t.completedDate=td();if(st!=='done')t.completedDate=null;}
     if(sd)t.startDate=sd;
     if(ed)t.endDate=ed;
     if(asg)t.assignee=asg;
