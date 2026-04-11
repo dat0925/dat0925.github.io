@@ -319,9 +319,9 @@ const AUTH_DAYS=3;
 <div id="topbar">
   <div class="logo">📋 商品企画部</div>
   <div class="pjs">
-    <button class="btn" onclick="navPJ(-1)" title="前のプロジェクト" style="padding:3px 7px;font-size:12px">◀</button>
+    <button class="btn" onclick="navPJ(-1)" title="前のプロジェクト&#10;ショートカット：Ctrl + ←" style="padding:3px 7px;font-size:12px">◀</button>
     <select id="pjsel" onchange="switchPJ(this.value)"><option value="">プロジェクト選択...</option></select>
-    <button class="btn" onclick="navPJ(1)" title="次のプロジェクト" style="padding:3px 7px;font-size:12px">▶</button>
+    <button class="btn" onclick="navPJ(1)" title="次のプロジェクト&#10;ショートカット：Ctrl + →" style="padding:3px 7px;font-size:12px">▶</button>
     <button class="btn" id="pj-rename-btn" onclick="startRenamePJ()" title="プロジェクト名を変更" style="display:none;padding:3px 7px;font-size:12px">✏</button>
     <input type="text" id="pjname" placeholder="新規プロジェクト名" maxlength="40">
     <button class="btn p" onclick="addPJ()">+ 作成</button>
@@ -329,12 +329,12 @@ const AUTH_DAYS=3;
   <div class="tbr">
     <div class="fb">
       <input type="text" id="srch" placeholder="🔍 検索" oninput="renderAll()">
-      <button id="ffav" onclick="toggleFavFilter()" title="お気に入りのみ表示" style="background:none;border:1px solid var(--bd2);border-radius:5px;cursor:pointer;font-size:14px;padding:2px 6px;color:var(--tx3);transition:all .1s">☆</button>
-      <button class="btn" onclick="navFst(-1)" style="padding:3px 7px;font-size:12px">◀</button>
+      <button id="ffav" onclick="toggleFavFilter()" title="お気に入りのみ表示&#10;ショートカット：Ctrl + Shift + x" style="background:none;border:1px solid var(--bd2);border-radius:5px;cursor:pointer;font-size:14px;padding:2px 6px;color:var(--tx3);transition:all .1s">☆</button>
+      <button class="btn" onclick="navFst(-1)" title="ステータスフィルタ（前）&#10;ショートカット：Ctrl + Shift + ←" style="padding:3px 7px;font-size:12px">◀</button>
       <select id="fst" onchange="renderAll()" style="max-width:90px"><option value="">全ステータス</option><option value="todo">未着手</option><option value="inprogress">進行中</option><option value="requested">依頼中</option><option value="done">完了</option><option value="cancelled">不用</option><option value="__active__">完了以外</option><option value="__needs_adjust__">要期間調整</option></select>
-      <button class="btn" onclick="navFst(1)" style="padding:3px 7px;font-size:12px">▶</button>
+      <button class="btn" onclick="navFst(1)" title="ステータスフィルタ（次）&#10;ショートカット：Ctrl + Shift + →" style="padding:3px 7px;font-size:12px">▶</button>
       <select id="fas" onchange="renderAll()"><option value="">全担当者</option></select>
-      <button id="filter-clear-btn" onclick="clearFilters()" title="フィルタをクリア" style="display:flex;align-items:center;justify-content:center;width:28px;height:26px;padding:0;background:none;border:1px solid var(--bd2);border-radius:5px;cursor:pointer;transition:all .15s;flex-shrink:0">
+      <button id="filter-clear-btn" onclick="clearFilters()" title="フィルタ全解除&#10;ショートカット：Ctrl + Shift + d" style="display:flex;align-items:center;justify-content:center;width:28px;height:26px;padding:0;background:none;border:1px solid var(--bd2);border-radius:5px;cursor:pointer;transition:all .15s;flex-shrink:0">
         <svg id="filter-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M3 4.5h18M7 12h10M11 19.5h2" stroke="var(--tx3)" stroke-width="2.2" stroke-linecap="round"/>
         </svg>
@@ -349,7 +349,7 @@ const AUTH_DAYS=3;
       <input type="file" id="csi" accept=".csv" style="display:none" onchange="importCSV(event)">
     </div>
     <!-- 鍵アイコン：通常時は施錠アイコン、管理者モード時は退出ボタンに切り替え -->
-    <button id="admin-lock-btn" onclick="tryOpenAdmin()" title="管理者モード"
+    <button id="admin-lock-btn" onclick="tryOpenAdmin()" title="管理者モード切替&#10;ショートカット：Ctrl + Shift + z"
       style="display:flex;align-items:center;justify-content:center;width:26px;height:26px;padding:0;background:none;border:1px solid var(--bd2);border-radius:5px;cursor:pointer;color:var(--tx2);transition:all .2s"
       onmouseenter="this.style.background='var(--bd)'" onmouseleave="this.style.background='none'">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" stroke-width="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
@@ -365,11 +365,11 @@ const AUTH_DAYS=3;
 </div>
 <div id="tabs">
   <div class="tg" style="border:1.5px solid var(--bd2);padding:2px;gap:1px">
-    <div class="tab on" data-v="gantt" onclick="setView('gantt')" style="font-weight:600">ガント</div>
-    <div class="tab" data-v="summary" onclick="setView('summary')" style="border-left:1px solid var(--bd2);border-right:1px solid var(--bd2)">サマリー</div>
-    <div class="tab" data-v="allprojects" onclick="setView('allprojects')">全プロジェクト</div>
+    <div class="tab on" data-v="gantt" onclick="setView('gantt')" title="ガントチャート&#10;ショートカット：Ctrl + q で切替" style="font-weight:600">ガント</div>
+    <div class="tab" data-v="summary" onclick="setView('summary')" title="サマリー&#10;ショートカット：Ctrl + q で切替" style="border-left:1px solid var(--bd2);border-right:1px solid var(--bd2)">サマリー</div>
+    <div class="tab" data-v="allprojects" onclick="setView('allprojects')" title="全プロジェクト&#10;ショートカット：Ctrl + q で切替">全プロジェクト</div>
   </div>
-  <button class="btn" onclick="undo()" title="操作を元に戻す (Ctrl+Z)" id="undo-btn" style="margin-left:6px;padding:3px 8px;display:flex;align-items:center;justify-content:center">
+  <button class="btn" onclick="undo()" title="操作を元に戻す&#10;ショートカット：Ctrl + Z" id="undo-btn" style="margin-left:6px;padding:3px 8px;display:flex;align-items:center;justify-content:center">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M3 9h13a5 5 0 0 1 0 10H7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
       <path d="M7 5L3 9l4 4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -380,10 +380,10 @@ const AUTH_DAYS=3;
   <!-- iPad用タスク移動ボタン -->
   <div id="move-btns" style="display:flex;align-items:center;gap:4px;margin-left:4px">
     <span style="font-size:10px;color:var(--tx3);white-space:nowrap">選択タスク:</span>
-    <button class="btn" onclick="moveSelTask(-1)" title="上へ移動" style="padding:3px 8px;font-size:13px;font-weight:700">↑</button>
-    <button class="btn" onclick="moveSelTask(1)" title="下へ移動" style="padding:3px 8px;font-size:13px;font-weight:700">↓</button>
-    <button class="btn" onclick="indentSelTask(true)" title="親タスクに昇格（左）" style="padding:3px 8px;font-size:13px;font-weight:700">←</button>
-    <button class="btn" onclick="indentSelTask(false)" title="子タスクにする（右）" style="padding:3px 8px;font-size:13px;font-weight:700">→</button>
+    <button class="btn" onclick="moveSelTask(-1)" title="上へ移動&#10;ショートカット：↑" style="padding:3px 8px;font-size:13px;font-weight:700">↑</button>
+    <button class="btn" onclick="moveSelTask(1)" title="下へ移動&#10;ショートカット：↓" style="padding:3px 8px;font-size:13px;font-weight:700">↓</button>
+    <button class="btn" onclick="indentSelTask(true)" title="親タスクに昇格（左）&#10;ショートカット：←" style="padding:3px 8px;font-size:13px;font-weight:700">←</button>
+    <button class="btn" onclick="indentSelTask(false)" title="子タスクにする（右）&#10;ショートカット：→" style="padding:3px 8px;font-size:13px;font-weight:700">→</button>
   </div>
   <div id="bulk-inline" style="display:flex;align-items:center;gap:5px;margin-left:8px">
     <span class="bc" id="bcc" style="font-size:11px;color:var(--tx3);white-space:nowrap">0件選択</span>
@@ -399,9 +399,9 @@ const AUTH_DAYS=3;
       <div class="tab" data-s="week" onclick="setScale('week')">週</div>
       <div class="tab" data-s="month" onclick="setScale('month')">月</div>
     </div>
-    <button class="btn" onclick="goToday()">今日</button>
-    <button class="btn" onclick="navSmooth(-1)">◀</button>
-    <button class="btn" onclick="navSmooth(1)">▶</button>
+    <button class="btn" onclick="goToday()" title="今日へ移動">今日</button>
+    <button class="btn" onclick="navSmooth(-1)" title="前へ">◀</button>
+    <button class="btn" onclick="navSmooth(1)" title="次へ">▶</button>
     <span id="sb-status" title="DB同期状態" style="font-size:11px;color:var(--tx3);display:flex;align-items:center;gap:4px;padding:0 4px"><span class="sb-dot" id="sb-ind"></span><span id="sb-label">接続中…</span></span>
     <button class="btn" onclick="forceReload()" title="DBから最新データを再読み込み" style="font-size:11px;padding:2px 7px">🔄</button>
   </div>
