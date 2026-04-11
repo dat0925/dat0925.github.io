@@ -1318,7 +1318,8 @@ function getRows(){
   const ts=filtered();const phs=phases();const rows=[];
   const favOn=S.favFilter||false;
   const fs=document.getElementById('fst')?.value||'';
-  const forceExpand=favOn||fs==='__needs_adjust__'||fs==='__active__';
+  const q=(document.getElementById('srch')?.value||'').trim();
+  const forceExpand=!!q||favOn||fs==='__needs_adjust__'||fs==='__active__';
   phs.forEach(ph=>{
     const hasFiltered=forceExpand&&ts.some(t=>t.phaseId===ph.id);
     const expanded=S.exp.has(ph.id)||hasFiltered;
@@ -1345,7 +1346,7 @@ function filtered(){
   const fa=document.getElementById('fas')?.value||'';
   const favOn=S.favFilter||false;
   const today=td();
-  return ts.filter(t=>{
+  const matched=ts.filter(t=>{
     if(q&&!t.name.toLowerCase().includes(q))return false;
     if(fa&&t.assignee!==fa)return false;
     if(favOn&&!t.starred)return false;
@@ -1358,6 +1359,17 @@ function filtered(){
     } else if(fs&&t.status!==fs)return false;
     return true;
   });
+  // 検索時：マッチした子タスクの親タスクも表示対象に含める
+  if(q){
+    const matchedIds=new Set(matched.map(t=>t.id));
+    [...matched].forEach(t=>{
+      if(t.parentId&&!matchedIds.has(t.parentId)){
+        const parent=ts.find(p=>p.id===t.parentId);
+        if(parent){matched.push(parent);matchedIds.add(parent.id);}
+      }
+    });
+  }
+  return matched;
 }
 function toggleStar(id){pushUndo();
   const p=pj();if(!p)return;
