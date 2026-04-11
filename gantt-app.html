@@ -106,6 +106,9 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--f);
 .t-r.delayed .td.start-dt{color:#d97706;font-weight:600}
 /* ch = child task: name列だけ左paddingでインデント、gridは崩さない */
 .t-r.ch .tn-wrap{padding-left:14px}
+.t-r.has-c{background:var(--s3)}
+.t-r.has-c:hover{background:var(--bd)}
+.t-r.has-c .tn{font-weight:700}
 /* drag ghost */
 .t-r.dragging{opacity:.4;background:var(--ac2)!important}
 .drop-line{height:2px;background:var(--ac);margin:0 6px;border-radius:1px}
@@ -1575,7 +1578,7 @@ function renderTR(t,ch=false,idx=0){
     : ch
       ? `<span class="tog" onclick="event.stopPropagation();addSibling('${t.id}','${idx}')" title="同レベルで追加" style="color:var(--tx3)">+</span>`
       : `<span class="tog" onclick="event.stopPropagation();startInlineAdd('${t.id}','${idx}')" title="サブタスク追加" style="color:var(--tx3)">+</span>`;
-  return `<div class="t-r${ch?' ch':''}${sel?' sel':''}${isOverdue?' overdue':isDelayed?' delayed':''}" data-idx="${idx}" data-type="t" data-id="${t.id}" id="tr_${t.id}">
+  return `<div class="t-r${ch?' ch':''}${hasC?' has-c':''}${sel?' sel':''}${isOverdue?' overdue':isDelayed?' delayed':''}" data-idx="${idx}" data-type="t" data-id="${t.id}" id="tr_${t.id}">
     <span class="drag-handle" data-drag-id="${t.id}">⠿</span>
     <span><input type="checkbox"${sel?' checked':''} style="accent-color:var(--ac);width:15.6px;height:15.6px" onclick="event.stopPropagation();togSel('${t.id}',this.checked)"></span>
     ${col3}
