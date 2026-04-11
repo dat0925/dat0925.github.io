@@ -3053,6 +3053,7 @@ function editTask(id){
   showDelBtn(true);
   openOv();
   updateAsgDatalist();
+  updateMemoPreview();
   pushURL();
 }
 function editPh(id){
@@ -3129,7 +3130,8 @@ function tForm(t,pid=''){
       </button>
     </div>
   </div>
-  <textarea class="fc" id="fmo" style="min-height:120px;resize:vertical">${esc(d.memo||'')}</textarea>
+  <textarea class="fc" id="fmo" style="min-height:120px;resize:vertical" oninput="updateMemoPreview()">${esc(d.memo||'')}</textarea>
+  <div id="memo-preview" style="display:none;margin-top:6px;padding:7px 9px;background:var(--s2);border:1px solid var(--bd);border-radius:5px;font-size:12px;color:var(--tx);line-height:1.7;word-break:break-word"></div>
 </div>
 <input type="hidden" id="fpar" value="${pid}">`;
 }
@@ -3243,6 +3245,18 @@ function copyMemo(){
   });
 }
 
+function updateMemoPreview(){
+  const ta=document.getElementById('fmo');
+  const pv=document.getElementById('memo-preview');
+  if(!ta||!pv)return;
+  const val=ta.value;
+  if(/\[[^\]]+\]\(https?:\/\/[^)]+\)/.test(val)){
+    pv.style.display='block';
+    pv.innerHTML=memoToHtml(val);
+  }else{
+    pv.style.display='none';
+  }
+}
 let _linkSelStart=0,_linkSelEnd=0;
 function openLinkPop(e){
   const ta=document.getElementById('fmo');if(!ta)return;
