@@ -1606,7 +1606,7 @@ function renderTR(t,ch=false,idx=0){
     ${col3}
     <span class="tn-wrap" style="display:flex;align-items:center;overflow:hidden;min-width:0;${ch?'padding-left:14px':''};${hasC?'cursor:pointer':''}"
       onclick="${hasC?`event.stopPropagation();parentTogClick('${t.id}')`:''}"
-      onmouseenter="showTaskTip(event,'${t.id}')" onmouseleave="scheduleHideTaskTip()"
+      onmouseenter="showTaskTip(event,'${t.id}')" onmousemove="posTaskTip(event)" onmouseleave="scheduleHideTaskTip()"
       ontouchstart="startTaskTipTimer(event,'${t.id}')" ontouchend="clearTaskTipTimer()" ontouchmove="clearTaskTipTimer()">
       <span class="tn${t.status==='done'?' dn':''}" ondblclick="event.stopPropagation();clearTimeout(_parentTogTimer);editTask('${t.id}')" title="${esc(t.name)}">${esc(t.name)}</span>
     </span>
