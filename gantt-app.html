@@ -832,9 +832,9 @@ function sbSubscribe(){
 let _reloadTimer=null;
 let _pendingSave=false;
 async function sbReload(){
-  if(_pendingSave)return;
   clearTimeout(_reloadTimer);
   _reloadTimer=setTimeout(async()=>{
+    if(_pendingSave){sbReload();return;}  // 保存中なら再スケジュール
     const ok=await sbLoad();
     if(ok){renderPJS();updateFAs();renderAll();}
   },600);
