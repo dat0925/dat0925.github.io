@@ -1558,10 +1558,11 @@ function renderTR(t,ch=false,idx=0){
     <span class="drag-handle" data-drag-id="${t.id}">⠿</span>
     <span><input type="checkbox"${sel?' checked':''} style="accent-color:var(--ac);width:15.6px;height:15.6px" onclick="event.stopPropagation();togSel('${t.id}',this.checked)"></span>
     ${col3}
-    <span class="tn-wrap" style="display:flex;align-items:center;overflow:hidden;min-width:0;${ch?'padding-left:14px':''}"
+    <span class="tn-wrap" style="display:flex;align-items:center;overflow:hidden;min-width:0;${ch?'padding-left:14px':''};${hasC?'cursor:pointer':''}"
+      onclick="${hasC?`event.stopPropagation();parentTogClick('${t.id}')`:''}"
       onmouseenter="showTaskTip(event,'${t.id}')" onmouseleave="hideTaskTip()"
       ontouchstart="startTaskTipTimer(event,'${t.id}')" ontouchend="clearTaskTipTimer()" ontouchmove="clearTaskTipTimer()">
-      <span class="tn${t.status==='done'?' dn':''}" ondblclick="event.stopPropagation();editTask('${t.id}')" title="${esc(t.name)}">${esc(t.name)}</span>
+      <span class="tn${t.status==='done'?' dn':''}" ondblclick="event.stopPropagation();clearTimeout(_parentTogTimer);editTask('${t.id}')" title="${esc(t.name)}">${esc(t.name)}</span>
     </span>
     <span style="overflow:hidden"><span class="stbdg ${t.status}" onclick="event.stopPropagation();openStPopup(event,'${t.id}')">${SL[t.status]}</span></span>
     <span class="td dt-cell${isDelayed?' start-dt':''}" onclick="event.stopPropagation();openDatePicker(event,'${t.id}','start')" title="クリックで開始日編集">${fmt(sd)}</span>
@@ -1945,6 +1946,12 @@ function togC(id){
   S.exp.has(k)?S.exp.delete(k):S.exp.add(k);
   saveExp();
   animateRows('c',id,expanding,()=>drawBody());
+}
+let _parentTogTimer=null;
+function parentTogClick(id){
+  // シングルクリックで開閉、ダブルクリックで編集できるよう220ms待ってからtogC
+  clearTimeout(_parentTogTimer);
+  _parentTogTimer=setTimeout(()=>togC(id),220);
 }
 function expandAllPh(){
   phases().forEach(p=>S.exp.add(p.id));
