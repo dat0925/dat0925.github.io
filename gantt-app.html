@@ -140,7 +140,7 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--f);
 .sd.todo{background:#8a96a8}.sd.inprogress{background:#2563eb}.sd.requested{background:#d97706}.sd.done{background:#16a34a}.sd.cancelled{background:#dc2626}
 .tn{font-size:13px;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
 .tn.dn{text-decoration:line-through;color:var(--tx3)}
-#task-tip{position:fixed;z-index:3000;background:var(--s1);border:1px solid var(--bd2);border-radius:8px;padding:10px 12px;font-size:11px;color:var(--tx);box-shadow:0 4px 20px rgba(0,0,0,.25);pointer-events:none;max-width:220px;line-height:1.6;display:none}
+#task-tip{position:fixed;z-index:3000;background:var(--s1);border:1px solid var(--bd2);border-radius:8px;padding:10px 12px;font-size:11px;color:var(--tx);box-shadow:0 4px 20px rgba(0,0,0,.25);max-width:240px;line-height:1.6;display:none}
 #task-tip .tip-name{font-weight:700;font-size:12px;margin-bottom:5px;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #task-tip .tip-row{display:flex;gap:6px;align-items:flex-start}
 #task-tip .tip-label{color:var(--tx3);flex-shrink:0}
@@ -564,7 +564,7 @@ const AUTH_DAYS=3;
       onkeydown="if(event.key==='Enter')submitAsgPicker();if(event.key==='Escape')closeAsgPicker()">
   </div>
 </div>
-<div id="task-tip">
+<div id="task-tip" onmouseenter="cancelHideTaskTip()" onmouseleave="scheduleHideTaskTip()">
   <div class="tip-name" id="tip-name"></div>
   <div class="tip-row"><span class="tip-label">担当</span><span class="tip-val" id="tip-asg"></span></div>
   <div class="tip-row" id="tip-memo-row"><span class="tip-label">メモ</span><span class="tip-val" id="tip-memo"></span></div>
@@ -1606,7 +1606,7 @@ function renderTR(t,ch=false,idx=0){
     ${col3}
     <span class="tn-wrap" style="display:flex;align-items:center;overflow:hidden;min-width:0;${ch?'padding-left:14px':''};${hasC?'cursor:pointer':''}"
       onclick="${hasC?`event.stopPropagation();parentTogClick('${t.id}')`:''}"
-      onmouseenter="showTaskTip(event,'${t.id}')" onmouseleave="hideTaskTip()"
+      onmouseenter="showTaskTip(event,'${t.id}')" onmouseleave="scheduleHideTaskTip()"
       ontouchstart="startTaskTipTimer(event,'${t.id}')" ontouchend="clearTaskTipTimer()" ontouchmove="clearTaskTipTimer()">
       <span class="tn${t.status==='done'?' dn':''}" ondblclick="event.stopPropagation();clearTimeout(_parentTogTimer);editTask('${t.id}')" title="${esc(t.name)}">${esc(t.name)}</span>
     </span>
@@ -2636,7 +2636,17 @@ function posTaskTip(e){
   tip.style.left=(x+tw>window.innerWidth?x-tw-20:x)+'px';
   tip.style.top=(y+th>window.innerHeight?y-th-20:y)+'px';
 }
+let _tipHideTimer=null;
+function scheduleHideTaskTip(){
+  _tipHideTimer=setTimeout(()=>{
+    document.getElementById('task-tip').style.display='none';
+  },200);
+}
+function cancelHideTaskTip(){
+  if(_tipHideTimer){clearTimeout(_tipHideTimer);_tipHideTimer=null;}
+}
 function hideTaskTip(){
+  cancelHideTaskTip();
   document.getElementById('task-tip').style.display='none';
   clearTaskTipTimer();
 }
