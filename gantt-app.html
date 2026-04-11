@@ -4090,6 +4090,12 @@ async function init(){
     if((e.ctrlKey||e.metaKey)&&e.shiftKey&&(e.key==='d'||e.key==='D')){
       e.preventDefault();if(!mMode)clearFilters();
     }
+    // Ctrl+F: 検索欄にフォーカス
+    if((e.ctrlKey||e.metaKey)&&(e.key==='f'||e.key==='F')&&!e.shiftKey){
+      e.preventDefault();
+      const srch=document.getElementById('srch');
+      srch.focus();srch.select();
+    }
     if((e.ctrlKey||e.metaKey)&&e.shiftKey&&e.key==='ArrowRight'){
       e.preventDefault();if(!mMode)navFst(1);
     }
