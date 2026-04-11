@@ -869,8 +869,27 @@ async function sbReload(){
   clearTimeout(_reloadTimer);
   _reloadTimer=setTimeout(async()=>{
     if(_pendingSave){sbReload();return;}  // 保存中なら再スケジュール
+    // sbLoad前にS.pjsのスナップショットを保持
+    // localStorageが古い場合でも、メモリ上のフェーズ・タスクを確実に復元するため
+    const _preSnap=JSON.parse(JSON.stringify(S.pjs));
     const ok=await sbLoad();
-    if(ok){renderPJS();updateFAs();renderAll();}
+    if(ok){
+      // Supabaseにないフェーズをメモリスナップショットから復元（localStorageベースの復元を補完）
+      let _snapRecovered=false;
+      for(const[_pid,_sp] of Object.entries(_preSnap)){
+        if(!S.pjs[_pid])continue;
+        const _sbPhIds=new Set((S.pjs[_pid].phases||[]).map(p=>p.id));
+        for(const ph of (_sp.phases||[])){
+          if(!_sbPhIds.has(ph.id)){
+            S.pjs[_pid].phases.push(ph);
+            sbSavePH(ph,_pid);
+            _snapRecovered=true;
+          }
+        }
+      }
+      if(_snapRecovered)save();
+      renderPJS();updateFAs();renderAll();
+    }
   },600);
 }
 
@@ -1926,8 +1945,19 @@ function togC(id){
   saveExp();
   animateRows('c',id,expanding,()=>drawBody());
 }
-function expandAllPh(){phases().forEach(p=>S.exp.add(p.id));saveExp();renderTP();drawBody();}
-function collapseAllPh(){phases().forEach(p=>S.exp.delete(p.id));saveExp();renderTP();drawBody();}
+function expandAllPh(){
+  phases().forEach(p=>S.exp.add(p.id));
+  // 子タスクを持つ親タスクも展開
+  const parentIds=new Set(tasks().filter(t=>t.parentId).map(t=>t.parentId));
+  parentIds.forEach(id=>S.exp.add('c_'+id));
+  saveExp();renderTP();drawBody();
+}
+function collapseAllPh(){
+  phases().forEach(p=>S.exp.delete(p.id));
+  // 親タスクも折りたたむ
+  tasks().filter(t=>!t.parentId).forEach(t=>S.exp.delete('c_'+t.id));
+  saveExp();renderTP();drawBody();
+}
 function toggleAllPh(){
   const phs=phases();
   const allClosed=phs.every(p=>!S.exp.has(p.id));
@@ -1938,6 +1968,9 @@ function toggleAllPh(){
     setTimeout(()=>{btn.style.transform='scale(1)';},120);
   }
   if(allClosed){
+    // 子タスクを持つ親タスクも一括展開
+    const parentIds=new Set(tasks().filter(t=>t.parentId).map(t=>t.parentId));
+    parentIds.forEach(id=>S.exp.add('c_'+id));
     // 段階的に開くアニメーション
     phs.forEach((p,i)=>{
       setTimeout(()=>{
@@ -1948,7 +1981,8 @@ function toggleAllPh(){
       }, i*40);
     });
   } else {
-    // まとめて閉じる
+    // 親タスクも一括折りたたむ
+    tasks().filter(t=>!t.parentId).forEach(t=>S.exp.delete('c_'+t.id));
     phs.forEach(p=>S.exp.delete(p.id));
     saveExp();renderTP();drawBody();
   }
@@ -2977,7 +3011,7 @@ function tForm(t,pid=''){
   <div style="width:calc(50% - 5px)"><label class="fl">工数（h）</label><input class="fc" type="number" id="fef" value="${d.effort||1}" min="0" step="0.5"></div>
 </div>
 <div style="display:flex;flex-direction:row;gap:10px;margin-bottom:11px;width:100%;align-items:flex-end">
-  <div style="width:calc(50% - 5px)"><label class="fl">担当者 <span style="font-size:10px;color:var(--tx3);font-weight:400">（↓で候補表示）</span></label><input class="fc" id="fasg" value="${esc(d.assignee||'')}" placeholder="担当者名" list="asg-list" autocomplete="off"></div>
+  <div style="width:calc(50% - 5px)"><label class="fl">担当者</label><select class="fc" id="fasg"><option value="">（未設定）</option>${(()=>{const cs=getMemberCandidates();const cur=d.assignee||'';const opts=cs.map(m=>`<option value="${esc(m)}"${cur===m?' selected':''}>${esc(m)}</option>`).join('');const extra=cur&&!cs.includes(cur)?`<option value="${esc(cur)}" selected>${esc(cur)}</option>`:'';return opts+extra;})()}</select></div>
   <div style="width:calc(50% - 5px)"><label class="fl">完了日</label><input class="fc" type="date" id="fcd" value="${d.completedDate||''}"></div>
 </div>
 <div class="fg">
@@ -3004,7 +3038,7 @@ function phForm(ph){
   const d=ph||{name:'',startDate:td(),endDate:addD(td(),13),assignee:''};
   return `<div class="fg"><label class="fl">フェーズ名 *</label><input class="fc" id="fn" value="${esc(d.name||'')}" placeholder="フェーズ名を入力"></div>
 <div class="fr"><div class="fg"><label class="fl">開始日 *</label><input class="fc" type="date" id="fsd" value="${d.startDate}"></div><div class="fg"><label class="fl">終了日 *</label><input class="fc" type="date" id="fed" value="${d.endDate}"></div></div>
-<div class="fg"><label class="fl">担当者</label><input class="fc" id="fasg-ph" value="${esc(d.assignee||'')}" placeholder="担当者名" list="asg-list" autocomplete="off"></div>`;
+<div class="fg"><label class="fl">担当者</label><select class="fc" id="fasg-ph"><option value="">（未設定）</option>${(()=>{const cs=getMemberCandidates();const cur=d.assignee||'';const opts=cs.map(m=>`<option value="${esc(m)}"${cur===m?' selected':''}>${esc(m)}</option>`).join('');const extra=cur&&!cs.includes(cur)?`<option value="${esc(cur)}" selected>${esc(cur)}</option>`:'';return opts+extra;})()}</select></div>`;
 }
 function subM(){if(mMode==='addTask'||mMode==='editTask')subTask();else subPh();}
 function subTask(){pushUndo();
