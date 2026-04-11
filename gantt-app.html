@@ -814,6 +814,38 @@ async function sbLoad(){
     (tkRows||[]).forEach(r=>{if(S.pjs[r.project_id])S.pjs[r.project_id].tasks.push({id:r.id,phaseId:r.phase_id,parentId:r.parent_id,name:r.name,startDate:r.start_date,endDate:r.end_date,completedDate:r.completed_date,status:r.status,assignee:r.assignee,effort:r.effort,memo:r.memo,starred:r.starred||false,updatedAt:r.updated_at});});
     sbDot('ok');
     applyStarred();
+    // ── localStorageにあるがSupabaseにない未保存フェーズ・タスクphaseIdを復元 ──
+    // sbSavePH/sbSaveTaskが失敗した場合のフォールバック。
+    // sbLoad()はRealtimeリロード時・init()時の両方で呼ばれるため、
+    // ここで復元することでsave()による上書き前に必ずマージされる。
+    try{
+      const _lsKey=adminMode?'gp6a':'gp6';
+      const _lsStr=localStorage.getItem(_lsKey);
+      if(_lsStr){
+        const _lsPjs=JSON.parse(_lsStr);
+        let _recovered=false;
+        for(const[_pid,_lp] of Object.entries(_lsPjs)){
+          if(!S.pjs[_pid])continue;
+          // 未保存フェーズを復元
+          const _sbPhIds=new Set((S.pjs[_pid].phases||[]).map(p=>p.id));
+          (_lp.phases||[]).forEach(ph=>{
+            if(!_sbPhIds.has(ph.id)){
+              S.pjs[_pid].phases.push(ph);
+              sbSavePH(ph,_pid);
+              _recovered=true;
+            }
+          });
+          // タスクのphaseIdが失われている場合に復元
+          const _sbTaskMap=new Map((S.pjs[_pid].tasks||[]).map(t=>[t.id,t]));
+          (_lp.tasks||[]).forEach(lt=>{
+            if(!lt.phaseId)return;
+            const st=_sbTaskMap.get(lt.id);
+            if(st&&!st.phaseId){st.phaseId=lt.phaseId;sbSaveTask(st,_pid);_recovered=true;}
+          });
+        }
+        if(_recovered)save();
+      }
+    }catch(_e){}
     sbSubscribe();
     return true;
   }catch(e){sbDot('err');return false;}
