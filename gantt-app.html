@@ -83,7 +83,7 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:var(--f);
 /* TASK PANEL */
 #tp{width:590px;min-width:590px;flex-shrink:0;display:flex;flex-direction:column;border-right:2px solid var(--bd2);background:var(--s1);overflow:hidden}
 /* 列構成: drag(16) | chk(20) | expand(22) | name(1fr) | status(54) | start(52) | end(52) | edit(24) | dup(24) */
-#tph{display:grid;grid-template-columns:var(--gc);align-items:center;padding:0 6px;height:52px;background:var(--s2);border-bottom:2px solid var(--bd2);flex-shrink:0;gap:3px}
+#tph{display:grid;grid-template-columns:var(--gc);align-items:center;padding:0 6px;height:57px;background:var(--s2);border-bottom:2px solid var(--bd2);flex-shrink:0;gap:3px}
 #tph span{font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.3px;white-space:nowrap;user-select:none}
 #tpb{flex:1;overflow-y:auto;overflow-x:hidden;position:relative;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 /* Quick-add footer row (inside tpb scroll) */
@@ -343,7 +343,6 @@ const AUTH_DAYS=3;
         </svg>
       </button>
     </div>
-    <button class="btn" id="toggle-all-btn" onclick="toggleAllPh()" title="フェーズを全て開閉&#10;Ctrl + ↑ : すべて閉じる&#10;Ctrl + ↓ : すべて開く">開閉</button>
     <!-- 歯車メニュー -->
     <div style="position:relative;display:inline-block" id="gear-wrap">
       <button class="btn" onclick="openGearMenu(event)" id="gear-btn" title="設定メニュー" style="display:flex;align-items:center;justify-content:center;width:28px;height:26px;padding:0">
@@ -364,26 +363,16 @@ const AUTH_DAYS=3;
     <!-- ヘルプ？ボタン -->
     <button id="help-btn" onclick="toggleHelp(event)" onmouseenter="showHelp()" onmouseleave="scheduleHideHelp()"
       style="display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;border:1px solid var(--bd2);background:var(--s3);color:var(--tx3);font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;line-height:1">?</button>
+    <!-- ビュー切替タブ（topbar右端） -->
+    <div class="tg" style="border:1.5px solid var(--bd2);padding:2px;gap:1px;margin-left:8px">
+      <div class="tab on" data-v="gantt" onclick="setView('gantt')" title="ガントチャート&#10;ショートカット：Ctrl + q で切替" style="font-weight:600">ガント</div>
+      <div class="tab" data-v="summary" onclick="setView('summary')" title="サマリー&#10;ショートカット：Ctrl + q で切替" style="border-left:1px solid var(--bd2);border-right:1px solid var(--bd2)">サマリー</div>
+      <div class="tab" data-v="allprojects" onclick="setView('allprojects')" title="全プロジェクト&#10;ショートカット：Ctrl + q で切替">全プロジェクト</div>
+    </div>
   </div>
 </div>
 <div id="tabs">
-  <div class="tg" style="border:1.5px solid var(--bd2);padding:2px;gap:1px">
-    <div class="tab on" data-v="gantt" onclick="setView('gantt')" title="ガントチャート&#10;ショートカット：Ctrl + q で切替" style="font-weight:600">ガント</div>
-    <div class="tab" data-v="summary" onclick="setView('summary')" title="サマリー&#10;ショートカット：Ctrl + q で切替" style="border-left:1px solid var(--bd2);border-right:1px solid var(--bd2)">サマリー</div>
-    <div class="tab" data-v="allprojects" onclick="setView('allprojects')" title="全プロジェクト&#10;ショートカット：Ctrl + q で切替">全プロジェクト</div>
-  </div>
-  <button class="btn" onclick="undo()" title="操作を元に戻す&#10;ショートカット：Ctrl + Z" id="undo-btn" style="margin-left:6px;padding:3px 8px;display:flex;align-items:center;justify-content:center">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M3 9h13a5 5 0 0 1 0 10H7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M7 5L3 9l4 4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-  </button>
-  <button class="btn" onclick="redo()" title="やり直す&#10;ショートカット：Ctrl + Y" id="redo-btn" style="padding:3px 8px;display:flex;align-items:center;justify-content:center;opacity:0.4" disabled>
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M21 9H8a5 5 0 0 0 0 10h9" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M17 5l4 4-4 4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-  </button>
+  <button class="btn" id="toggle-all-btn" onclick="toggleAllPh()" title="フェーズを全て開閉&#10;Ctrl + ↑ : すべて閉じる&#10;Ctrl + ↓ : すべて開く">開閉</button>
   <!-- 管理者モード退出ボタン -->
   <button id="admin-exit-btn" onclick="exitAdminMode()" style="display:none;align-items:center;gap:4px;padding:3px 10px;border:1px solid rgba(124,58,237,.4);border-radius:5px;background:rgba(124,58,237,.1);color:#7c3aed;font-size:11px;font-weight:600;cursor:pointer;margin-left:4px" title="管理者モードを終了">🔒 退出</button>
   <!-- iPad用タスク移動ボタン -->
@@ -401,6 +390,18 @@ const AUTH_DAYS=3;
     <button class="btn d" style="padding:3px 8px;font-size:11px" onclick="bulkDelete()" title="選択したタスクを削除">削除</button>
   </div>
   <div class="sp"></div>
+  <button class="btn" onclick="undo()" title="操作を元に戻す&#10;ショートカット：Ctrl + Z" id="undo-btn" style="padding:3px 8px;display:flex;align-items:center;justify-content:center">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M3 9h13a5 5 0 0 1 0 10H7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M7 5L3 9l4 4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
+  <button class="btn" onclick="redo()" title="やり直す&#10;ショートカット：Ctrl + Y" id="redo-btn" style="padding:3px 8px;display:flex;align-items:center;justify-content:center;opacity:0.4" disabled>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M21 9H8a5 5 0 0 0 0 10h9" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M17 5l4 4-4 4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
   <div class="rc">
     <div class="tg" id="sctabs">
       <div class="tab on" data-s="day" onclick="setScale('day')">日</div>
@@ -708,7 +709,7 @@ const SBG={todo:'#e2e8f0',inprogress:'#dbeafe',requested:'#fef3c7',done:'#dcfce7
 const SACC={todo:'#5a6478',inprogress:'#1d4ed8',requested:'#b45309',done:'#15803d',cancelled:'#b91c1c'};
 const DN=['日','月','火','水','木','金','土'];
 const HOLS=new Set(['2025-01-01','2025-01-13','2025-02-11','2025-02-23','2025-03-20','2025-04-29','2025-05-03','2025-05-04','2025-05-05','2025-07-21','2025-08-11','2025-09-15','2025-09-22','2025-09-23','2025-10-13','2025-11-03','2025-11-23','2025-11-24','2025-12-23','2026-01-01','2026-01-12','2026-02-11','2026-02-23','2026-03-20','2026-04-29','2026-05-03','2026-05-04','2026-05-05','2026-07-20','2026-08-11','2026-09-21','2026-09-22','2026-09-23','2026-10-12','2026-11-03','2026-11-23','2026-12-23']);
-const ROW=35,PHROW=35,HDR=52;
+const ROW=35,PHROW=35,HDR=57;
 
 // ══════════════════════════════════════════
 // STATE
@@ -2123,7 +2124,7 @@ function drawHdr(){
   const{days}=getDays();const W=days.length*cw();
   const c=document.getElementById('chc');
   const dpr=window.devicePixelRatio||1;
-  const M_H=17,D_H=18,W_H=17;
+  const M_H=17,D_H=18,W_H=22;
   c.width=W*dpr;c.height=HDR*dpr;c.style.width=W+'px';c.style.height=HDR+'px';
   document.getElementById('chw').style.height=HDR+'px';
   const ctx=c.getContext('2d');ctx.scale(dpr,dpr);
@@ -2579,7 +2580,7 @@ function renderAll(){
 }
 function setView(v){
   S.view=v;
-  document.querySelectorAll('#tabs .tab[data-v]').forEach(t=>t.classList.toggle('on',t.dataset.v===v));
+  document.querySelectorAll('.tab[data-v]').forEach(t=>t.classList.toggle('on',t.dataset.v===v));
   document.getElementById('gw').style.display=v==='gantt'?'flex':'none';
   document.getElementById('sv').style.display=v==='summary'?'block':'none';
   document.getElementById('apsv').style.display=v==='allprojects'?'block':'none';
