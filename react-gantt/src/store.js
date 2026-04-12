@@ -37,6 +37,20 @@ function createDemoData() {
 }
 
 // ── row computation ────────────────────────────────────────────────────────
+function getEffForFilter(t, tasks) {
+  const children = tasks.filter(c => c.parentId === t.id)
+  if (!children.length) return { sd: t.startDate, ed: t.endDate, status: t.status }
+  const starts = children.map(c => c.startDate).filter(Boolean).sort()
+  const ends = children.map(c => c.endDate).filter(Boolean).sort()
+  const allDone = children.every(c => c.status === 'done' || c.status === 'cancelled')
+  const allTodo = children.every(c => c.status === 'todo')
+  return {
+    sd: starts.length ? starts[0] : t.startDate,
+    ed: ends.length ? ends[ends.length - 1] : t.endDate,
+    status: allDone ? 'done' : allTodo ? 'todo' : 'inprogress'
+  }
+}
+
 export function computeRows(tasks, phases, exp, filters, favFilter) {
   const { q = '', fs = '', fa = '' } = filters
   const today = td()
@@ -45,13 +59,17 @@ export function computeRows(tasks, phases, exp, filters, favFilter) {
     if (q && !t.name.toLowerCase().includes(q.toLowerCase())) return false
     if (fa && t.assignee !== fa) return false
     if (favFilter && !t.starred) return false
-    if (fs === '__active__') { if (t.status === 'done' || t.status === 'cancelled') return false }
-    else if (fs === '__needs_adjust__') {
-      const overdue = t.endDate && t.endDate < today && t.status !== 'done' && t.status !== 'cancelled'
-      const delayed = t.startDate && t.startDate < today && t.status === 'todo'
+    if (fs === '__active__') {
+      const eff = getEffForFilter(t, tasks)
+      if (eff.status === 'done' || eff.status === 'cancelled') return false
+    } else if (fs === '__needs_adjust__') {
+      const eff = getEffForFilter(t, tasks)
+      const overdue = eff.ed && eff.ed < today && eff.status !== 'done' && eff.status !== 'cancelled'
+      const delayed = eff.sd && eff.sd < today && eff.status === 'todo'
       if (!overdue && !delayed) return false
     } else if (fs && fs !== '__active__' && fs !== '__needs_adjust__') {
-      if (t.status !== fs) return false
+      const eff = getEffForFilter(t, tasks)
+      if (eff.status !== fs) return false
     }
     return true
   })

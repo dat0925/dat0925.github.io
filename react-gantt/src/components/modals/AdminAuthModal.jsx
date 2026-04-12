@@ -11,6 +11,12 @@ export default function AdminAuthModal() {
 
   useEffect(() => {
     if (modal?.type === 'adminAuth') {
+      // Same session: skip password
+      if (sessionStorage.getItem('gantt_admin_session') === '1') {
+        store.enterAdmin()
+        closeModal()
+        return
+      }
       setPw('')
       setErr('')
       setTimeout(() => pwRef.current?.focus(), 50)
