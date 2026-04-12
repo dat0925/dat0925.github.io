@@ -270,10 +270,11 @@ function PhaseRow({ ph, idx, tasks, exp, onToggle, onEdit, onDelete, onAsgClick,
   const phStLabel = {todo:'未着手',inprogress:'進行中',done:'完了'}[phSt]
 
   return (
-    <div className="ph-r" data-idx={idx} data-type="ph" data-id={ph.id} onClick={onToggle}>
+    <div className="ph-r" data-idx={idx} data-type="ph" data-id={ph.id} onClick={onToggle}
+      onDoubleClick={e => { if (!e.target.closest('.drag-handle,.ptog')) { e.stopPropagation(); onEdit() } }}>
       <span className="drag-handle" onClick={e=>e.stopPropagation()} title="フェーズを移動">⠿</span>
       <span className={`ptog${expanded?'':' cl'}`} onClick={e=>{e.stopPropagation();onToggle()}}>▾</span>
-      <span className="pn" style={{gridColumn:'3/5'}} onDoubleClick={e=>{e.stopPropagation();onEdit()}}>{ph.name}</span>
+      <span className="pn" style={{gridColumn:'3/5'}}>{ph.name}</span>
       <span style={{overflow:'hidden'}}>
         {allPh.length > 0 && <span className={`ph-stbdg ${phSt}`}>{phStLabel}</span>}
       </span>
@@ -328,7 +329,8 @@ function TaskRow({ t, ch, idx, sel, exp, today, onCheck, onToggleChild, onStPopu
 
   return (
     <div className={`t-r${ch?' ch':''}${selected?' sel':''}${isOverdue?' overdue':isDelayed?' delayed':''}`}
-      data-idx={idx} data-type="t" data-id={t.id} id={`tr_${t.id}`}>
+      data-idx={idx} data-type="t" data-id={t.id} id={`tr_${t.id}`}
+      onDoubleClick={e => { if (!e.target.closest('input,select,button,.stbdg,.drag-handle,.tog')) { e.stopPropagation(); onEdit() } }}>
       <span className="drag-handle" draggable onDragStart={onDragStart} onDragEnd={onDragEnd}>⠿</span>
       <span><input type="checkbox" checked={selected} style={{accentColor:'var(--ac)',width:15.6,height:15.6}} onClick={e=>e.stopPropagation()} onChange={e=>onCheck(e.target.checked)} /></span>
       {col3}
@@ -341,7 +343,6 @@ function TaskRow({ t, ch, idx, sel, exp, today, onCheck, onToggleChild, onStPopu
           />
         ) : (
           <span className={`tn${t.status==='done'?' dn':''}`}
-            onDoubleClick={e=>{e.stopPropagation();setNameEdit(true);setEditVal(t.name)}}
             title={t.name}>{t.name}</span>
         )}
       </span>
