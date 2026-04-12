@@ -15,6 +15,7 @@ export default function TaskPanel({ onScrollSync, scrollRef }) {
 
   const pj = store.pj()
   const tpbRef = useRef(null)
+  const [closingPhases, setClosingPhases] = useState(new Set())
   const [stPopup, setStPopup] = useState(null) // { taskId, x, y }
   const [datePickerState, setDatePicker] = useState(null)
   const [asgPicker, setAsgPicker] = useState(null)
@@ -25,9 +26,24 @@ export default function TaskPanel({ onScrollSync, scrollRef }) {
 
   if (scrollRef) scrollRef.current = tpbRef.current
 
+  // closing phases are force-expanded so their rows stay in DOM during exit animation
+  const expWithClosing = closingPhases.size > 0 ? new Set([...exp, ...closingPhases]) : exp
   const { rows, filtered } = pj
-    ? computeRows(pj.tasks, pj.phases, exp, filters, favFilter)
+    ? computeRows(pj.tasks, pj.phases, expWithClosing, filters, favFilter)
     : { rows: [], filtered: [] }
+
+  function handleTogglePh(phId) {
+    if (exp.has(phId)) {
+      // closing: animate out first, then actually collapse
+      setClosingPhases(prev => new Set([...prev, phId]))
+      setTimeout(() => {
+        togglePh(phId)
+        setClosingPhases(prev => { const next = new Set(prev); next.delete(phId); return next })
+      }, 240)
+    } else {
+      togglePh(phId)
+    }
+  }
 
   // Scroll sync
   useEffect(() => {
@@ -179,7 +195,7 @@ export default function TaskPanel({ onScrollSync, scrollRef }) {
           <div key={row.type === 'ph' ? row.data.id : row.data.id + '_' + idx}>
             {row.type === 'ph'
               ? <PhaseRow ph={row.data} idx={idx} tasks={tasks()} exp={exp}
-                  onToggle={() => togglePh(row.data.id)}
+                  onToggle={() => handleTogglePh(row.data.id)}
                   onEdit={() => openModal('editPh', { id: row.data.id })}
                   onDelete={() => openModal('delete', { type: 'phase', id: row.data.id, label: row.data.name })}
                   onAsgClick={e => openAsgPickerInline(e, row.data.id, true)}
@@ -187,6 +203,7 @@ export default function TaskPanel({ onScrollSync, scrollRef }) {
                   today={today} />
               : <TaskRow t={row.data} ch={row.ch} idx={idx} sel={sel} exp={exp}
                   today={today}
+                  exiting={closingPhases.has(row.data.phaseId)}
                   onCheck={v => toggleSel(row.data.id, v)}
                   onToggleChild={() => toggleChild(row.data.id)}
                   onStPopup={e => { e.stopPropagation(); const r=e.currentTarget.getBoundingClientRect(); setStPopup({taskId:row.data.id, x:r.left, y:r.bottom+2}) }}
@@ -287,7 +304,7 @@ function PhaseRow({ ph, idx, tasks, exp, onToggle, onEdit, onDelete, onAsgClick,
   )
 }
 
-function TaskRow({ t, ch, idx, sel, exp, today, onCheck, onToggleChild, onStPopup, onEdit, onDup, onDelete, onStar, onDateClick, onAsgClick, onAddChild, onAddSibling, onDragStart, onDragEnd, onNameClick, tasks }) {
+function TaskRow({ t, ch, idx, sel, exp, today, exiting, onCheck, onToggleChild, onStPopup, onEdit, onDup, onDelete, onStar, onDateClick, onAsgClick, onAddChild, onAddSibling, onDragStart, onDragEnd, onNameClick, tasks }) {
   const [nameEdit, setNameEdit] = useState(false)
   const [editVal, setEditVal] = useState(t.name)
   const nameRef = useRef(null)
@@ -328,7 +345,7 @@ function TaskRow({ t, ch, idx, sel, exp, today, onCheck, onToggleChild, onStPopu
   )
 
   return (
-    <div className={`t-r${ch?' ch':''}${selected?' sel':''}${isOverdue?' overdue':isDelayed?' delayed':''}`}
+    <div className={`t-r${ch?' ch':''}${selected?' sel':''}${isOverdue?' overdue':isDelayed?' delayed':''}${exiting?' exiting':''}`}
       data-idx={idx} data-type="t" data-id={t.id} id={`tr_${t.id}`}
       onDoubleClick={e => { if (!e.target.closest('input,select,button,.stbdg,.drag-handle,.tog')) { e.stopPropagation(); onEdit() } }}>
       <span className="drag-handle" draggable onDragStart={onDragStart} onDragEnd={onDragEnd}>⠿</span>

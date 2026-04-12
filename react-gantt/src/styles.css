@@ -193,6 +193,16 @@ textarea.fc{min-height:60px;resize:vertical}.fg{margin-bottom:11px}.fg label{dis
 .bulk-bar.on{display:flex}
 .bc{font-size:11px;color:var(--ac);font-weight:600}
 
+/* ACCORDION ANIMATION */
+@keyframes rowEnter{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes rowExit{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-6px)}}
+.t-r{animation:rowEnter 0.32s cubic-bezier(0.4,0,0.2,1)}
+.t-r.exiting{animation:rowExit 0.22s cubic-bezier(0.4,0,0.2,1) forwards;pointer-events:none}
+
+/* CHART NAV ANIMATION */
+@keyframes chartNavFwd{from{opacity:.8;transform:translateX(-36px)}to{opacity:1;transform:translateX(0)}}
+@keyframes chartNavBack{from{opacity:.8;transform:translateX(36px)}to{opacity:1;transform:translateX(0)}}
+
 /* INLINE ADD */
 .inline-add-row{display:grid;grid-template-columns:var(--gc);gap:3px;align-items:center;padding:0 6px;height:35px;border-bottom:1px solid var(--bd);background:#eff6ff;box-sizing:border-box}
 .inline-add-input{background:#fff;border:1px solid var(--ac);color:var(--tx);border-radius:4px;outline:none;font-family:var(--f)}

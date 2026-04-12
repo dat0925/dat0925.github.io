@@ -16,14 +16,32 @@ export default function GanttChart({ tpbScrollTop, onScrollSync }) {
 
   const cdragRef = useRef({ active: false })
   const syncingRef = useRef(false)
+  const prevSdRef = useRef(null)
+  const navAnimTimerRef = useRef(null)
 
   const { rows } = pj
     ? computeRows(pj.tasks, pj.phases, exp, filters, favFilter)
     : { rows: [] }
 
-  // Draw header
+  // Draw header + nav animation
   useEffect(() => {
-    if (hdrRef.current) drawHdr(hdrRef.current, scale, sd)
+    if (!hdrRef.current) return
+    drawHdr(hdrRef.current, scale, sd)
+    if (prevSdRef.current !== null && prevSdRef.current !== sd) {
+      const animName = sd > prevSdRef.current ? 'chartNavFwd' : 'chartNavBack'
+      const dur = '0.3s cubic-bezier(0.25,0.46,0.45,0.94)';
+      [hdrRef.current, bodyRef.current].forEach(c => {
+        if (!c) return
+        c.style.animation = 'none'
+        c.getBoundingClientRect() // force reflow to restart animation
+        c.style.animation = `${animName} ${dur}`
+      })
+      clearTimeout(navAnimTimerRef.current)
+      navAnimTimerRef.current = setTimeout(() => {
+        [hdrRef.current, bodyRef.current].forEach(c => { if (c) c.style.animation = '' })
+      }, 340)
+    }
+    prevSdRef.current = sd
   }, [scale, sd])
 
   // Draw body
