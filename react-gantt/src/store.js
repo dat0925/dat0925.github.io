@@ -205,10 +205,11 @@ export const useStore = create((set, get) => ({
     })
 
     // restore admin session
-    const s = get()
     if (sessionStorage.getItem('gantt_admin_session') === '1' && isAdminAuthed()) {
       set({ adminMode: true })
     }
+    // get state AFTER admin mode is restored so s.adminMode is correct
+    const s = get()
 
     // supabase
     if (initClient()) {
