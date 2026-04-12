@@ -42,6 +42,8 @@ export default function App() {
 
   // Keyboard shortcuts
   useEffect(() => {
+    const STATUS_CYCLE = ['', '__active__', '__needs_adjust__', 'todo', 'inprogress', 'requested', 'done', 'cancelled']
+
     function onKeyDown(e) {
       // Don't handle when typing in inputs/textareas (except specific combos)
       const tag = document.activeElement?.tagName
@@ -52,25 +54,49 @@ export default function App() {
         if (modal) { closeModal(); return }
       }
 
+      // Ctrl+F: focus search input
+      if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+        const el = document.getElementById('search-q-input')
+        if (el) { e.preventDefault(); el.focus(); el.select(); return }
+      }
+
       // Ctrl combos
       if (e.ctrlKey || e.metaKey) {
         if (e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); return }
-        if (e.key === 'y' || (e.key === 'z' && e.shiftKey && !e.altKey && e.key !== 'Z')) {
-          if (e.key === 'y') { e.preventDefault(); redo(); return }
+        if (e.key === 'y') { e.preventDefault(); redo(); return }
+        // Ctrl+Shift+z = admin mode toggle
+        if ((e.key === 'Z' || e.key === 'z') && e.shiftKey) {
+          e.preventDefault()
+          const s = useStore.getState()
+          if (s.adminMode) s.exitAdmin()
+          else openModal('adminAuth')
+          return
         }
-        // Ctrl+Shift+z = admin auth
-        if (e.key === 'Z' && e.shiftKey) { e.preventDefault(); openModal('adminAuth'); return }
         // Ctrl+Shift+x = fav filter
         if (e.key === 'X' && e.shiftKey) { e.preventDefault(); toggleFavFilter(); return }
         // Ctrl+Shift+d = clear filters
         if (e.key === 'D' && e.shiftKey) { e.preventDefault(); clearFilters(); return }
+        // Ctrl+Shift+← → = cycle status filter
+        if (e.shiftKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+          e.preventDefault()
+          const s = useStore.getState()
+          const cur = s.filters.fs || ''
+          const idx = STATUS_CYCLE.indexOf(cur)
+          const next = e.key === 'ArrowRight'
+            ? STATUS_CYCLE[(idx + 1) % STATUS_CYCLE.length]
+            : STATUS_CYCLE[(idx - 1 + STATUS_CYCLE.length) % STATUS_CYCLE.length]
+          s.setFilters({ fs: next })
+          return
+        }
         // Ctrl+q = cycle view
         if (e.key === 'q') { e.preventDefault(); cycleView(); return }
-        // Ctrl+Arrow
-        if (e.key === 'ArrowUp') { e.preventDefault(); collapseAllPh(); return }
-        if (e.key === 'ArrowDown') { e.preventDefault(); expandAllPh(); return }
-        if (e.key === 'ArrowLeft') { e.preventDefault(); navPJ(-1); return }
-        if (e.key === 'ArrowRight') { e.preventDefault(); navPJ(1); return }
+        // Ctrl+Arrow (no shift) = expand/collapse / project nav
+        if (!e.shiftKey) {
+          if (e.key === 'ArrowUp') { e.preventDefault(); collapseAllPh(); return }
+          if (e.key === 'ArrowDown') { e.preventDefault(); expandAllPh(); return }
+          if (e.key === 'ArrowLeft') { e.preventDefault(); navPJ(-1); return }
+          if (e.key === 'ArrowRight') { e.preventDefault(); navPJ(1); return }
+        }
         // Ctrl+S = save (no-op in react version, autosaves)
         if (e.key === 's') { e.preventDefault(); return }
       }

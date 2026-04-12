@@ -35,7 +35,10 @@ export default function PhaseModal() {
     if (isEdit && existing) {
       store.updatePhase(existingId, data)
     } else {
-      store.addPhase(data)
+      store.addPhase({
+        id: 'ph_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
+        ...data
+      })
     }
     closeModal()
   }

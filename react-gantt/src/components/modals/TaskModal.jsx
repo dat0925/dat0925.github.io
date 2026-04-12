@@ -70,7 +70,12 @@ export default function TaskModal() {
     if (isEdit && existing) {
       store.updateTask(existingId, data)
     } else {
-      store.addTask(data)
+      store.addTask({
+        id: 't_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
+        ...data,
+        starred: false,
+        updatedAt: td()
+      })
     }
     closeModal()
   }

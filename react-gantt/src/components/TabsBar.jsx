@@ -7,10 +7,12 @@ export default function TabsBar() {
     undo, redo, undoStack, redoStack,
     sel, clearSel, filters, setFilters, favFilter, toggleFavFilter,
     tasks, phases, taskIndent, reorderTasks, adminMode,
+    expandAllPh, collapseAllPh, exp,
     _pjs, _cur
   } = useStore()
 
   const selSize = sel.size
+  const allPhExpanded = phases().length > 0 && phases().every(p => exp.has(p.id))
 
   function navPJ(dir) {
     const pjs = _pjs()
@@ -42,6 +44,11 @@ export default function TabsBar() {
         style={{ marginLeft: 6, padding: '3px 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: undoStack.length ? 1 : 0.4 }}
         disabled={!undoStack.length}>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 9h13a5 5 0 0 1 0 10H7" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/><path d="M7 5L3 9l4 4" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+      </button>
+      <button className="btn" onClick={() => allPhExpanded ? collapseAllPh() : expandAllPh()}
+        title={allPhExpanded ? 'すべて閉じる (Ctrl+↑)' : 'すべて開く (Ctrl+↓)'}
+        style={{ padding: '3px 8px', fontSize: 11 }}>
+        {allPhExpanded ? '▲ 閉じる' : '▼ 開く'}
       </button>
       <button className="btn" onClick={() => redo()} title="やり直す (Ctrl+Y)" id="redo-btn"
         style={{ padding: '3px 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: redoStack.length ? 1 : 0.4 }}
@@ -89,7 +96,7 @@ export default function TabsBar() {
       {view === 'gantt' && (
         <div className="rc">
           <div className="fb">
-            <input placeholder="🔍 タスク検索..." value={filters.q} onChange={e => setFilters({ q: e.target.value })} style={{ width: 110 }} />
+            <input id="search-q-input" placeholder="🔍 タスク検索..." value={filters.q} onChange={e => setFilters({ q: e.target.value })} style={{ width: 110 }} />
             <select value={filters.fs} onChange={e => setFilters({ fs: e.target.value })}>
               <option value="">全ステータス</option>
               <option value="__active__">進行中のみ</option>

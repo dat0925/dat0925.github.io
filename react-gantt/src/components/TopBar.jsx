@@ -71,6 +71,15 @@ export default function TopBar() {
               <div className="gmenu-item" onClick={() => { openModal('backup'); setGearOpen(false) }}><span>💾</span><div><div style={{ fontWeight: 600 }}>バックアップ管理</div></div></div>
               <div style={{ height: 1, background: 'var(--bd)', margin: '2px 10px' }}></div>
               <div className="gmenu-item" onClick={() => { openModal('supabase'); setGearOpen(false) }}><span>🔌</span><div><div style={{ fontWeight: 600 }}>Supabase設定</div></div></div>
+              {cur && (
+                <>
+                  <div style={{ height: 1, background: 'var(--bd)', margin: '2px 10px' }}></div>
+                  <div className="gmenu-item" style={{ color: 'var(--rd)' }}
+                    onClick={() => { openModal('delete', { type: 'project', id: cur, label: pjs[cur]?.name }); setGearOpen(false) }}>
+                    <span>🗑️</span><div><div style={{ fontWeight: 600 }}>プロジェクト削除</div><div style={{ fontSize: 10, color: 'var(--rd)', opacity: .8 }}>パスワード必要</div></div>
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>
@@ -106,9 +115,11 @@ function HelpPopup() {
       <div style={{ fontWeight: 700, color: 'var(--tx)', marginBottom: 10, fontSize: 13.5 }}>⌨️ キーボードショートカット</div>
       <table style={{ borderCollapse: 'collapse', width: '100%', lineHeight: 2 }}>
         {[
-          ['Ctrl + Z', '元に戻す'], ['Ctrl + Y', 'やり直す'], ['Ctrl + S', '編集内容を保存'],
+          ['Ctrl + Z', '元に戻す'], ['Ctrl + Y', 'やり直す'],
           ['Ctrl + q', 'ビュー切替'], ['Ctrl + ↑', 'フェーズをすべて閉じる'], ['Ctrl + ↓', 'フェーズをすべて開く'],
-          ['Ctrl + ← →', 'プロジェクト切替'], ['Ctrl + Shift + x', '☆フィルタ ON/OFF'],
+          ['Ctrl + ← →', 'プロジェクト切替'], ['Ctrl + F', '検索欄にフォーカス'],
+          ['Ctrl + Shift + ← →', 'ステータスフィルタ切替'],
+          ['Ctrl + Shift + x', '☆フィルタ ON/OFF'],
           ['Ctrl + Shift + d', 'フィルタ全解除'], ['Ctrl + Shift + z', '管理者モード切替'],
           ['↑ ↓', '選択タスクを上下移動'], ['← →', '選択タスクの親子切替'], ['Esc', 'モーダルを閉じる'],
         ].map(([key, desc]) => (
