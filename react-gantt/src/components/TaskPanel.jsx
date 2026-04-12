@@ -39,7 +39,7 @@ export default function TaskPanel({ onScrollSync, scrollRef }) {
       setTimeout(() => {
         togglePh(phId)
         setClosingPhases(prev => { const next = new Set(prev); next.delete(phId); return next })
-      }, 240)
+      }, 440)
     } else {
       togglePh(phId)
     }
@@ -352,7 +352,7 @@ function TaskRow({ t, ch, idx, sel, exp, today, exiting, onCheck, onToggleChild,
   )
 
   return (
-    <div className={`t-r${ch?' ch':''}${selected?' sel':''}${isOverdue?' overdue':isDelayed?' delayed':''}${exiting?' exiting':''}`}
+    <div className={`t-r${ch?' ch':''}${hasC?' parent-task':''}${selected?' sel':''}${isOverdue?' overdue':isDelayed?' delayed':''}${exiting?' exiting':''}`}
       data-idx={idx} data-type="t" data-id={t.id} id={`tr_${t.id}`}
       onDoubleClick={e => { if (!e.target.closest('input,select,button,.stbdg,.drag-handle,.tog')) { e.stopPropagation(); onEdit() } }}>
       <span className="drag-handle" draggable onDragStart={onDragStart} onDragEnd={onDragEnd}>⠿</span>

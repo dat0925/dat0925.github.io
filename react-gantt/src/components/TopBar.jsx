@@ -13,6 +13,7 @@ export default function TopBar() {
   const [pjname, setPjname] = useState('')
   const [gearOpen, setGearOpen] = useState(false)
   const [helpOpen, setHelpOpen] = useState(false)
+  const [adminSubOpen, setAdminSubOpen] = useState(false)
   const gearRef = useRef(null)
   const helpRef = useRef(null)
 
@@ -71,21 +72,33 @@ export default function TopBar() {
               <div className="gmenu-item" onClick={() => { openModal('backup'); setGearOpen(false) }}><span>💾</span><div><div style={{ fontWeight: 600 }}>バックアップ管理</div></div></div>
               {/* 管理者用セクション */}
               <div style={{ height: 1, background: 'var(--bd)', margin: '2px 10px' }}></div>
-              <div style={{ padding: '4px 14px 2px', fontSize: 10, color: 'var(--tx3)', fontWeight: 700, letterSpacing: '.05em' }}>管理者用</div>
-              <div className="gmenu-item" onClick={() => { openModal('supabase'); setGearOpen(false) }}><span>🔌</span><div><div style={{ fontWeight: 600 }}>Supabase設定</div></div></div>
-              {cur && (
-                <div className="gmenu-item" style={{ color: 'var(--rd)' }}
-                  onClick={() => { openModal('delete', { type: 'project', id: cur, label: pjs[cur]?.name }); setGearOpen(false) }}>
-                  <span>🗑️</span><div><div style={{ fontWeight: 600 }}>プロジェクト削除</div><div style={{ fontSize: 10, color: 'var(--rd)', opacity: .8 }}>パスワード必要</div></div>
-                </div>
-              )}
-              <div className="gmenu-item"
-                onClick={() => {
-                  const s = useStore.getState()
-                  if (s.adminMode) s.exitAdmin(); else openModal('adminAuth')
-                  setGearOpen(false)
-                }}>
-                <span>🔒</span><div><div style={{ fontWeight: 600 }}>管理者モード切替</div><div style={{ fontSize: 10, color: 'var(--tx3)' }}>ショートカット: Ctrl+Shift+Z</div></div>
+              <div className="gmenu-item" style={{ position: 'relative' }}
+                onMouseEnter={() => setAdminSubOpen(true)}
+                onMouseLeave={() => setAdminSubOpen(false)}>
+                <span>🔐</span>
+                <div style={{ flex: 1 }}><div style={{ fontWeight: 600 }}>管理者用</div></div>
+                <span style={{ fontSize: 10, color: 'var(--tx3)', marginLeft: 4 }}>▶</span>
+                {adminSubOpen && (
+                  <div style={{ position: 'absolute', right: '100%', top: 0, background: 'var(--s1)', border: '1px solid var(--bd2)', borderRadius: 8, boxShadow: '0 6px 24px rgba(0,0,0,.18)', minWidth: 220, zIndex: 2100 }}>
+                    <div className="gmenu-item" onClick={() => { openModal('supabase'); setGearOpen(false); setAdminSubOpen(false) }}>
+                      <span>🔌</span><div><div style={{ fontWeight: 600 }}>Supabase設定</div></div>
+                    </div>
+                    <div className="gmenu-item"
+                      onClick={() => {
+                        const s = useStore.getState()
+                        if (s.adminMode) s.exitAdmin(); else openModal('adminAuth')
+                        setGearOpen(false); setAdminSubOpen(false)
+                      }}>
+                      <span>🔒</span><div><div style={{ fontWeight: 600 }}>管理者モード切替</div><div style={{ fontSize: 10, color: 'var(--tx3)' }}>ショートカット: Ctrl+Shift+Z</div></div>
+                    </div>
+                    {cur && (
+                      <div className="gmenu-item" style={{ color: 'var(--rd)' }}
+                        onClick={() => { openModal('delete', { type: 'project', id: cur, label: pjs[cur]?.name }); setGearOpen(false); setAdminSubOpen(false) }}>
+                        <span>🗑️</span><div><div style={{ fontWeight: 600 }}>プロジェクト削除</div><div style={{ fontSize: 10, color: 'var(--rd)', opacity: .8 }}>パスワード必要</div></div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           )}

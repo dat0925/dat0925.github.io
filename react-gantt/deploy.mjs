@@ -26,4 +26,11 @@ if (existsSync(assetsOut)) {
 cpSync(resolve(distDir, 'gantt-assets'), assetsOut, { recursive: true })
 console.log('✅ Copied dist/gantt-assets/ → gantt-assets/')
 
+// Copy icon.png if present
+const iconSrc = resolve(distDir, 'icon.png')
+if (existsSync(iconSrc)) {
+  copyFileSync(iconSrc, resolve(repoRoot, 'icon.png'))
+  console.log('✅ Copied dist/icon.png → icon.png')
+}
+
 console.log('\nDeploy complete! Files ready to commit and push.')

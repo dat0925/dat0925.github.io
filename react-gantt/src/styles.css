@@ -28,7 +28,7 @@ html,body,#root{height:100%;background:var(--bg);color:var(--tx);font-family:var
 
 /* TOPBAR */
 #topbar{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--s1);border-bottom:1px solid var(--bd);flex-wrap:wrap;flex-shrink:0}
-.logo{font-family:var(--fm);font-size:13px;font-weight:600;color:var(--ac);letter-spacing:2px;white-space:nowrap}
+.logo{font-family:var(--fm);font-size:13px;font-weight:600;color:var(--ac);letter-spacing:0.3px;white-space:nowrap}
 .pjs{display:flex;gap:6px;align-items:center;flex:1;min-width:0;flex-wrap:wrap}
 .pjs select,.pjs input[type=text]{background:var(--s3);border:1px solid var(--bd2);color:var(--tx);padding:4px 8px;border-radius:5px;font-family:var(--f);font-size:12px;outline:none}
 .pjs select{max-width:170px}.pjs input[type=text]{width:120px}
@@ -196,8 +196,9 @@ textarea.fc{min-height:60px;resize:vertical}.fg{margin-bottom:11px}.fg label{dis
 /* ACCORDION ANIMATION */
 @keyframes rowEnter{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes rowExit{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-6px)}}
-.t-r{animation:rowEnter 0.32s cubic-bezier(0.4,0,0.2,1)}
-.t-r.exiting{animation:rowExit 0.22s cubic-bezier(0.4,0,0.2,1) forwards;pointer-events:none}
+.t-r{animation:rowEnter 0.55s cubic-bezier(0.4,0,0.2,1)}
+.t-r.exiting{animation:rowExit 0.42s cubic-bezier(0.4,0,0.2,1) forwards;pointer-events:none}
+.t-r.parent-task .tn{font-weight:700}
 
 /* CHART NAV ANIMATION */
 @keyframes chartNavFwd{from{opacity:.8;transform:translateX(-36px)}to{opacity:1;transform:translateX(0)}}
