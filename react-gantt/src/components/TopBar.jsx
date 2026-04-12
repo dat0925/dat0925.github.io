@@ -29,7 +29,7 @@ export default function TopBar() {
   const sbLabel = sbStatus === 'ok' ? '✅ 保存済' : sbStatus === 'busy' ? '⏳ 保存中…' : sbStatus === 'err' ? '❌ 保存失敗' : '接続中…'
 
   return (
-    <div id="topbar" style={adminMode ? { background: 'linear-gradient(135deg,#0f2a4a 0%,#1a3a6e 100%)', borderBottom: '2px solid rgba(37,99,235,.6)' } : {}}>
+    <div id="topbar" style={adminMode ? { background: 'linear-gradient(135deg,#1e4080 0%,#2a5cc0 100%)', borderBottom: '2px solid rgba(37,99,235,.6)' } : {}}>
       <span className="logo" style={adminMode ? { color: '#fff' } : {}}>{adminMode ? '🔒 管理者' : '📋 商品企画部'}</span>
       <div className="pjs">
         <select value={cur || ''} onChange={e => switchPJ(e.target.value || null)}
