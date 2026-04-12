@@ -190,6 +190,7 @@ export default function TaskModal() {
             <textarea value={memo} onChange={e => setMemo(e.target.value)}
               rows={4} style={{ width: '100%', resize: 'vertical', fontFamily: 'inherit', fontSize: 12 }}
               placeholder="メモ・URL・備考など" />
+            {memo && <MemoPreview text={memo} />}
           </div>
         </div>
         <div className="mf">
@@ -204,6 +205,45 @@ export default function TaskModal() {
           <button className="btn p" onClick={handleSave}>{isEdit ? '保存' : '追加'}</button>
         </div>
       </div>
+    </div>
+  )
+}
+
+function MemoPreview({ text }) {
+  // Parse memo text into segments: plain text, URLs, and markdown links [label](url)
+  function parseSegments(str) {
+    const parts = []
+    // Match [label](url) or bare URLs
+    const re = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|(https?:\/\/[^\s\])"'>,]+)/g
+    let last = 0, m
+    while ((m = re.exec(str)) !== null) {
+      if (m.index > last) parts.push({ type: 'text', value: str.slice(last, m.index) })
+      if (m[1]) {
+        parts.push({ type: 'link', label: m[1], url: m[2] })
+      } else {
+        parts.push({ type: 'link', label: m[3], url: m[3] })
+      }
+      last = m.index + m[0].length
+    }
+    if (last < str.length) parts.push({ type: 'text', value: str.slice(last) })
+    return parts
+  }
+
+  const lines = text.split('\n')
+  return (
+    <div style={{ marginTop: 4, padding: '6px 8px', background: 'var(--s3)', border: '1px solid var(--bd)', borderRadius: 5, fontSize: 12, lineHeight: 1.7, color: 'var(--tx2)', wordBreak: 'break-all' }}>
+      {lines.map((line, i) => (
+        <div key={i}>
+          {parseSegments(line).map((seg, j) =>
+            seg.type === 'link'
+              ? <a key={j} href={seg.url} target="_blank" rel="noopener noreferrer"
+                  style={{ color: 'var(--ac)', textDecoration: 'underline', cursor: 'pointer' }}
+                  onClick={e => e.stopPropagation()}>{seg.label}</a>
+              : <span key={j}>{seg.value}</span>
+          )}
+          {i < lines.length - 1 && lines.length > 1 && <br />}
+        </div>
+      ))}
     </div>
   )
 }
