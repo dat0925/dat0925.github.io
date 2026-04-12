@@ -205,7 +205,7 @@ export const useStore = create((set, get) => ({
     })
 
     // restore admin session
-    if (sessionStorage.getItem('gantt_admin_session') === '1' && isAdminAuthed()) {
+    if (sessionStorage.getItem('gantt_admin_active') === '1' && isAdminAuthed()) {
       set({ adminMode: true })
     }
     // get state AFTER admin mode is restored so s.adminMode is correct
@@ -617,7 +617,8 @@ export const useStore = create((set, get) => ({
   // ── admin ─────────────────────────────────────────────────────────────────
   async enterAdmin() {
     set({ adminMode: true })
-    sessionStorage.setItem('gantt_admin_session', '1')
+    sessionStorage.setItem('gantt_admin_session', '1')  // 認証済みフラグ（セッション中パスワード不要）
+    sessionStorage.setItem('gantt_admin_active', '1')   // アクティブフラグ（リロード時復元用）
     const remotePjs = await sbLoad(true)
     if (remotePjs) {
       const withStars = applyStarred(remotePjs, true)
@@ -634,7 +635,7 @@ export const useStore = create((set, get) => ({
   },
   exitAdmin() {
     set({ adminMode: false })
-    sessionStorage.removeItem('gantt_admin_session')
+    sessionStorage.removeItem('gantt_admin_active')  // アクティブフラグのみ削除（認証済みフラグは残す）
     const s = get()
     const localCur = localStorage.getItem('gp6c') || null
     set({ cur: localCur && s.pjs[localCur] ? localCur : null, view: 'gantt', sel: new Set() })
