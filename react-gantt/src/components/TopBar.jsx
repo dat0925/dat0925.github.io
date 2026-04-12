@@ -28,7 +28,7 @@ export default function TopBar() {
   const sbLabel = sbStatus === 'ok' ? '✅ 保存済' : sbStatus === 'busy' ? '⏳ 保存中…' : sbStatus === 'err' ? '❌ 保存失敗' : '接続中…'
 
   return (
-    <div id="topbar" style={adminMode ? { background: 'linear-gradient(135deg,#1e1240 0%,#2d1a5e 100%)', borderBottom: '2px solid rgba(124,58,237,.5)' } : {}}>
+    <div id="topbar" style={adminMode ? { background: 'linear-gradient(135deg,#0f2a4a 0%,#1a3a6e 100%)', borderBottom: '2px solid rgba(37,99,235,.6)' } : {}}>
       <span className="logo" style={adminMode ? { color: '#fff' } : {}}>{adminMode ? '🔒 管理者' : '📋 商品企画部'}</span>
       <div className="pjs">
         <select value={cur || ''} onChange={e => switchPJ(e.target.value || null)}
@@ -60,7 +60,10 @@ export default function TopBar() {
         <button className="btn" onClick={forceReload} title="DBから最新データを再読み込み" style={{ fontSize: 11, padding: '2px 7px' }}>🔄</button>
         {/* Gear menu */}
         <div ref={gearRef} style={{ position: 'relative' }}>
-          <button id="gear-btn" className="btn" onClick={() => setGearOpen(o => !o)} title="メニュー">⚙️</button>
+          <button id="gear-btn" className="btn" onClick={() => setGearOpen(o => !o)} title="設定"
+            style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 9px', fontSize: 12 }}>
+            ⚙️ 設定
+          </button>
           {gearOpen && (
             <div style={{ position: 'fixed', zIndex: 2000, background: 'var(--s1)', border: '1px solid var(--bd2)', borderRadius: 8, boxShadow: '0 6px 24px rgba(0,0,0,.18)', minWidth: 200, right: 8, top: 44 }}>
               <div className="gmenu-item" onClick={() => { exportCSVHandler(); setGearOpen(false) }}><span>⬇️</span><div><div style={{ fontWeight: 600 }}>CSVエクスポート</div><div style={{ fontSize: 10, color: 'var(--tx3)' }}>現在のプロジェクトをCSV保存</div></div></div>
@@ -69,33 +72,27 @@ export default function TopBar() {
               <div style={{ height: 1, background: 'var(--bd)', margin: '2px 10px' }}></div>
               <div className="gmenu-item" onClick={() => { openModal('members'); setGearOpen(false) }}><span>👥</span><div><div style={{ fontWeight: 600 }}>担当者管理</div></div></div>
               <div className="gmenu-item" onClick={() => { openModal('backup'); setGearOpen(false) }}><span>💾</span><div><div style={{ fontWeight: 600 }}>バックアップ管理</div></div></div>
+              {/* 管理者用セクション */}
               <div style={{ height: 1, background: 'var(--bd)', margin: '2px 10px' }}></div>
+              <div style={{ padding: '4px 14px 2px', fontSize: 10, color: 'var(--tx3)', fontWeight: 700, letterSpacing: '.05em' }}>管理者用</div>
               <div className="gmenu-item" onClick={() => { openModal('supabase'); setGearOpen(false) }}><span>🔌</span><div><div style={{ fontWeight: 600 }}>Supabase設定</div></div></div>
               {cur && (
-                <>
-                  <div style={{ height: 1, background: 'var(--bd)', margin: '2px 10px' }}></div>
-                  <div className="gmenu-item" style={{ color: 'var(--rd)' }}
-                    onClick={() => { openModal('delete', { type: 'project', id: cur, label: pjs[cur]?.name }); setGearOpen(false) }}>
-                    <span>🗑️</span><div><div style={{ fontWeight: 600 }}>プロジェクト削除</div><div style={{ fontSize: 10, color: 'var(--rd)', opacity: .8 }}>パスワード必要</div></div>
-                  </div>
-                </>
+                <div className="gmenu-item" style={{ color: 'var(--rd)' }}
+                  onClick={() => { openModal('delete', { type: 'project', id: cur, label: pjs[cur]?.name }); setGearOpen(false) }}>
+                  <span>🗑️</span><div><div style={{ fontWeight: 600 }}>プロジェクト削除</div><div style={{ fontSize: 10, color: 'var(--rd)', opacity: .8 }}>パスワード必要</div></div>
+                </div>
               )}
+              <div className="gmenu-item"
+                onClick={() => {
+                  const s = useStore.getState()
+                  if (s.adminMode) s.exitAdmin(); else openModal('adminAuth')
+                  setGearOpen(false)
+                }}>
+                <span>🔒</span><div><div style={{ fontWeight: 600 }}>管理者モード切替</div><div style={{ fontSize: 10, color: 'var(--tx3)' }}>ショートカット: Ctrl+Shift+Z</div></div>
+              </div>
             </div>
           )}
         </div>
-        {/* Admin lock */}
-        {!adminMode ? (
-          <button className="btn" onClick={() => openModal('adminAuth')}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 26, height: 26, padding: 0, border: '1px solid var(--bd2)', borderRadius: 5 }}
-            title="管理者モード切替&#10;ショートカット：Ctrl + Shift + z">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" strokeWidth="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
-          </button>
-        ) : (
-          <button className="btn" onClick={() => useStore.getState().exitAdmin()}
-            style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 10px', borderColor: 'var(--bd2)' }}>
-            🔒 退出
-          </button>
-        )}
         {/* Help */}
         <div ref={helpRef} style={{ position: 'relative' }}>
           <button id="help-btn" className="btn" onClick={() => setHelpOpen(o => !o)}

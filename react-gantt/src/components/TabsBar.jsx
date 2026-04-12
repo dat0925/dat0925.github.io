@@ -55,12 +55,6 @@ export default function TabsBar() {
         disabled={!redoStack.length}>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M21 9H8a5 5 0 0 0 0 10h9" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/><path d="M17 5l4 4-4 4" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
       </button>
-      {adminMode && (
-        <button className="btn" onClick={() => useStore.getState().exitAdmin()}
-          style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 10px', borderColor: 'rgba(124,58,237,.4)', background: 'rgba(124,58,237,.1)', color: '#7c3aed', fontSize: 11, fontWeight: 600, marginLeft: 4 }}>
-          🔒 退出
-        </button>
-      )}
       {/* iPad move buttons */}
       {selSize === 1 && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginLeft: 4 }}>
