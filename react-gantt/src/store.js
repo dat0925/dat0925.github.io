@@ -633,7 +633,7 @@ export const useStore = create((set, get) => ({
   },
   exitAdmin() {
     set({ adminMode: false })
-    sessionStorage.removeItem('gantt_admin_session')
+    // セッション中は再入場をパスワード不要にするためフラグは残す
     const s = get()
     const localCur = localStorage.getItem('gp6c') || null
     set({ cur: localCur && s.pjs[localCur] ? localCur : null, view: 'gantt', sel: new Set() })
