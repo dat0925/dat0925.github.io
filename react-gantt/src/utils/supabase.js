@@ -129,12 +129,11 @@ export async function sbLoadBackups(adminMode) {
   return data || []
 }
 
-export async function sbSaveBackup(name, data, adminMode) {
+export async function sbSaveBackup(label, data, adminMode) {
   if (!_client) throw new Error('Supabaseクライアントが初期化されていません')
   const table = adminMode ? 'gp6a_backups' : 'gp6_backups'
   const id = crypto.randomUUID()
-  // どちらのテーブルも name カラムが存在しないため除外
-  const { error } = await _client.from(table).insert({ id, data, created_at: new Date().toISOString() })
+  const { error } = await _client.from(table).insert({ id, label: label || null, data, created_at: new Date().toISOString() })
   if (error) throw new Error(error.message)
   return true
 }
