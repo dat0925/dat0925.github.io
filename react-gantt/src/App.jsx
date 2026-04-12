@@ -88,6 +88,10 @@ export default function App() {
           s.setFilters({ fs: next })
           return
         }
+        // Ctrl+m = add task modal
+        if (e.key === 'm') { e.preventDefault(); openModal('addTask'); return }
+        // Ctrl+Shift+f = add phase modal
+        if ((e.key === 'F' || e.key === 'f') && e.shiftKey) { e.preventDefault(); openModal('addPh'); return }
         // Ctrl+q = cycle view
         if (e.key === 'q') { e.preventDefault(); cycleView(); return }
         // Ctrl+Arrow (no shift) = expand/collapse / project nav

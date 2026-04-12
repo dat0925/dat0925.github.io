@@ -46,7 +46,7 @@ export default function GanttChart({ tpbScrollTop, onScrollSync }) {
 
   // Draw body
   useEffect(() => {
-    if (bodyRef.current) drawBody(bodyRef.current, rows, scale, sd)
+    if (bodyRef.current) drawBody(bodyRef.current, rows, scale, sd, pj?.tasks || [])
   }, [rows, scale, sd])
 
   // Sync scroll from task panel → chart

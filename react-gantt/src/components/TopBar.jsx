@@ -115,7 +115,8 @@ function HelpPopup() {
       <div style={{ fontWeight: 700, color: 'var(--tx)', marginBottom: 10, fontSize: 13.5 }}>⌨️ キーボードショートカット</div>
       <table style={{ borderCollapse: 'collapse', width: '100%', lineHeight: 2 }}>
         {[
-          ['Ctrl + Z', '元に戻す'], ['Ctrl + Y', 'やり直す'],
+          ['Ctrl + Z', '元に戻す'], ['Ctrl + Y', 'やり直す'], ['Ctrl + S', 'タスク編集を保存'],
+          ['Ctrl + M', 'タスクを追加'], ['Ctrl + Shift + F', 'フェーズを追加'],
           ['Ctrl + q', 'ビュー切替'], ['Ctrl + ↑', 'フェーズをすべて閉じる'], ['Ctrl + ↓', 'フェーズをすべて開く'],
           ['Ctrl + ← →', 'プロジェクト切替'], ['Ctrl + F', '検索欄にフォーカス'],
           ['Ctrl + Shift + ← →', 'ステータスフィルタ切替'],

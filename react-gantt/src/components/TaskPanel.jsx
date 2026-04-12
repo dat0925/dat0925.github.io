@@ -229,8 +229,8 @@ export default function TaskPanel({ onScrollSync, scrollRef }) {
           <InlineAddRow state={inlineState} onChange={setInline} onSubmit={submitInline} onCancel={cancelInline} />
         )}
         {/* Add footer */}
-        <div className="tpb-add-row" onClick={() => openModal('addTask')}><span className="add-ic">＋</span>タスクを追加...</div>
-        <div className="tpb-add-row" onClick={() => openModal('addPh')} style={{borderTop:'1px dashed var(--bd)'}}><span className="add-ic">＋</span>フェーズを追加...</div>
+        <div className="tpb-add-row" onClick={() => openModal('addTask')} title="タスクを追加 (Ctrl+M)"><span className="add-ic">＋</span>タスクを追加...</div>
+        <div className="tpb-add-row" onClick={() => openModal('addPh')} style={{borderTop:'1px dashed var(--bd)'}} title="フェーズを追加 (Ctrl+Shift+F)"><span className="add-ic">＋</span>フェーズを追加...</div>
       </div>
 
       {/* Status popup */}
@@ -323,8 +323,15 @@ function TaskRow({ t, ch, idx, sel, exp, today, exiting, onCheck, onToggleChild,
     if (ends.length) ed = ends[ends.length - 1]
   }
 
-  const isOverdue = ed && ed < today && t.status !== 'done' && t.status !== 'cancelled'
-  const isDelayed = !isOverdue && sd && sd < today && t.status === 'todo'
+  // effective status for parent tasks
+  const effStatus = hasC ? (() => {
+    const allDone = children.every(c => c.status === 'done' || c.status === 'cancelled')
+    const allTodo = children.every(c => c.status === 'todo')
+    return allDone ? 'done' : allTodo ? 'todo' : 'inprogress'
+  })() : t.status
+
+  const isOverdue = ed && ed < today && effStatus !== 'done' && effStatus !== 'cancelled'
+  const isDelayed = !isOverdue && sd && sd < today && effStatus === 'todo'
   const selected = sel.has(t.id)
 
   function finishNameEdit() {
@@ -359,12 +366,12 @@ function TaskRow({ t, ch, idx, sel, exp, today, exiting, onCheck, onToggleChild,
             onBlur={finishNameEdit} onKeyDown={e=>{if(e.key==='Enter')finishNameEdit();if(e.key==='Escape'){setEditVal(t.name);setNameEdit(false)}}}
           />
         ) : (
-          <span className={`tn${t.status==='done'?' dn':''}`}
+          <span className={`tn${effStatus==='done'?' dn':''}`}
             title={t.name}>{t.name}</span>
         )}
       </span>
       <span style={{overflow:'hidden'}}>
-        <span className={`stbdg ${t.status}`} onClick={onStPopup}>{SL[t.status]}</span>
+        <span className={`stbdg ${effStatus}`} onClick={onStPopup} title={hasC ? '子タスクから自動判定' : undefined}>{SL[effStatus]}</span>
       </span>
       <span className={`td dt-cell${isDelayed?' start-dt':''}`} onClick={e=>onDateClick(e,t.id,'start')} title="クリックで開始日編集">{fmt(sd)}</span>
       <span className={`td dt-cell${isOverdue?' end-dt':''}`} onClick={e=>onDateClick(e,t.id,'end')} title="クリックで終了日編集">{fmt(ed)}</span>
@@ -384,7 +391,7 @@ function InlineAddRow({ state, onChange, onSubmit, onCancel }) {
         <input id="ia-name" type="text" placeholder="タスク名..." value={state.name}
           className="inline-add-input" style={{flex:1,minWidth:0,padding:'3px 5px',fontSize:12}}
           onChange={e=>onChange({...state,name:e.target.value})}
-          onKeyDown={e=>{if(e.key==='Enter')onSubmit();if(e.key==='Escape')onCancel()}} />
+          onKeyDown={e=>{if(e.key==='Enter'||(e.key==='s'&&(e.ctrlKey||e.metaKey))){e.preventDefault();onSubmit()}if(e.key==='Escape')onCancel()}} />
         <button style={{flexShrink:0,padding:'3px 5px',borderRadius:4,border:'1px solid var(--bd2)',background:'var(--s3)',color:'var(--tx3)',fontSize:12,cursor:'pointer'}} onClick={onCancel}>✕</button>
       </span>
       <span></span>

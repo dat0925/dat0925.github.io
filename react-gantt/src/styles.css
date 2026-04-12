@@ -9,7 +9,7 @@
   --gc:14px 18px 28px 2fr 58px 54px 54px 60px 20px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body,#root{height:100%;background:var(--bg);color:var(--tx);font-family:var(--f);font-size:13px;overflow:hidden}
+html,body,#root{height:100%;background:var(--bg);color:var(--tx);font-family:var(--f);font-size:14px;overflow:hidden}
 
 /* AUTH */
 #auth-overlay{position:fixed;inset:0;background:#f3f4f6;display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:0}

@@ -113,7 +113,8 @@ export default function TaskModal() {
   if (modal?.type !== 'addTask' && modal?.type !== 'editTask') return null
 
   return (
-    <div className="ov" onClick={e => e.target === e.currentTarget && closeModal()}>
+    <div className="ov" onClick={e => e.target === e.currentTarget && closeModal()}
+      onKeyDown={e => { if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); handleSave() } }}>
       <div className="md" style={{ maxWidth: 480 }}>
         <div className="mh">
           <span>{isEdit ? 'タスク編集' : 'タスク追加'}</span>

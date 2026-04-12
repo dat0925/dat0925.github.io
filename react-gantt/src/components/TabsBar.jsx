@@ -40,15 +40,15 @@ export default function TabsBar() {
           </div>
         ))}
       </div>
-      <button className="btn" onClick={() => undo()} title="元に戻す (Ctrl+Z)" id="undo-btn"
-        style={{ marginLeft: 6, padding: '3px 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: undoStack.length ? 1 : 0.4 }}
-        disabled={!undoStack.length}>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 9h13a5 5 0 0 1 0 10H7" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/><path d="M7 5L3 9l4 4" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-      </button>
       <button className="btn" onClick={() => allPhExpanded ? collapseAllPh() : expandAllPh()}
         title={allPhExpanded ? 'すべて閉じる (Ctrl+↑)' : 'すべて開く (Ctrl+↓)'}
-        style={{ padding: '3px 8px', fontSize: 11 }}>
+        style={{ padding: '3px 8px', fontSize: 11, marginLeft: 4 }}>
         {allPhExpanded ? '▲ 閉じる' : '▼ 開く'}
+      </button>
+      <button className="btn" onClick={() => undo()} title="元に戻す (Ctrl+Z)" id="undo-btn"
+        style={{ marginLeft: 4, padding: '3px 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: undoStack.length ? 1 : 0.4 }}
+        disabled={!undoStack.length}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 9h13a5 5 0 0 1 0 10H7" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/><path d="M7 5L3 9l4 4" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
       </button>
       <button className="btn" onClick={() => redo()} title="やり直す (Ctrl+Y)" id="redo-btn"
         style={{ padding: '3px 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: redoStack.length ? 1 : 0.4 }}

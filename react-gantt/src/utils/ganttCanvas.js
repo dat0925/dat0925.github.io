@@ -125,7 +125,42 @@ export function drawHdr(canvas, scale, sd) {
   }
 }
 
-export function drawBody(canvas, rows, scale, sd) {
+// ── effective date / status helpers ────────────────────────────────────────
+function getEffectiveDates(task, allTasks) {
+  const children = allTasks.filter(c => c.parentId === task.id)
+  if (children.length) {
+    const starts = children.map(c => c.startDate).filter(Boolean).sort()
+    const ends   = children.map(c => c.endDate).filter(Boolean).sort()
+    return {
+      startDate: starts.length ? starts[0] : task.startDate,
+      endDate:   ends.length   ? ends[ends.length - 1] : task.endDate
+    }
+  }
+  return { startDate: task.startDate, endDate: task.endDate }
+}
+
+function getPhaseEffectiveDates(ph, allTasks) {
+  const parentTasks = allTasks.filter(t => t.phaseId === ph.id && !t.parentId)
+  if (parentTasks.length) {
+    const starts = parentTasks.map(t => getEffectiveDates(t, allTasks).startDate).filter(Boolean).sort()
+    const ends   = parentTasks.map(t => getEffectiveDates(t, allTasks).endDate).filter(Boolean).sort()
+    if (starts.length || ends.length) return {
+      startDate: starts.length ? starts[0] : (ph.startDate || null),
+      endDate:   ends.length   ? ends[ends.length - 1] : (ph.endDate || null)
+    }
+  }
+  return { startDate: ph.startDate || null, endDate: ph.endDate || null }
+}
+
+function getEffectiveStatus(task, allTasks) {
+  const children = allTasks.filter(c => c.parentId === task.id)
+  if (!children.length) return task.status
+  const allDone = children.every(c => c.status === 'done' || c.status === 'cancelled')
+  const allTodo = children.every(c => c.status === 'todo')
+  return allDone ? 'done' : allTodo ? 'todo' : 'inprogress'
+}
+
+export function drawBody(canvas, rows, scale, sd, allTasks = []) {
   const { days } = getDays(scale, sd)
   const colW = cw(scale)
   const W = days.length * colW
@@ -173,9 +208,9 @@ export function drawBody(canvas, rows, scale, sd) {
     ctx.beginPath(); ctx.moveTo(0, cy + rh); ctx.lineTo(W, cy + rh); ctx.stroke()
 
     if (row.type === 'ph') {
-      drawPhaseBar(ctx, row.data, cy, rh, di, colW)
+      drawPhaseBar(ctx, row.data, cy, rh, di, colW, allTasks)
     } else {
-      drawTaskBar(ctx, row.data, cy, rh, di, colW, today)
+      drawTaskBar(ctx, row.data, cy, rh, di, colW, today, allTasks)
     }
 
     cy += rh
@@ -199,28 +234,48 @@ export function drawBody(canvas, rows, scale, sd) {
   }
 }
 
-function drawPhaseBar(ctx, ph, cy, rh, di, colW) {
-  if (!ph.startDate && !ph.endDate) return
-  const si = ph.startDate in di ? di[ph.startDate] : (ph.startDate < Object.keys(di)[0] ? 0 : -1)
+function drawPhaseBar(ctx, ph, cy, rh, di, colW, allTasks) {
+  const { startDate, endDate } = getPhaseEffectiveDates(ph, allTasks)
+  if (!startDate && !endDate) return
   const keys = Object.keys(di)
-  const ei = ph.endDate in di ? di[ph.endDate] : (ph.endDate > keys[keys.length - 1] ? keys.length - 1 : -1)
-  if (ei < 0 || si < 0 || si >= keys.length) return
-  const bx = si * colW, bw = Math.max(colW / 2, (ei - si + 1) * colW)
-  const bh = 6, by = cy + rh - bh - 3
-  ctx.fillStyle = '#2563eb33'
-  rr(ctx, bx, by, bw, bh, 2); ctx.fill()
+  const si = startDate in di ? di[startDate] : (startDate < keys[0] ? 0 : keys.length)
+  const ei = endDate in di ? di[endDate] : (endDate > keys[keys.length - 1] ? keys.length - 1 : -1)
+  if (ei < 0 || si >= keys.length) return
+  const bx = si * colW
+  const bw = Math.max(colW / 2, (ei - si + 1) * colW)
+  const bh = rh * 0.52
+  const by = cy + (rh - bh) / 2
+  // fill
+  ctx.fillStyle = 'rgba(37,99,235,0.10)'
+  rr(ctx, bx, by, bw, bh, 3); ctx.fill()
+  // border
+  ctx.strokeStyle = 'rgba(37,99,235,0.45)'; ctx.lineWidth = 1.2
+  rr(ctx, bx, by, bw, bh, 3); ctx.stroke()
+  // left accent bar
   ctx.fillStyle = '#2563eb'
-  rr(ctx, bx, by, 3, bh, 1); ctx.fill()
+  rr(ctx, bx, by, 4, bh, 2); ctx.fill()
+  // label
+  if (bw > 32) {
+    ctx.save()
+    ctx.beginPath(); ctx.rect(bx + 8, by, bw - 10, bh); ctx.clip()
+    ctx.font = '600 10px -apple-system,sans-serif'
+    ctx.fillStyle = '#1d4ed8'
+    ctx.textAlign = 'left'
+    ctx.fillText(ph.name, bx + 8, by + bh / 2 + 3.5)
+    ctx.restore()
+  }
 }
 
-function drawTaskBar(ctx, t, cy, rh, di, colW, today) {
-  if (!t.startDate && !t.endDate) return
+function drawTaskBar(ctx, t, cy, rh, di, colW, today, allTasks) {
+  const { startDate, endDate } = getEffectiveDates(t, allTasks)
+  if (!startDate && !endDate) return
   const keys = Object.keys(di)
-  const si = t.startDate in di ? di[t.startDate] : (t.startDate < keys[0] ? 0 : keys.length)
-  const ei = t.endDate in di ? di[t.endDate] : (t.endDate > keys[keys.length - 1] ? keys.length - 1 : -1)
+  const si = startDate in di ? di[startDate] : (startDate < keys[0] ? 0 : keys.length)
+  const ei = endDate in di ? di[endDate] : (endDate > keys[keys.length - 1] ? keys.length - 1 : -1)
   if (ei < 0 || si >= keys.length) return
 
-  const color = SC[t.status] || '#8a96a8'
+  const effStatus = getEffectiveStatus(t, allTasks)
+  const color = SC[effStatus] || '#8a96a8'
   const bx = si * colW
   const bw = Math.max(colW / 2, (ei - si + 1) * colW)
   const bh = rh * 0.55
@@ -236,7 +291,7 @@ function drawTaskBar(ctx, t, cy, rh, di, colW, today) {
   ctx.fillStyle = color
   rr(ctx, bx, by, Math.min(4, bw), bh, 2); ctx.fill()
   // done: strikethrough fill
-  if (t.status === 'done') {
+  if (effStatus === 'done') {
     ctx.fillStyle = color + '55'
     rr(ctx, bx, by, bw, bh, 3); ctx.fill()
   }
@@ -245,13 +300,13 @@ function drawTaskBar(ctx, t, cy, rh, di, colW, today) {
     ctx.save()
     ctx.beginPath(); ctx.rect(bx + 6, by, bw - 8, bh); ctx.clip()
     ctx.font = '500 10px -apple-system,sans-serif'
-    ctx.fillStyle = t.status === 'done' ? '#6b7280' : '#1a2030'
+    ctx.fillStyle = effStatus === 'done' ? '#6b7280' : '#1a2030'
     ctx.textAlign = 'left'
     ctx.fillText(t.name, bx + 6, by + bh / 2 + 3.5)
     ctx.restore()
   }
   // overdue indicator
-  if (t.endDate < today && t.status !== 'done' && t.status !== 'cancelled') {
+  if (endDate < today && effStatus !== 'done' && effStatus !== 'cancelled') {
     ctx.fillStyle = '#dc2626'
     rr(ctx, bx + bw - 6, by, 6, bh, 2); ctx.fill()
   }
