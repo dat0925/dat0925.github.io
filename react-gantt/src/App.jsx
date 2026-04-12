@@ -42,7 +42,7 @@ export default function App() {
 
   // Keyboard shortcuts
   useEffect(() => {
-    const STATUS_CYCLE = ['', '__active__', '__needs_adjust__', 'todo', 'inprogress', 'requested', 'done', 'cancelled']
+    const STATUS_CYCLE = ['__active__', '__needs_adjust__', 'requested']
 
     function onKeyDown(e) {
       // Don't handle when typing in inputs/textareas (except specific combos)
