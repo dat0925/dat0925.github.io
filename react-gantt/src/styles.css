@@ -199,6 +199,8 @@ textarea.fc{min-height:60px;resize:vertical}.fg{margin-bottom:11px}.fg label{dis
 .t-r{animation:rowEnter 0.55s cubic-bezier(0.4,0,0.2,1)}
 .t-r.exiting{animation:rowExit 0.42s cubic-bezier(0.4,0,0.2,1) forwards;pointer-events:none}
 .t-r.parent-task .tn{font-weight:700}
+.t-r.parent-task{background:linear-gradient(to right,var(--s1) 32px,var(--s3) 32px)}
+.t-r.parent-task:hover{background:linear-gradient(to right,var(--s2) 32px,var(--bd) 32px)}
 
 /* CHART NAV ANIMATION */
 @keyframes chartNavFwd{from{opacity:.8;transform:translateX(-36px)}to{opacity:1;transform:translateX(0)}}

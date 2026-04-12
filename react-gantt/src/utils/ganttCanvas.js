@@ -182,7 +182,8 @@ export function drawBody(canvas, rows, scale, sd, allTasks = []) {
   let cy = 0
   rows.forEach((row, ri) => {
     const rh = row.type === 'ph' ? PHROW : ROW
-    const bg = row.type === 'ph' ? '#e8eaed' : (ri % 2 === 0 ? '#ffffff' : '#f8f9fb')
+    const isParent = row.type === 't' && allTasks.some(c => c.parentId === row.data.id)
+    const bg = (row.type === 'ph' || isParent) ? '#e8eaed' : (ri % 2 === 0 ? '#ffffff' : '#f8f9fb')
     ctx.fillStyle = bg; ctx.fillRect(0, cy, W, rh)
 
     // weekend/holiday columns
