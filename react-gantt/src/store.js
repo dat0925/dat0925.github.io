@@ -562,6 +562,9 @@ export const useStore = create((set, get) => ({
   expandAllPh() {
     const exp = new Set(get().exp)
     get().phases().forEach(p => exp.add(p.id))
+    const tasks = get().tasks()
+    const parentIds = new Set(tasks.filter(t => t.parentId).map(t => t.parentId))
+    parentIds.forEach(id => exp.add('c_' + id))
     set({ exp }); get().saveExp()
   },
   collapseAllPh() {
