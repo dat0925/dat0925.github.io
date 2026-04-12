@@ -60,10 +60,7 @@ export default function TopBar() {
         <button className="btn" onClick={forceReload} title="DBから最新データを再読み込み" style={{ fontSize: 11, padding: '2px 7px' }}>🔄</button>
         {/* Gear menu */}
         <div ref={gearRef} style={{ position: 'relative' }}>
-          <button id="gear-btn" className="btn" onClick={() => setGearOpen(o => !o)} title="設定"
-            style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 9px', fontSize: 12 }}>
-            ⚙️ 設定
-          </button>
+          <button id="gear-btn" className="btn" onClick={() => setGearOpen(o => !o)} title="設定">⚙️</button>
           {gearOpen && (
             <div style={{ position: 'fixed', zIndex: 2000, background: 'var(--s1)', border: '1px solid var(--bd2)', borderRadius: 8, boxShadow: '0 6px 24px rgba(0,0,0,.18)', minWidth: 200, right: 8, top: 44 }}>
               <div className="gmenu-item" onClick={() => { exportCSVHandler(); setGearOpen(false) }}><span>⬇️</span><div><div style={{ fontWeight: 600 }}>CSVエクスポート</div><div style={{ fontSize: 10, color: 'var(--tx3)' }}>現在のプロジェクトをCSV保存</div></div></div>

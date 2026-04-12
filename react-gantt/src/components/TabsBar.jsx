@@ -5,7 +5,7 @@ export default function TabsBar() {
   const {
     view, setView, scale, setScale, goToday, navChart,
     undo, redo, undoStack, redoStack,
-    sel, clearSel, filters, setFilters, favFilter, toggleFavFilter,
+    sel, clearSel, filters, setFilters, favFilter, toggleFavFilter, clearFilters,
     tasks, phases, taskIndent, reorderTasks, adminMode,
     expandAllPh, collapseAllPh, exp,
     _pjs, _cur
@@ -110,6 +110,11 @@ export default function TabsBar() {
               title="お気に入りフィルタ">
               {favFilter ? '★' : '☆'}
             </button>
+            {(filters.q || filters.fs || filters.fa || favFilter) && (
+              <button className="btn" onClick={() => clearFilters()}
+                style={{ padding: '3px 8px', fontSize: 11, color: 'var(--rd)', borderColor: 'var(--rd)' }}
+                title="フィルタ全解除 (Ctrl+Shift+D)">✕ 解除</button>
+            )}
           </div>
           <div className="tg" id="sctabs">
             {[['day','日'],['week','週'],['month','月']].map(([s,l]) => (

@@ -32,7 +32,7 @@ export default function BackupModal() {
     if (!Object.keys(pjs).length) return alert('保存するデータがありません')
     setSaving(true)
     try {
-      await sbSaveBackup(pjs, label.trim() || undefined, store.adminMode)
+      await sbSaveBackup(label.trim() || undefined, pjs, store.adminMode)
       setLabel('')
       await loadBackups()
     } catch (e) {
@@ -91,7 +91,7 @@ export default function BackupModal() {
               {backups.map(b => (
                 <div key={b.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', background: 'var(--s3)', borderRadius: 6, border: '1px solid var(--bd)' }}>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 12, fontWeight: 600 }}>{b.label || '（ラベルなし）'}</div>
+                    <div style={{ fontSize: 12, fontWeight: 600 }}>{b.name || '（ラベルなし）'}</div>
                     <div style={{ fontSize: 10, color: 'var(--tx3)' }}>{b.created_at?.slice(0,16).replace('T',' ')}</div>
                   </div>
                   <button className="btn" style={{ fontSize: 11, padding: '2px 8px' }} onClick={() => handleRestore(b)}>復元</button>
