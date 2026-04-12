@@ -1,0 +1,143 @@
+import { createClient } from '@supabase/supabase-js'
+import { _SB_URL, _SB_KEY } from './constants.js'
+
+let _client = null
+
+export function getClient() { return _client }
+
+export function initClient() {
+  try {
+    _client = createClient(_SB_URL, _SB_KEY, { realtime: { params: { eventsPerSecond: 10 } } })
+    return true
+  } catch (e) { _client = null; return false }
+}
+
+export function tbl(name, adminMode) {
+  return adminMode ? `gp6a_${name}` : `gp6_${name}`
+}
+
+export async function sbLoad(adminMode) {
+  if (!_client) return null
+  try {
+    const [{ data: pjRows, error: e1 }, { data: phRows, error: e2 }, { data: tkRows, error: e3 }] =
+      await Promise.all([
+        _client.from(tbl('projects', adminMode)).select('*').order('sort_order'),
+        _client.from(tbl('phases', adminMode)).select('*').order('sort_order'),
+        _client.from(tbl('tasks', adminMode)).select('*').order('sort_order'),
+      ])
+    if (e1 || e2 || e3) return null
+    const pjs = {}
+    ;(pjRows || []).forEach(r => { pjs[r.id] = { name: r.name, tasks: [], phases: [], members: r.members || [] } })
+    ;(phRows || []).forEach(r => {
+      if (pjs[r.project_id])
+        pjs[r.project_id].phases.push({ id: r.id, name: r.name, startDate: r.start_date, endDate: r.end_date, assignee: r.assignee || '' })
+    })
+    ;(tkRows || []).forEach(r => {
+      if (pjs[r.project_id])
+        pjs[r.project_id].tasks.push({
+          id: r.id, phaseId: r.phase_id, parentId: r.parent_id,
+          name: r.name, startDate: r.start_date, endDate: r.end_date,
+          completedDate: r.completed_date, status: r.status, assignee: r.assignee,
+          effort: r.effort, memo: r.memo, starred: r.starred || false, updatedAt: r.updated_at
+        })
+    })
+    return pjs
+  } catch (e) { return null }
+}
+
+export async function sbSavePJ(id, pjs, adminMode) {
+  if (!_client) return
+  const p = pjs[id]; if (!p) return
+  await _client.from(tbl('projects', adminMode)).upsert(
+    { id, name: p.name, sort_order: Object.keys(pjs).indexOf(id), members: p.members || [] },
+    { onConflict: 'id' }
+  )
+}
+
+export async function sbDeletePJ(id, adminMode) {
+  if (!_client) return
+  await _client.from(tbl('projects', adminMode)).delete().eq('id', id)
+}
+
+export async function sbSavePH(ph, projectId, pjs, adminMode) {
+  if (!_client) return
+  const p = pjs[projectId]; if (!p) return
+  await _client.from(tbl('phases', adminMode)).upsert({
+    id: ph.id, project_id: projectId, name: ph.name,
+    start_date: ph.startDate || null, end_date: ph.endDate || null,
+    assignee: ph.assignee || '',
+    sort_order: p.phases.findIndex(x => x.id === ph.id)
+  }, { onConflict: 'id' })
+}
+
+export async function sbDeletePH(id, adminMode) {
+  if (!_client) return
+  await _client.from(tbl('phases', adminMode)).delete().eq('id', id)
+}
+
+export async function sbSaveTask(t, projectId, pjs, adminMode) {
+  if (!_client) return
+  const p = pjs[projectId]; if (!p) return
+  await _client.from(tbl('tasks', adminMode)).upsert({
+    id: t.id, project_id: projectId,
+    phase_id: t.phaseId || null, parent_id: t.parentId || null,
+    name: t.name, start_date: t.startDate || null, end_date: t.endDate || null,
+    completed_date: t.completedDate || null, status: t.status,
+    assignee: t.assignee || '', effort: t.effort || 1, memo: t.memo || '',
+    starred: t.starred || false,
+    sort_order: p.tasks.findIndex(x => x.id === t.id),
+    updated_at: new Date().toISOString()
+  }, { onConflict: 'id' })
+}
+
+export async function sbDeleteTask(id, adminMode) {
+  if (!_client) return
+  await _client.from(tbl('tasks', adminMode)).delete().eq('id', id)
+}
+
+export async function sbMigrateFromLegacy(adminMode) {
+  if (!_client) return
+  const { data: existing } = await _client.from('gp6_projects').select('id').limit(1)
+  if (existing && existing.length > 0) return
+  const { data: legacy } = await _client.from('gantt_data').select('*').eq('id', 'gp6').maybeSingle()
+  if (!legacy || !legacy.projects) return
+  const pjsLegacy = legacy.projects
+  for (const [pjId, p] of Object.entries(pjsLegacy)) {
+    await _client.from('gp6_projects').upsert({ id: pjId, name: p.name, sort_order: Object.keys(pjsLegacy).indexOf(pjId) }, { onConflict: 'id' })
+    for (const [i, ph] of (p.phases || []).entries())
+      await _client.from('gp6_phases').upsert({ id: ph.id, project_id: pjId, name: ph.name, start_date: ph.startDate || null, end_date: ph.endDate || null, sort_order: i }, { onConflict: 'id' })
+    for (const [i, t] of (p.tasks || []).entries())
+      await _client.from('gp6_tasks').upsert({ id: t.id, project_id: pjId, phase_id: t.phaseId || null, parent_id: t.parentId || null, name: t.name, start_date: t.startDate || null, end_date: t.endDate || null, completed_date: t.completedDate || null, status: t.status || 'todo', assignee: t.assignee || '', effort: t.effort || 1, memo: t.memo || '', sort_order: i, updated_at: t.updatedAt || new Date().toISOString() }, { onConflict: 'id' })
+  }
+}
+
+export function sbSubscribe(adminMode, onReload) {
+  if (!_client) return null
+  const ch = adminMode ? 'gp6a-realtime' : 'gp6-realtime'
+  const channel = _client.channel(ch)
+    .on('postgres_changes', { event: '*', schema: 'public', table: tbl('projects', adminMode) }, onReload)
+    .on('postgres_changes', { event: '*', schema: 'public', table: tbl('phases', adminMode) }, onReload)
+    .on('postgres_changes', { event: '*', schema: 'public', table: tbl('tasks', adminMode) }, onReload)
+    .subscribe()
+  return channel
+}
+
+export async function sbLoadBackups(adminMode) {
+  if (!_client) return []
+  const table = adminMode ? 'gp6a_backups' : 'gp6_backups'
+  const { data } = await _client.from(table).select('*').order('created_at', { ascending: false }).limit(20)
+  return data || []
+}
+
+export async function sbSaveBackup(name, data, adminMode) {
+  if (!_client) return false
+  const table = adminMode ? 'gp6a_backups' : 'gp6_backups'
+  const { error } = await _client.from(table).insert({ name, data, created_at: new Date().toISOString() })
+  return !error
+}
+
+export async function sbDeleteBackup(id, adminMode) {
+  if (!_client) return
+  const table = adminMode ? 'gp6a_backups' : 'gp6_backups'
+  await _client.from(table).delete().eq('id', id)
+}
