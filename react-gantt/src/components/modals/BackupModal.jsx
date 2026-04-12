@@ -22,7 +22,7 @@ export default function BackupModal() {
       const list = await sbLoadBackups(store.adminMode)
       setBackups(list || [])
     } catch (e) {
-      console.error(e)
+      alert('バックアップ一覧の取得に失敗しました: ' + e.message)
     }
     setLoading(false)
   }
