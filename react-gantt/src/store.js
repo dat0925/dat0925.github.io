@@ -7,6 +7,15 @@ import {
 } from './utils/supabase.js'
 import { UNDO_MAX } from './utils/constants.js'
 
+// ── pending save guard ─────────────────────────────────────────────────────
+// Supabase への書き込みが完了する前に _scheduleReload が sbLoad で上書きしないよう
+// 書き込み中の件数を追跡する。
+let _pendingSave = 0
+function sbPending(fn) {
+  _pendingSave++
+  Promise.resolve(fn()).finally(() => { _pendingSave-- })
+}
+
 // ── demo data ──────────────────────────────────────────────────────────────
 function createDemoData() {
   return {
@@ -275,6 +284,7 @@ export const useStore = create((set, get) => ({
     const s = get()
     clearTimeout(s._reloadTimer)
     const t = setTimeout(async () => {
+      if (_pendingSave > 0) { get()._scheduleReload(); return } // 保存中なら再スケジュール
       const s2 = get()
       const remotePjs = await sbLoad(s2.adminMode)
       if (remotePjs) {
@@ -296,7 +306,7 @@ export const useStore = create((set, get) => ({
     s._setCur(id)
     set({ sel: new Set(), exp: new Set() })
     s.save()
-    sbSavePJ(id, pjs, s.adminMode)
+    sbPending(() => sbSavePJ(id, pjs, s.adminMode))
   },
   renamePJ(name) {
     const s = get()
@@ -305,7 +315,7 @@ export const useStore = create((set, get) => ({
     pjs[cur] = { ...pjs[cur], name }
     s._setPjs(pjs)
     s.save()
-    sbSavePJ(cur, pjs, s.adminMode)
+    sbPending(() => sbSavePJ(cur, pjs, s.adminMode))
   },
   deletePJ(id) {
     const s = get()
@@ -315,7 +325,7 @@ export const useStore = create((set, get) => ({
     if (s._cur() === id) s._setCur(null)
     set({ sel: new Set(), exp: new Set() })
     s.save()
-    sbDeletePJ(id, s.adminMode)
+    sbPending(() => sbDeletePJ(id, s.adminMode))
   },
   switchPJ(id) {
     const s = get()
@@ -338,7 +348,7 @@ export const useStore = create((set, get) => ({
     set({ exp: new Set([...get().exp, ph.id]) })
     s._setPjs(pjs)
     s.save()
-    sbSavePH(ph, cur, pjs, s.adminMode)
+    sbPending(() => sbSavePH(ph, cur, pjs, s.adminMode))
   },
   updatePhase(idOrPh, data) {
     const s = get()
@@ -350,7 +360,7 @@ export const useStore = create((set, get) => ({
     if (i >= 0) pjs[cur].phases[i] = { ...pjs[cur].phases[i], ...ph }
     s._setPjs(pjs)
     s.save()
-    sbSavePH(pjs[cur].phases[i >= 0 ? i : 0], cur, pjs, s.adminMode)
+    sbPending(() => sbSavePH(pjs[cur].phases[i >= 0 ? i : 0], cur, pjs, s.adminMode))
   },
   deletePhase(id) {
     const s = get()
@@ -363,8 +373,8 @@ export const useStore = create((set, get) => ({
     set({ exp: newExp })
     s._setPjs(pjs)
     s.save()
-    Promise.all(phTasks.map(tid => sbDeleteTask(tid, s.adminMode)))
-    sbDeletePH(id, s.adminMode)
+    phTasks.forEach(tid => sbPending(() => sbDeleteTask(tid, s.adminMode)))
+    sbPending(() => sbDeletePH(id, s.adminMode))
   },
   reorderPhases(phases) {
     const s = get()
@@ -373,7 +383,7 @@ export const useStore = create((set, get) => ({
     pjs[cur].phases = phases
     s._setPjs(pjs)
     s.save()
-    phases.forEach(ph => sbSavePH(ph, cur, pjs, s.adminMode))
+    phases.forEach(ph => sbPending(() => sbSavePH(ph, cur, pjs, s.adminMode)))
   },
 
   // ── task ops ──────────────────────────────────────────────────────────────
@@ -385,7 +395,7 @@ export const useStore = create((set, get) => ({
     if (t.parentId) set({ exp: new Set([...get().exp, 'c_' + t.parentId]) })
     s._setPjs(pjs)
     s.save()
-    sbSaveTask(t, cur, pjs, s.adminMode)
+    sbPending(() => sbSaveTask(t, cur, pjs, s.adminMode))
   },
   updateTask(idOrT, data) {
     const s = get()
@@ -399,10 +409,10 @@ export const useStore = create((set, get) => ({
       pjs[cur].tasks[i] = { ...pjs[cur].tasks[i], ...patch, id, updatedAt: td() }
       const t = pjs[cur].tasks[i]
       // sync child phases
-      pjs[cur].tasks.filter(c => c.parentId === id).forEach(c => { c.phaseId = t.phaseId; sbSaveTask(c, cur, pjs, s.adminMode) })
+      pjs[cur].tasks.filter(c => c.parentId === id).forEach(c => { c.phaseId = t.phaseId; sbPending(() => sbSaveTask(c, cur, pjs, s.adminMode)) })
       s._setPjs(pjs)
       s.save()
-      sbSaveTask(t, cur, pjs, s.adminMode)
+      sbPending(() => sbSaveTask(t, cur, pjs, s.adminMode))
     }
   },
   deleteTask(id) {
@@ -416,7 +426,7 @@ export const useStore = create((set, get) => ({
     set({ sel: newSel })
     s._setPjs(pjs)
     s.save()
-    Promise.all([...toDelete].map(tid => sbDeleteTask(tid, s.adminMode)))
+    ;[...toDelete].forEach(tid => sbPending(() => sbDeleteTask(tid, s.adminMode)))
   },
   deleteBulk(ids) {
     const s = get()
@@ -431,7 +441,7 @@ export const useStore = create((set, get) => ({
     set({ sel: new Set() })
     s._setPjs(pjs)
     s.save()
-    Promise.all([...toDelete].map(tid => sbDeleteTask(tid, s.adminMode)))
+    ;[...toDelete].forEach(tid => sbPending(() => sbDeleteTask(tid, s.adminMode)))
   },
   updateTaskDates(id, startDate, endDate) {
     const s = get()
@@ -441,7 +451,7 @@ export const useStore = create((set, get) => ({
     t.startDate = startDate; t.endDate = endDate; t.updatedAt = td()
     s._setPjs(pjs)
     s.save()
-    sbSaveTask(t, cur, pjs, s.adminMode)
+    sbPending(() => sbSaveTask(t, cur, pjs, s.adminMode))
   },
   dupTask(id) {
     const s = get()
@@ -453,7 +463,7 @@ export const useStore = create((set, get) => ({
     pjs[cur].tasks.splice(idx + 1, 0, nt)
     s._setPjs(pjs)
     s.save()
-    sbSaveTask(nt, cur, pjs, s.adminMode)
+    sbPending(() => sbSaveTask(nt, cur, pjs, s.adminMode))
   },
   taskMoveUpDown(id, dir) {
     const s = get()
@@ -481,7 +491,7 @@ export const useStore = create((set, get) => ({
     tasks.splice(dir > 0 ? newTi + 1 : newTi, 0, removed)
     s._setPjs(pjs)
     s.save()
-    tasks.forEach(t => sbSaveTask(t, cur, pjs, s.adminMode))
+    tasks.forEach(t => sbPending(() => sbSaveTask(t, cur, pjs, s.adminMode)))
   },
   reorderTasks(tasks) {
     const s = get()
@@ -490,7 +500,7 @@ export const useStore = create((set, get) => ({
     pjs[cur].tasks = tasks
     s._setPjs(pjs)
     s.save()
-    tasks.forEach(t => sbSaveTask(t, cur, pjs, s.adminMode))
+    tasks.forEach(t => sbPending(() => sbSaveTask(t, cur, pjs, s.adminMode)))
   },
   applyBulkEdit(idsOrChanges, changesArg) {
     const s = get()
@@ -513,7 +523,7 @@ export const useStore = create((set, get) => ({
     })
     s._setPjs(pjs)
     s.save()
-    pjs[cur].tasks.filter(t => ids.has(t.id)).forEach(t => sbSaveTask(t, cur, pjs, s.adminMode))
+    pjs[cur].tasks.filter(t => ids.has(t.id)).forEach(t => sbPending(() => sbSaveTask(t, cur, pjs, s.adminMode)))
   },
   toggleStar(id) {
     const s = get()
@@ -523,7 +533,7 @@ export const useStore = create((set, get) => ({
     t.starred = !t.starred
     s._setPjs(pjs)
     s.save()
-    sbSaveTask(t, cur, pjs, s.adminMode)
+    sbPending(() => sbSaveTask(t, cur, pjs, s.adminMode))
   },
   taskIndent(id, dedent) {
     const s = get()
@@ -552,7 +562,7 @@ export const useStore = create((set, get) => ({
     }
     s._setPjs(pjs)
     s.save()
-    sbSaveTask(t, cur, pjs, s.adminMode)
+    sbPending(() => sbSaveTask(t, cur, pjs, s.adminMode))
   },
 
   // ── selection ─────────────────────────────────────────────────────────────
@@ -658,7 +668,7 @@ export const useStore = create((set, get) => ({
     s._setMembers(members)
     s.save()
     const cur = s._cur()
-    if (cur) sbSavePJ(cur, s._pjs(), s.adminMode)
+    if (cur) sbPending(() => sbSavePJ(cur, s._pjs(), s.adminMode))
   },
   addMember(name) {
     const s = get()
