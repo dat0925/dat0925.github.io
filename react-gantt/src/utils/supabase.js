@@ -60,24 +60,34 @@ export async function sbDeletePJ(id, adminMode) {
 }
 
 export async function sbSavePH(ph, projectId, pjs, adminMode) {
-  if (!_client) return
-  const p = pjs[projectId]; if (!p) return
+  if (!_client) { console.warn('[sbSavePH] client not initialized'); return }
+  const p = pjs[projectId]; if (!p) { console.warn('[sbSavePH] project not found:', projectId); return }
   const payload = {
     id: ph.id, project_id: projectId, name: ph.name,
     start_date: ph.startDate || null, end_date: ph.endDate || null,
     assignee: ph.assignee || '',
     sort_order: p.phases.findIndex(x => x.id === ph.id)
   }
+  console.log('[sbSavePH] saving phase:', ph.id, ph.name, 'to', tbl('phases', adminMode))
   const { error } = await _client.from(tbl('phases', adminMode)).upsert(payload, { onConflict: 'id' })
   if (error) {
-    // FK違反の場合（プロジェクト保存が遅延した際など）は少し待ってリトライ
+    console.error('[sbSavePH] error:', error.code, error.message)
     if (error.code === '23503') {
+      // FK違反: プロジェクト保存遅延の場合リトライ
       await new Promise(r => setTimeout(r, 1500))
       const { error: e2 } = await _client.from(tbl('phases', adminMode)).upsert(payload, { onConflict: 'id' })
       if (e2) throw new Error(`sbSavePH retry failed: ${e2.message}`)
+    } else if (error.code === '42703') {
+      // assigneeカラムが存在しない場合はassigneeなしでリトライ
+      console.warn('[sbSavePH] assignee column missing, retrying without it')
+      const { assignee, ...payloadWithoutAssignee } = payload
+      const { error: e2 } = await _client.from(tbl('phases', adminMode)).upsert(payloadWithoutAssignee, { onConflict: 'id' })
+      if (e2) throw new Error(`sbSavePH (no-assignee) retry failed: ${e2.message}`)
     } else {
       throw new Error(`sbSavePH failed: ${error.message}`)
     }
+  } else {
+    console.log('[sbSavePH] saved successfully:', ph.id)
   }
 }
 
