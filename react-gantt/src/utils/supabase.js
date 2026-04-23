@@ -62,13 +62,23 @@ export async function sbDeletePJ(id, adminMode) {
 export async function sbSavePH(ph, projectId, pjs, adminMode) {
   if (!_client) return
   const p = pjs[projectId]; if (!p) return
-  const { error } = await _client.from(tbl('phases', adminMode)).upsert({
+  const payload = {
     id: ph.id, project_id: projectId, name: ph.name,
     start_date: ph.startDate || null, end_date: ph.endDate || null,
     assignee: ph.assignee || '',
     sort_order: p.phases.findIndex(x => x.id === ph.id)
-  }, { onConflict: 'id' })
-  if (error) throw new Error(`sbSavePH failed: ${error.message}`)
+  }
+  const { error } = await _client.from(tbl('phases', adminMode)).upsert(payload, { onConflict: 'id' })
+  if (error) {
+    // FK違反の場合（プロジェクト保存が遅延した際など）は少し待ってリトライ
+    if (error.code === '23503') {
+      await new Promise(r => setTimeout(r, 1500))
+      const { error: e2 } = await _client.from(tbl('phases', adminMode)).upsert(payload, { onConflict: 'id' })
+      if (e2) throw new Error(`sbSavePH retry failed: ${e2.message}`)
+    } else {
+      throw new Error(`sbSavePH failed: ${error.message}`)
+    }
+  }
 }
 
 export async function sbDeletePH(id, adminMode) {

@@ -18,8 +18,16 @@ function sbPending(fn) {
   _saveGen++
   _saveQueue = _saveQueue
     .then(() => fn())
-    .catch(() => {})
+    .catch(err => {
+      // 保存エラーをコンソールに出力（握りつぶさない）
+      console.error('[sbPending] DB save error:', err)
+    })
     .finally(() => { _pendingSave-- })
+}
+
+// 保存キューが完了するまで待つユーティリティ
+function waitForSaveQueue() {
+  return _saveQueue
 }
 
 // ── demo data ──────────────────────────────────────────────────────────────
@@ -693,6 +701,10 @@ export const useStore = create((set, get) => ({
   // ── supabase status ───────────────────────────────────────────────────────
   setSbStatus(status) { set({ sbStatus: status }) },
   async forceReload() {
+    // 未完了の保存処理があれば完了を待ってからリロード
+    if (_pendingSave > 0) {
+      await waitForSaveQueue()
+    }
     const s = get()
     set({ sbStatus: 'busy' })
     const remotePjs = await sbLoad(s.adminMode)
