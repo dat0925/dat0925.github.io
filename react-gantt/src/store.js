@@ -8,12 +8,17 @@ import {
 import { UNDO_MAX } from './utils/constants.js'
 
 // ── pending save guard ─────────────────────────────────────────────────────
-// Supabase への書き込みが完了する前に _scheduleReload が sbLoad で上書きしないよう
-// 書き込み中の件数を追跡する。
+// 保存を直列キューで処理することで、フェーズ → タスクの順序を保証し
+// FK制約違反によるサイレント消失を防ぐ。
+// (並列実行だと「フェーズ未保存のうちにタスクが先にDBへ届く」→ FK違反 → 無視 → reload で消える)
+let _saveQueue = Promise.resolve()
 let _pendingSave = 0
 function sbPending(fn) {
   _pendingSave++
-  Promise.resolve(fn()).finally(() => { _pendingSave-- })
+  _saveQueue = _saveQueue
+    .then(() => fn())
+    .catch(() => {}) // エラーを握りつぶしてキューを継続
+    .finally(() => { _pendingSave-- })
 }
 
 // ── demo data ──────────────────────────────────────────────────────────────

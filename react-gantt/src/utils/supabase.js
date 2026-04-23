@@ -62,12 +62,13 @@ export async function sbDeletePJ(id, adminMode) {
 export async function sbSavePH(ph, projectId, pjs, adminMode) {
   if (!_client) return
   const p = pjs[projectId]; if (!p) return
-  await _client.from(tbl('phases', adminMode)).upsert({
+  const { error } = await _client.from(tbl('phases', adminMode)).upsert({
     id: ph.id, project_id: projectId, name: ph.name,
     start_date: ph.startDate || null, end_date: ph.endDate || null,
     assignee: ph.assignee || '',
     sort_order: p.phases.findIndex(x => x.id === ph.id)
   }, { onConflict: 'id' })
+  if (error) throw new Error(`sbSavePH failed: ${error.message}`)
 }
 
 export async function sbDeletePH(id, adminMode) {
@@ -78,7 +79,7 @@ export async function sbDeletePH(id, adminMode) {
 export async function sbSaveTask(t, projectId, pjs, adminMode) {
   if (!_client) return
   const p = pjs[projectId]; if (!p) return
-  await _client.from(tbl('tasks', adminMode)).upsert({
+  const payload = {
     id: t.id, project_id: projectId,
     phase_id: t.phaseId || null, parent_id: t.parentId || null,
     name: t.name, start_date: t.startDate || null, end_date: t.endDate || null,
@@ -87,7 +88,18 @@ export async function sbSaveTask(t, projectId, pjs, adminMode) {
     starred: t.starred || false,
     sort_order: p.tasks.findIndex(x => x.id === t.id),
     updated_at: new Date().toISOString()
-  }, { onConflict: 'id' })
+  }
+  const { error } = await _client.from(tbl('tasks', adminMode)).upsert(payload, { onConflict: 'id' })
+  if (error) {
+    // FK違反の場合(フェーズ保存が遅延した際など)は少し待ってリトライ
+    if (error.code === '23503') {
+      await new Promise(r => setTimeout(r, 1500))
+      const { error: e2 } = await _client.from(tbl('tasks', adminMode)).upsert(payload, { onConflict: 'id' })
+      if (e2) throw new Error(`sbSaveTask retry failed: ${e2.message}`)
+    } else {
+      throw new Error(`sbSaveTask failed: ${error.message}`)
+    }
+  }
 }
 
 export async function sbDeleteTask(id, adminMode) {
