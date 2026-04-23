@@ -44,7 +44,7 @@ export default function TaskModal() {
       // New task defaults
       const today = td()
       setName('')
-      setPhaseId(modal?.data?.phaseId || phases[0]?.id || '')
+      setPhaseId(modal?.data?.phaseId || '')
       setParentId('')
       setStartDate(today)
       setEndDate(today)

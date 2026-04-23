@@ -120,9 +120,9 @@ export default function TaskPanel({ onScrollSync, scrollRef }) {
   }
 
   // Inline add
-  function startInline(parentId, afterIdx) {
+  function startInline(parentId, afterIdx, phaseId) {
     const today = td()
-    setInline({ parentId: parentId || '__root__', afterIdx: afterIdx ?? -1, name: '', start: fmt(today), end: fmt(addD(today, 6)) })
+    setInline({ parentId: parentId || '__root__', phaseId: phaseId || null, afterIdx: afterIdx ?? -1, name: '', start: fmt(today), end: fmt(addD(today, 6)) })
     setTimeout(() => document.getElementById('ia-name')?.focus(), 30)
   }
   function cancelInline() { setInline(null) }
@@ -131,11 +131,13 @@ export default function TaskPanel({ onScrollSync, scrollRef }) {
     const s = parseInputDate(inlineState.start)
     const e2 = parseInputDate(inlineState.end)
     const cur = _cur(); if (!cur) return
-    let phaseId = null, parentId = null
+    // phaseId: フェーズ行から追加した場合はそのフェーズID、子タスクの場合は親から継承
+    let phaseId = inlineState.phaseId || null
+    let parentId = null
     if (inlineState.parentId && inlineState.parentId !== '__root__') {
       parentId = inlineState.parentId
       const par = tasks().find(t => t.id === parentId)
-      if (par) phaseId = par.phaseId
+      if (par && !phaseId) phaseId = par.phaseId
     }
     const t = { id: 't_' + Date.now() + '_' + Math.random().toString(36).slice(2,5), phaseId, parentId, name: inlineState.name.trim(), startDate: s, endDate: e2, completedDate: null, status: 'todo', assignee: '', effort: 1, memo: '', starred: false, updatedAt: td() }
     store.addTask(t)
@@ -199,7 +201,7 @@ export default function TaskPanel({ onScrollSync, scrollRef }) {
                   onEdit={() => openModal('editPh', { id: row.data.id })}
                   onDelete={() => openModal('delete', { type: 'phase', id: row.data.id, label: row.data.name })}
                   onAsgClick={e => openAsgPickerInline(e, row.data.id, true)}
-                  onStartInline={() => startInline(null, idx)}
+                  onStartInline={() => startInline(null, idx, row.data.id)}
                   today={today} />
               : <TaskRow t={row.data} ch={row.ch} idx={idx} sel={sel} exp={exp}
                   today={today}
