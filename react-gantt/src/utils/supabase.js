@@ -59,6 +59,25 @@ export async function sbDeletePJ(id, adminMode) {
   await _client.from(tbl('projects', adminMode)).delete().eq('id', id)
 }
 
+function showDbError(msg) {
+  let el = document.getElementById('_ph_save_err')
+  if (!el) {
+    el = document.createElement('div')
+    el.id = '_ph_save_err'
+    el.style.cssText = [
+      'position:fixed', 'bottom:20px', 'left:50%', 'transform:translateX(-50%)',
+      'background:#dc2626', 'color:#fff', 'padding:14px 18px', 'border-radius:10px',
+      'z-index:99999', 'font-size:13px', 'max-width:90vw', 'word-break:break-all',
+      'box-shadow:0 4px 20px rgba(0,0,0,.4)', 'line-height:1.5', 'text-align:center'
+    ].join(';')
+    document.body.appendChild(el)
+  }
+  el.innerHTML = `⚠️ フェーズDB保存エラー<br><span style="font-size:11px;opacity:.85">${msg}</span>`
+  el.style.display = 'block'
+  clearTimeout(el._timer)
+  el._timer = setTimeout(() => { el.style.display = 'none' }, 15000)
+}
+
 export async function sbSavePH(ph, projectId, pjs, adminMode) {
   if (!_client) { console.warn('[sbSavePH] client not initialized'); return }
   const p = pjs[projectId]; if (!p) { console.warn('[sbSavePH] project not found:', projectId); return }
@@ -76,14 +95,15 @@ export async function sbSavePH(ph, projectId, pjs, adminMode) {
       // FK違反: プロジェクト保存遅延の場合リトライ
       await new Promise(r => setTimeout(r, 1500))
       const { error: e2 } = await _client.from(tbl('phases', adminMode)).upsert(payload, { onConflict: 'id' })
-      if (e2) throw new Error(`sbSavePH retry failed: ${e2.message}`)
+      if (e2) { showDbError(`FK retry: ${e2.message}`); throw new Error(`sbSavePH retry failed: ${e2.message}`) }
     } else if (error.code === '42703') {
       // assigneeカラムが存在しない場合はassigneeなしでリトライ
       console.warn('[sbSavePH] assignee column missing, retrying without it')
       const { assignee, ...payloadWithoutAssignee } = payload
       const { error: e2 } = await _client.from(tbl('phases', adminMode)).upsert(payloadWithoutAssignee, { onConflict: 'id' })
-      if (e2) throw new Error(`sbSavePH (no-assignee) retry failed: ${e2.message}`)
+      if (e2) { showDbError(`no-assignee retry: ${e2.message}`); throw new Error(`sbSavePH (no-assignee) retry failed: ${e2.message}`) }
     } else {
+      showDbError(`code=${error.code} ${error.message}`)
       throw new Error(`sbSavePH failed: ${error.message}`)
     }
   } else {
