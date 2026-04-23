@@ -292,6 +292,9 @@ export const useStore = create((set, get) => ({
       if (_pendingSave > 0) { get()._scheduleReload(); return } // 保存中なら再スケジュール
       const s2 = get()
       const remotePjs = await sbLoad(s2.adminMode)
+      // sbLoad の await 中に新たな保存が始まっていた場合も再スケジュール
+      // (チェック後・await中にフェーズ/タスクを追加すると _pendingSave が上がる)
+      if (_pendingSave > 0) { get()._scheduleReload(); return }
       if (remotePjs) {
         const withStars = applyStarred(remotePjs, s2.adminMode)
         s2._setPjs(withStars)
