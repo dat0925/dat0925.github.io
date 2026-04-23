@@ -246,12 +246,19 @@ export const useStore = create((set, get) => ({
           if (!merged[pid]) continue
           const sbPhIds = new Set((merged[pid].phases || []).map(p => p.id))
           for (const ph of (lp.phases || []))
-            if (!sbPhIds.has(ph.id)) { merged[pid].phases.push(ph); sbSavePH(ph, pid, merged, s.adminMode) }
+            if (!sbPhIds.has(ph.id)) {
+              merged[pid].phases.push(ph)
+              // sbPending 経由にして _pendingSave でトラッキング（未追跡だと Realtime reload と競合する）
+              sbPending(() => sbSavePH(ph, pid, merged, s.adminMode))
+            }
           const sbTaskMap = new Map((merged[pid].tasks || []).map(t => [t.id, t]))
           for (const lt of (lp.tasks || [])) {
             if (!lt.phaseId) continue
             const st = sbTaskMap.get(lt.id)
-            if (st && !st.phaseId) { st.phaseId = lt.phaseId; sbSaveTask(st, pid, merged, s.adminMode) }
+            if (st && !st.phaseId) {
+              st.phaseId = lt.phaseId
+              sbPending(() => sbSaveTask(st, pid, merged, s.adminMode))
+            }
           }
         }
         const withStars = applyStarred(merged, s.adminMode)
@@ -701,10 +708,8 @@ export const useStore = create((set, get) => ({
   // ── supabase status ───────────────────────────────────────────────────────
   setSbStatus(status) { set({ sbStatus: status }) },
   async forceReload() {
-    // 未完了の保存処理があれば完了を待ってからリロード
-    if (_pendingSave > 0) {
-      await waitForSaveQueue()
-    }
+    // 保存キューが完了するまで必ず待ってからリロード（pendingSave の有無に関わらず）
+    await waitForSaveQueue()
     const s = get()
     set({ sbStatus: 'busy' })
     const remotePjs = await sbLoad(s.adminMode)
