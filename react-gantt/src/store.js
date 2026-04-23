@@ -8,16 +8,17 @@ import {
 import { UNDO_MAX } from './utils/constants.js'
 
 // ── pending save guard ─────────────────────────────────────────────────────
-// 保存を直列キューで処理することで、フェーズ → タスクの順序を保証し
-// FK制約違反によるサイレント消失を防ぐ。
-// (並列実行だと「フェーズ未保存のうちにタスクが先にDBへ届く」→ FK違反 → 無視 → reload で消える)
+// 直列キューで保存順序を保証しつつ、sbLoad の await 中に保存が走った場合も
+// 世代カウンタ (_saveGen) で検知して上書きをブロックする。
 let _saveQueue = Promise.resolve()
 let _pendingSave = 0
+let _saveGen = 0   // sbPending が呼ばれるたびに増加（世代管理）
 function sbPending(fn) {
   _pendingSave++
+  _saveGen++
   _saveQueue = _saveQueue
     .then(() => fn())
-    .catch(() => {}) // エラーを握りつぶしてキューを継続
+    .catch(() => {})
     .finally(() => { _pendingSave-- })
 }
 
@@ -290,11 +291,11 @@ export const useStore = create((set, get) => ({
     clearTimeout(s._reloadTimer)
     const t = setTimeout(async () => {
       if (_pendingSave > 0) { get()._scheduleReload(); return } // 保存中なら再スケジュール
+      const genAtStart = _saveGen   // sbLoad 開始直前の世代を記録
       const s2 = get()
       const remotePjs = await sbLoad(s2.adminMode)
-      // sbLoad の await 中に新たな保存が始まっていた場合も再スケジュール
-      // (チェック後・await中にフェーズ/タスクを追加すると _pendingSave が上がる)
-      if (_pendingSave > 0) { get()._scheduleReload(); return }
+      // await 中に新たな保存が始まっていたら（_pendingSave が戻っていても）上書きしない
+      if (_pendingSave > 0 || _saveGen !== genAtStart) { get()._scheduleReload(); return }
       if (remotePjs) {
         const withStars = applyStarred(remotePjs, s2.adminMode)
         s2._setPjs(withStars)
