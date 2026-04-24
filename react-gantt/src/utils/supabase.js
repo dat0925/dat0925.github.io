@@ -96,7 +96,7 @@ export async function sbSavePH(ph, projectId, pjs, adminMode) {
       await new Promise(r => setTimeout(r, 1500))
       const { error: e2 } = await _client.from(tbl('phases', adminMode)).upsert(payload, { onConflict: 'id' })
       if (e2) { showDbError(`FK retry: ${e2.message}`); throw new Error(`sbSavePH retry failed: ${e2.message}`) }
-    } else if (error.code === '42703') {
+    } else if (error.code === '42703' || error.code === 'PGRST204' || error.message?.includes('assignee')) {
       // assigneeカラムが存在しない場合はassigneeなしでリトライ
       console.warn('[sbSavePH] assignee column missing, retrying without it')
       const { assignee, ...payloadWithoutAssignee } = payload
