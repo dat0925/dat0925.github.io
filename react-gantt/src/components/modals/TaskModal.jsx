@@ -26,6 +26,7 @@ export default function TaskModal() {
   const [effort, setEffort] = useState('1')
   const [completedDate, setCompletedDate] = useState('')
   const [memo, setMemo] = useState('')
+  const [linkCopied, setLinkCopied] = useState(false)
   const nameRef = useRef(null)
 
   useEffect(() => {
@@ -114,7 +115,10 @@ export default function TaskModal() {
     const cur = store._cur()
     if (!cur || !existingId) return
     const url = `${location.origin}${location.pathname}#p=${cur}&t=${existingId}`
-    navigator.clipboard?.writeText(url).catch(() => {})
+    navigator.clipboard?.writeText(url).then(() => {
+      setLinkCopied(true)
+      setTimeout(() => setLinkCopied(false), 2000)
+    }).catch(() => {})
   }
 
   if (modal?.type !== 'addTask' && modal?.type !== 'editTask') return null
@@ -127,8 +131,8 @@ export default function TaskModal() {
           <span>{isEdit ? 'タスク編集' : 'タスク追加'}</span>
           {isEdit && (
             <button onClick={copyTaskLink} title="このタスクのリンクをコピー"
-              style={{ fontSize: 11, padding: '2px 8px', border: '1px solid var(--bd2)', borderRadius: 4, cursor: 'pointer', background: 'var(--s3)', color: 'var(--tx2)', marginRight: 8 }}>
-              🔗 リンクをコピー
+              style={{ fontSize: 11, padding: '2px 8px', border: '1px solid var(--bd2)', borderRadius: 4, cursor: 'pointer', background: linkCopied ? 'var(--ac)' : 'var(--s3)', color: linkCopied ? '#fff' : 'var(--tx2)', marginRight: 8, transition: 'background 0.2s' }}>
+              {linkCopied ? '✅ コピーしました' : '🔗 リンクをコピー'}
             </button>
           )}
           <button className="cls" onClick={closeModal}>✕</button>

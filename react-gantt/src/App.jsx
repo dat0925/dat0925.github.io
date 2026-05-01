@@ -24,23 +24,31 @@ export default function App() {
   const [authed, setAuthed] = useState(false)
   const [tpbScrollTop, setTpbScrollTop] = useState(0)
   const initialized = useRef(false)
+  const deepLinkRef = useRef(null)
 
-  // Init store once, then handle deep link from URL hash
+  // Init store once
   useEffect(() => {
     if (!initialized.current) {
       initialized.current = true
       store.init().then(() => {
-        setAuthed(isAuthed())
         const hash = new URLSearchParams(window.location.hash.slice(1))
         const pId = hash.get('p')
         const tId = hash.get('t')
-        if (pId && tId) {
-          store.switchPJ(pId)
-          store.openModal('editTask', { id: tId })
-        }
+        if (pId && tId) deepLinkRef.current = { pId, tId }
+        setAuthed(isAuthed())
       })
     }
   }, [])
+
+  // Open deep link modal after auth is confirmed
+  useEffect(() => {
+    if (authed && deepLinkRef.current) {
+      const { pId, tId } = deepLinkRef.current
+      deepLinkRef.current = null
+      store.switchPJ(pId)
+      setTimeout(() => store.openModal('editTask', { id: tId }), 150)
+    }
+  }, [authed])
 
   // Sync task modal open/close → URL hash
   useEffect(() => {
