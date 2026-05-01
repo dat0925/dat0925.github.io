@@ -110,6 +110,13 @@ export default function TaskModal() {
     if (memo) navigator.clipboard?.writeText(memo).catch(() => {})
   }
 
+  function copyTaskLink() {
+    const cur = store._cur()
+    if (!cur || !existingId) return
+    const url = `${location.origin}${location.pathname}#p=${cur}&t=${existingId}`
+    navigator.clipboard?.writeText(url).catch(() => {})
+  }
+
   if (modal?.type !== 'addTask' && modal?.type !== 'editTask') return null
 
   return (
@@ -118,6 +125,12 @@ export default function TaskModal() {
       <div className="md" style={{ maxWidth: 480 }}>
         <div className="mh">
           <span>{isEdit ? 'タスク編集' : 'タスク追加'}</span>
+          {isEdit && (
+            <button onClick={copyTaskLink} title="このタスクのリンクをコピー"
+              style={{ fontSize: 11, padding: '2px 8px', border: '1px solid var(--bd2)', borderRadius: 4, cursor: 'pointer', background: 'var(--s3)', color: 'var(--tx2)', marginRight: 8 }}>
+              🔗 リンクをコピー
+            </button>
+          )}
           <button className="cls" onClick={closeModal}>✕</button>
         </div>
         <div className="mb">

@@ -25,15 +25,33 @@ export default function App() {
   const [tpbScrollTop, setTpbScrollTop] = useState(0)
   const initialized = useRef(false)
 
-  // Init store once
+  // Init store once, then handle deep link from URL hash
   useEffect(() => {
     if (!initialized.current) {
       initialized.current = true
       store.init().then(() => {
         setAuthed(isAuthed())
+        const hash = new URLSearchParams(window.location.hash.slice(1))
+        const pId = hash.get('p')
+        const tId = hash.get('t')
+        if (pId && tId) {
+          store.switchPJ(pId)
+          store.openModal('editTask', { id: tId })
+        }
       })
     }
   }, [])
+
+  // Sync task modal open/close → URL hash
+  useEffect(() => {
+    if (modal?.type === 'editTask' && modal?.data?.id) {
+      const cur = useStore.getState()._cur()
+      if (cur) window.history.replaceState(null, '', `#p=${cur}&t=${modal.data.id}`)
+    } else if (!modal) {
+      const hasHash = window.location.hash.includes('&t=')
+      if (hasHash) window.history.replaceState(null, '', window.location.pathname + window.location.search)
+    }
+  }, [modal])
 
   // Auth check
   useEffect(() => {
