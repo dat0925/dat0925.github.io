@@ -1,0 +1,27 @@
+{
+  "name": "商品企画部ガントチャート",
+  "short_name": "ガントチャート",
+  "description": "商品企画部プロジェクト管理ガントチャート",
+  "start_url": "/gantt-app.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "lang": "ja",
+  "categories": ["productivity", "utilities"],
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
