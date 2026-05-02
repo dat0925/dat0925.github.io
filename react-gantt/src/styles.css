@@ -220,7 +220,12 @@ textarea.fc{min-height:60px;resize:vertical}.fg{margin-bottom:11px}.fg label{dis
   #tpb{overflow-y:auto;max-height:45vh}
   #cp{height:260px;min-height:260px;flex-shrink:0}
   #sv,#apsv{height:auto}
-  .pjs select{max-width:110px}.pjs input[type=text]{width:85px}
+  #topbar{padding:6px 10px;gap:6px}
+  .logo{order:0;flex-shrink:0}
+  .tbr{order:1;margin-left:auto;flex-shrink:0;flex-wrap:nowrap}
+  .pjs{order:2;width:100%;flex:none;flex-wrap:nowrap}
+  .pjs select{max-width:120px;flex-shrink:1}.pjs input[type=text]{width:0;flex:1;min-width:60px}
+  .sb-label{display:none}
   .fr{grid-template-columns:1fr}
   .mo .fr{grid-template-columns:1fr 1fr}
 }

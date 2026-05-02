@@ -57,12 +57,12 @@ export default function TopBar() {
         <a href="https://dat0925.github.io/task-app/" target="_blank" rel="noopener noreferrer"
           title="タスクアプリを開く"
           style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 26, height: 26, borderRadius: 6, background: 'var(--s2)', border: '1px solid var(--bd2)', color: 'var(--tx2)', textDecoration: 'none', fontSize: 14, flexShrink: 0 }}>
-          ✅
+          🔗
         </a>
         {/* Supabase status */}
         <span style={{ fontSize: 11, color: 'var(--tx3)', display: 'flex', alignItems: 'center', gap: 4, padding: '0 4px' }}>
           <span className={`sb-dot${sbStatus ? ' ' + sbStatus : ''}`}></span>
-          <span>{sbLabel}</span>
+          <span className="sb-label">{sbLabel}</span>
         </span>
         <button className="btn" onClick={forceReload} title="DBから最新データを再読み込み" style={{ fontSize: 11, padding: '2px 7px' }}>🔄</button>
         {/* Gear menu */}
